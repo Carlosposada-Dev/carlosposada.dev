@@ -1,0 +1,103 @@
+---
+/**
+ * projects.astro — Portfolio de Proyectos
+ * Basado en mockup: projects_portfolio_desktop
+ * Header gigante + filtros de categoría + grilla de cards + card CTA al final
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+import ProjectCard from "@components/projects/ProjectCard.astro";
+import ProjectFilter from "@components/projects/ProjectFilter.astro";
+import { PROJECTS } from "@utils/constants";
+---
+
+<PageLayout
+  title="Projects"
+  description="Portfolio of Cloud, DevOps, QA Automation and AI projects by Carlos Posada."
+>
+  <div class="relative min-h-screen pt-32 pb-20">
+
+    <!-- Header -->
+    <header class="max-w-screen-2xl mx-auto px-6 md:px-8 mb-14">
+      <p class="section-label text-secondary mb-4">Infrastructure Portfolio</p>
+      <h1
+        class="font-headline font-bold text-on-surface tracking-tighter leading-none mb-12"
+        style="font-size: clamp(3rem, 9vw, 6rem);"
+      >
+        My Recent <span class="text-primary">Projects</span>
+      </h1>
+
+      <!-- Filtros de categoría -->
+      <ProjectFilter active="All" />
+    </header>
+
+    <!-- Grilla de proyectos -->
+    <section
+      class="max-w-screen-2xl mx-auto px-6 md:px-8"
+      aria-label="Projects grid"
+    >
+      <div
+        id="projects-grid"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+      >
+        <!-- Cards generadas desde constants -->
+        {PROJECTS.map((project) => (
+          <ProjectCard project={project} />
+        ))}
+
+        <!-- Card CTA — siempre visible, no filtrable -->
+        <div
+          class="group flex flex-col items-center justify-center
+                 bg-surface-container-low rounded-xl
+                 border border-dashed border-outline-variant/50
+                 hover:border-primary transition-all duration-300
+                 p-12 text-center cursor-pointer min-h-[280px]"
+        >
+          <span
+            class="material-symbols-outlined text-5xl text-primary mb-4
+                   group-hover:scale-110 transition-transform duration-300"
+            aria-hidden="true"
+          >
+            add_circle
+          </span>
+          <h3 class="font-headline text-xl font-bold text-on-surface mb-2">
+            New Architecture?
+          </h3>
+          <p class="text-on-surface-variant text-xs font-body mb-6 max-w-[200px]">
+            Let&apos;s discuss your next high-scale project and build something incredible.
+          </p>
+          <a
+            href="/contact"
+            class="px-6 py-2 border border-primary text-primary rounded
+                   font-label font-bold text-xs uppercase tracking-widest
+                   hover:bg-primary/10 transition-all"
+          >
+            Start Chat
+          </a>
+        </div>
+      </div>
+
+      <!-- Estado vacío cuando ningún proyecto coincide con el filtro -->
+      <div
+        id="projects-empty"
+        class="hidden py-24 text-center"
+        aria-live="polite"
+      >
+        <span
+          class="material-symbols-outlined text-5xl text-outline mb-4 block"
+          aria-hidden="true"
+        >
+          search_off
+        </span>
+        <p class="font-headline font-bold text-on-surface-variant">
+          No projects found in this category.
+        </p>
+        <p class="text-sm text-on-surface-variant/60 mt-1">
+          More coming soon &mdash; follow along on{" "}
+          <a href="https://github.com/carlosposada" class="text-primary hover:underline"
+            target="_blank" rel="noopener noreferrer">GitHub</a>.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</PageLayout>

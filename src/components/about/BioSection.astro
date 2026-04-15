@@ -1,0 +1,42 @@
+---
+/**
+ * BioSection.astro
+ * Bloque de bio textual en About.
+ * Headline editorial + dos párrafos de descripción.
+ */
+---
+
+<section class="space-y-6" aria-labelledby="bio-heading">
+
+  <!-- Sup-label de sección -->
+  <p class="section-label text-secondary">About the Architect</p>
+
+  <!-- Headline editorial con clamp tipográfico -->
+  <h1
+    id="bio-heading"
+    class="font-headline font-bold text-on-surface leading-tight tracking-tighter"
+    style="font-size: clamp(2rem, 5vw, 3.5rem);"
+  >
+    Bridging the gap between{" "}
+    <span class="text-primary">Logic</span>{" "}
+    and{" "}
+    <span class="text-tertiary">Scale</span>.
+  </h1>
+
+  <!-- Cuerpo de texto -->
+  <div class="space-y-4 text-on-surface-variant leading-relaxed text-base md:text-lg font-body">
+    <p>
+      I am Carlos, a systems architect and automation specialist dedicated to
+      building resilient digital infrastructures. With over a decade of
+      experience, I&apos;ve navigated the transition from manual precision to
+      autonomous systems.
+    </p>
+    <p>
+      My philosophy is rooted in <em class="text-on-surface not-italic font-medium">technical elegance</em>:
+      the belief that the most complex infrastructure should operate with the
+      rhythm of a heartbeat&mdash;consistent, quiet, and essential. Whether
+      I&apos;m deploying multi-cloud environments or training AI agents for QA,
+      my focus remains on high-velocity reliability.
+    </p>
+  </div>
+</section>

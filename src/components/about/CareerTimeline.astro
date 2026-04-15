@@ -1,0 +1,103 @@
+---
+/**
+ * CareerTimeline.astro
+ * Timeline vertical de la trayectoria profesional.
+ * Línea vertical con nodos que se iluminan al hover.
+ * El nodo activo (isCurrent) siempre está en cyan.
+ */
+import { CAREER } from "@utils/constants";
+---
+
+<section class="space-y-8" aria-labelledby="career-heading">
+
+  <!-- Header con línea decorativa -->
+  <div class="flex items-center gap-4">
+    <h2
+      id="career-heading"
+      class="font-headline text-2xl font-bold text-on-surface whitespace-nowrap"
+    >
+      Career Trajectory
+    </h2>
+    <div class="flex-1 h-px bg-outline-variant/30" aria-hidden="true"></div>
+  </div>
+
+  <!-- Timeline -->
+  <ol
+    class="relative pl-8 border-l border-outline-variant/30"
+    aria-label="Career history"
+  >
+    {CAREER.map((entry, index) => {
+      const isLast = index === CAREER.length - 1;
+      return (
+        <li class:list={["relative group", isLast ? "" : "pb-12"]}>
+
+          <!-- Nodo del timeline -->
+          <div
+            class:list={[
+              "absolute -left-[1.32rem] top-0.5",
+              "w-4 h-4 rounded-full border-2 transition-colors duration-300",
+              entry.isCurrent
+                ? "bg-surface border-primary"
+                : "bg-surface border-outline group-hover:border-primary",
+            ]}
+            aria-hidden="true"
+          >
+            <!-- Punto central visible en el nodo activo -->
+            {entry.isCurrent && (
+              <span
+                class="absolute inset-1 rounded-full bg-primary"
+                aria-hidden="true"
+              ></span>
+            )}
+          </div>
+
+          <!-- Contenido del entry -->
+          <div class="space-y-3">
+
+            <!-- Título + período -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <h3
+                class:list={[
+                  "font-headline text-xl font-bold",
+                  entry.isCurrent ? "text-primary" : "text-on-surface",
+                ]}
+              >
+                {entry.title}
+              </h3>
+              <span
+                class:list={[
+                  "font-mono text-xs px-3 py-1 rounded-lg",
+                  entry.isCurrent
+                    ? "text-secondary bg-secondary/5 border border-secondary/20"
+                    : "text-on-surface-variant bg-surface-container",
+                ]}
+              >
+                {entry.period}
+              </span>
+            </div>
+
+            <!-- Descripción -->
+            <p class="text-on-surface-variant text-sm leading-relaxed">
+              {entry.description}
+            </p>
+
+            <!-- Tags de tecnología -->
+            <div class="flex flex-wrap gap-2 pt-1" aria-label="Technologies used">
+              {entry.tags.map((tag) => (
+                <span
+                  class:list={[
+                    "px-3 py-1 rounded text-xs font-mono border border-outline-variant/30",
+                    "bg-surface-container",
+                    entry.isCurrent ? "text-primary" : "text-on-surface-variant",
+                  ]}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </li>
+      );
+    })}
+  </ol>
+</section>

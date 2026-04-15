@@ -1,0 +1,5 @@
+# Cloudflare Pages redirects
+# https://developers.cloudflare.com/pages/configuration/redirects/
+
+# www → apex
+https://www.carlosposada.dev/* https://carlosposada.dev/:splat 301

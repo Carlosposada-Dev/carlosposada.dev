@@ -1,0 +1,344 @@
+---
+/**
+ * ContactForm.astro
+ * Formulario de contacto con:
+ * - Validación client-side antes de enviar
+ * - Submit via fetch al Cloudflare Worker en /api/contact
+ * - Estados: idle | loading | success | error
+ * - Accesibilidad: aria-live para mensajes de estado
+ */
+---
+
+<div
+  class="bg-surface-container rounded-2xl p-8 lg:p-12
+         border border-outline-variant/20 shadow-glow-primary
+         relative overflow-hidden"
+>
+  <!-- Glow decorativo -->
+  <div
+    class="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"
+    aria-hidden="true"
+  ></div>
+
+  <!-- Formulario -->
+  <form
+    id="contact-form"
+    class="space-y-6 relative z-10"
+    novalidate
+    aria-label="Contact form"
+  >
+    <!-- Fila: nombre + email -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Nombre -->
+      <div class="space-y-2">
+        <label
+          for="name"
+          class="block text-xs font-label uppercase tracking-widest text-on-surface-variant"
+        >
+          Full Name
+        </label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          autocomplete="name"
+          placeholder="John Doe"
+          required
+          minlength="2"
+          class="input-base"
+          aria-required="true"
+          aria-describedby="name-error"
+        />
+        <p id="name-error" class="field-error hidden text-error text-xs mt-1" role="alert"></p>
+      </div>
+
+      <!-- Email -->
+      <div class="space-y-2">
+        <label
+          for="email"
+          class="block text-xs font-label uppercase tracking-widest text-on-surface-variant"
+        >
+          Email Address
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          placeholder="john@company.com"
+          required
+          class="input-base"
+          aria-required="true"
+          aria-describedby="email-error"
+        />
+        <p id="email-error" class="field-error hidden text-error text-xs mt-1" role="alert"></p>
+      </div>
+    </div>
+
+    <!-- Tipo de consulta -->
+    <div class="space-y-2">
+      <label
+        for="inquiry"
+        class="block text-xs font-label uppercase tracking-widest text-on-surface-variant"
+      >
+        Type of Inquiry
+      </label>
+      <div class="relative">
+        <select
+          id="inquiry"
+          name="inquiry"
+          class="input-base appearance-none cursor-pointer pr-10"
+          aria-required="true"
+        >
+          <option value="hiring">Hiring (Full-time)</option>
+          <option value="freelance">Freelance Project</option>
+          <option value="collaboration">Collaboration</option>
+          <option value="other">Other</option>
+        </select>
+        <!-- Chevron decorativo -->
+        <span
+          class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2
+                 text-on-surface-variant pointer-events-none text-lg"
+          aria-hidden="true"
+        >
+          expand_more
+        </span>
+      </div>
+    </div>
+
+    <!-- Mensaje -->
+    <div class="space-y-2">
+      <label
+        for="message"
+        class="block text-xs font-label uppercase tracking-widest text-on-surface-variant"
+      >
+        Your Message
+      </label>
+      <textarea
+        id="message"
+        name="message"
+        rows="5"
+        placeholder="Tell me about your project infrastructure or goals..."
+        required
+        minlength="10"
+        class="input-base resize-none"
+        aria-required="true"
+        aria-describedby="message-error"
+      ></textarea>
+      <p id="message-error" class="field-error hidden text-error text-xs mt-1" role="alert"></p>
+    </div>
+
+    <!-- Botón de submit -->
+    <button
+      id="submit-btn"
+      type="submit"
+      class="w-full flex items-center justify-center gap-3
+             bg-primary-container hover:bg-primary
+             text-on-primary-container
+             font-headline font-bold py-4 rounded-lg
+             shadow-lg hover:shadow-glow-primary-md
+             transition-all duration-200 active:scale-[0.98]
+             disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+    >
+      <span id="btn-label">Transmit Message</span>
+      <span
+        id="btn-icon"
+        class="material-symbols-outlined transition-transform group-hover:translate-x-0.5"
+        aria-hidden="true"
+      >
+        send
+      </span>
+    </button>
+
+    <!-- Mensaje de estado (accesible con aria-live) -->
+    <div
+      id="form-status"
+      class="hidden rounded-lg px-4 py-3 text-sm font-body text-center"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+    <!-- Nota de privacidad -->
+    <p class="text-center text-xs text-on-surface-variant/60 font-body">
+      By submitting, you agree to our{" "}
+      <a href="/privacy" class="text-primary hover:underline">privacy policy</a>.
+      Response time is typically within 24 hours.
+    </p>
+  </form>
+</div>
+
+<script>
+  /**
+   * Lógica del formulario de contacto.
+   * 1. Valida campos client-side antes de enviar.
+   * 2. Hace fetch POST a /api/contact (Cloudflare Worker).
+   * 3. Gestiona los estados: idle → loading → success / error.
+   */
+
+  // ── Tipos ─────────────────────────────────────────────
+  type FormState = "idle" | "loading" | "success" | "error";
+
+  // ── Referencias al DOM ─────────────────────────────────
+  const form = document.getElementById("contact-form") as HTMLFormElement | null;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement | null;
+  const btnLabel = document.getElementById("btn-label");
+  const btnIcon = document.getElementById("btn-icon");
+  const statusEl = document.getElementById("form-status");
+
+  if (!form || !submitBtn || !btnLabel || !btnIcon || !statusEl) {
+    console.warn("[ContactForm] DOM elements not found");
+  } else {
+    // ── Helpers ──────────────────────────────────────────
+
+    /** Muestra / oculta el estado del formulario con estilo */
+    function setStatus(state: FormState, message = "") {
+      statusEl!.className =
+        "rounded-lg px-4 py-3 text-sm font-body text-center transition-all";
+
+      if (state === "idle") {
+        statusEl!.classList.add("hidden");
+        statusEl!.textContent = "";
+        return;
+      }
+
+      statusEl!.classList.remove("hidden");
+
+      if (state === "loading") {
+        statusEl!.classList.add("bg-surface-container-high", "text-on-surface-variant");
+        statusEl!.textContent = message || "Transmitting...";
+      } else if (state === "success") {
+        statusEl!.classList.add("bg-secondary/10", "border", "border-secondary/30", "text-secondary");
+        statusEl!.textContent = message;
+      } else if (state === "error") {
+        statusEl!.classList.add("bg-error/10", "border", "border-error/30", "text-error");
+        statusEl!.textContent = message;
+      }
+    }
+
+    /** Muestra error en un campo específico */
+    function showFieldError(fieldId: string, msg: string) {
+      const errorEl = document.getElementById(`${fieldId}-error`);
+      if (errorEl) {
+        errorEl.textContent = msg;
+        errorEl.classList.remove("hidden");
+      }
+      const input = document.getElementById(fieldId);
+      input?.classList.add("!border-error", "!shadow-none");
+    }
+
+    /** Limpia todos los errores de campo */
+    function clearFieldErrors() {
+      form!.querySelectorAll<HTMLElement>(".field-error").forEach((el) => {
+        el.textContent = "";
+        el.classList.add("hidden");
+      });
+      form!.querySelectorAll("input, textarea, select").forEach((el) => {
+        el.classList.remove("!border-error", "!shadow-none");
+      });
+    }
+
+    /** Valida el formulario y devuelve true si todo está OK */
+    function validate(data: FormData): boolean {
+      let valid = true;
+
+      const name = (data.get("name") as string)?.trim();
+      const email = (data.get("email") as string)?.trim();
+      const message = (data.get("message") as string)?.trim();
+
+      if (!name || name.length < 2) {
+        showFieldError("name", "Please enter your full name (min. 2 characters).");
+        valid = false;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        showFieldError("email", "Please enter a valid email address.");
+        valid = false;
+      }
+
+      if (!message || message.length < 10) {
+        showFieldError("message", "Message must be at least 10 characters.");
+        valid = false;
+      }
+
+      return valid;
+    }
+
+    /** Cambia el estado visual del botón */
+    function setButtonState(loading: boolean) {
+      submitBtn!.disabled = loading;
+      if (loading) {
+        btnLabel!.textContent = "Transmitting...";
+        btnIcon!.textContent = "sync";
+        btnIcon!.classList.add("animate-spin");
+      } else {
+        btnLabel!.textContent = "Transmit Message";
+        btnIcon!.textContent = "send";
+        btnIcon!.classList.remove("animate-spin");
+      }
+    }
+
+    // ── Submit handler ────────────────────────────────────
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearFieldErrors();
+      setStatus("idle");
+
+      const data = new FormData(form);
+
+      // Validar antes de enviar
+      if (!validate(data)) return;
+
+      setButtonState(true);
+      setStatus("loading", "Transmitting your message...");
+
+      try {
+        const response = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: (data.get("name") as string).trim(),
+            email: (data.get("email") as string).trim(),
+            inquiry: data.get("inquiry") as string,
+            message: (data.get("message") as string).trim(),
+          }),
+        });
+
+        if (response.ok) {
+          setStatus("success", "✓ Message received! I'll get back to you within 24 hours.");
+          form.reset();
+        } else {
+          // El Worker devuelve JSON con un campo `error`
+          const body = await response.json().catch(() => ({}));
+          throw new Error((body as { error?: string }).error || "Server error");
+        }
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : "Unexpected error. Please try again.";
+        setStatus(
+          "error",
+          msg.includes("Failed to fetch")
+            ? "Connection error. Please check your network and try again."
+            : `⚠ ${msg}`
+        );
+      } finally {
+        setButtonState(false);
+      }
+    });
+
+    // Limpiar error de campo al escribir
+    form.querySelectorAll("input, textarea").forEach((el) => {
+      el.addEventListener("input", () => {
+        const id = (el as HTMLElement).id;
+        const errorEl = document.getElementById(`${id}-error`);
+        if (errorEl) {
+          errorEl.textContent = "";
+          errorEl.classList.add("hidden");
+        }
+        el.classList.remove("!border-error", "!shadow-none");
+      });
+    });
+  }
+</script>

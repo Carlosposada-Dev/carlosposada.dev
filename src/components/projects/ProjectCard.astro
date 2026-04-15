@@ -1,0 +1,101 @@
+---
+/**
+ * ProjectCard.astro
+ * Tarjeta de proyecto para la grilla de /projects.
+ * Muestra imagen con zoom al hover, título, descripción,
+ * tags de tecnología y links a GitHub / demo.
+ */
+import type { Project } from "@utils/constants";
+
+export interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+---
+
+<article
+  class="group relative flex flex-col bg-surface-container rounded-xl overflow-hidden
+         border border-outline-variant/20 hover:border-primary/40
+         transition-all duration-500 hover:-translate-y-1"
+  data-category={project.category}
+>
+  <!-- Imagen -->
+  <div class="h-56 w-full overflow-hidden bg-surface-container-high flex-shrink-0">
+    <img
+      src={project.image}
+      alt={project.imageAlt}
+      class="w-full h-full object-cover opacity-70
+             transition-transform duration-700 group-hover:scale-110"
+      loading="lazy"
+      decoding="async"
+      width="600"
+      height="224"
+    />
+  </div>
+
+  <!-- Contenido -->
+  <div class="p-6 flex flex-col flex-grow">
+
+    <!-- Título + ícono de link -->
+    <div class="flex justify-between items-start mb-3">
+      <h3 class="font-headline text-xl font-bold text-on-surface tracking-tight leading-snug">
+        {project.title}
+      </h3>
+      <a
+        href={project.githubUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${project.title} on GitHub`}
+        class="material-symbols-outlined text-outline hover:text-primary
+               transition-colors flex-shrink-0 ml-2"
+      >
+        {project.icon}
+      </a>
+    </div>
+
+    <!-- Descripción -->
+    <p class="text-on-surface-variant font-body text-sm leading-relaxed mb-5 flex-grow">
+      {project.description}
+    </p>
+
+    <!-- Tags -->
+    <div class="flex flex-wrap gap-2 mb-6" aria-label="Technologies">
+      {project.tags.map((tag, i) => (
+        <span
+          class:list={[
+            "px-2 py-1 bg-surface-variant text-[10px] font-mono tracking-tighter rounded",
+            i % 3 === 0 ? "text-primary" : i % 3 === 1 ? "text-secondary" : "text-tertiary",
+          ]}
+        >
+          {tag}
+        </span>
+      ))}
+    </div>
+
+    <!-- Footer: GitHub + Demo -->
+    <div class="flex items-center justify-between pt-5 border-t border-outline-variant/10 mt-auto">
+      <a
+        href={project.githubUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex items-center gap-1.5 text-on-surface-variant hover:text-primary
+               transition-colors text-xs font-label font-bold uppercase tracking-widest"
+      >
+        <span class="material-symbols-outlined text-base" aria-hidden="true">code</span>
+        GitHub
+      </a>
+      <a
+        href={project.demoUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="px-4 py-2 bg-primary-container text-on-primary-container rounded
+               text-xs font-label font-bold uppercase tracking-widest
+               hover:brightness-110 active:scale-95
+               transition-all shadow-[0_4px_10px_rgba(0,0,0,0.3)]"
+      >
+        {project.demoLabel}
+      </a>
+    </div>
+  </div>
+</article>

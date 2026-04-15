@@ -1,0 +1,18 @@
+# wrangler.toml — Configuración para desarrollo local con Cloudflare Workers
+# Permite simular el entorno de Cloudflare Pages en local con `wrangler pages dev`
+# https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "carlosposada-dev"
+compatibility_date = "2025-01-01"
+# nodejs_compat habilita las APIs de Node.js en el runtime de Cloudflare Workers
+# Requerido para Node.js 22 y compatibilidad con módulos modernos
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+# Variables de entorno para desarrollo local.
+# Para producción, configura estas variables en:
+# Cloudflare Dashboard → Pages → tu proyecto → Settings → Environment Variables
+[vars]
+CONTACT_TO_EMAIL = "hello@carlosposada.dev"
+# RESEND_API_KEY debe ir como Secret (no en texto plano):
+# wrangler pages secret put RESEND_API_KEY

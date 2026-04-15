@@ -1,0 +1,27 @@
+---
+/**
+ * index.astro — Home Page
+ * Landing principal de carlosposada.dev
+ * Ensambla todas las secciones del mockup home_landing_page_desktop
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+import HeroSection from "@components/home/HeroSection.astro";
+import SkillsBar from "@components/home/SkillsBar.astro";
+import ServicesPreview from "@components/home/ServicesPreview.astro";
+import FeaturedProjects from "@components/home/FeaturedProjects.astro";
+import Testimonials from "@components/home/Testimonials.astro";
+import CTABanner from "@components/home/CTABanner.astro";
+import { SITE } from "@utils/constants";
+---
+
+<PageLayout
+  title={undefined}
+  description={SITE.description}
+>
+  <HeroSection />
+  <SkillsBar />
+  <ServicesPreview />
+  <FeaturedProjects />
+  <Testimonials />
+  <CTABanner />
+</PageLayout>

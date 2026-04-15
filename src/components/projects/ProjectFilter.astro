@@ -1,0 +1,99 @@
+---
+/**
+ * ProjectFilter.astro
+ * Botones de filtro de categoría para /projects.
+ * Isla interactiva: filtra las cards en el DOM sin recarga.
+ * Sin framework JS adicional — vanilla script en el propio componente.
+ */
+import { PROJECT_CATEGORIES } from "@utils/constants";
+import type { ProjectCategory } from "@utils/constants";
+
+export interface Props {
+  /** Categoría activa inicial */
+  active?: ProjectCategory;
+}
+
+const { active = "All" } = Astro.props;
+---
+
+<div
+  class="flex flex-wrap gap-3"
+  role="group"
+  aria-label="Filter projects by category"
+>
+  {PROJECT_CATEGORIES.map((cat) => (
+    <button
+      class:list={[
+        "filter-btn px-5 py-2 rounded-lg font-label font-bold text-sm tracking-wide",
+        "transition-all duration-200 active:scale-95",
+        cat === active
+          ? "bg-primary text-on-primary shadow-glow-primary"
+          : "border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary",
+      ]}
+      data-filter={cat}
+      aria-pressed={cat === active ? "true" : "false"}
+    >
+      {cat}
+    </button>
+  ))}
+</div>
+
+<script>
+  /**
+   * Filtra las tarjetas de proyectos según la categoría seleccionada.
+   * Lee el atributo data-category de cada ProjectCard y la muestra/oculta.
+   */
+  function initProjectFilter() {
+    const buttons = document.querySelectorAll<HTMLButtonElement>(".filter-btn");
+    const cards = document.querySelectorAll<HTMLElement>("[data-category]");
+    const emptyState = document.getElementById("projects-empty");
+
+    if (!buttons.length || !cards.length) return;
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const filter = btn.dataset.filter ?? "All";
+
+        // Actualizar estado visual de botones
+        buttons.forEach((b) => {
+          const isActive = b === btn;
+          b.setAttribute("aria-pressed", String(isActive));
+          b.classList.toggle("bg-primary", isActive);
+          b.classList.toggle("text-on-primary", isActive);
+          b.classList.toggle("shadow-glow-primary", isActive);
+          b.classList.toggle("border", !isActive);
+          b.classList.toggle("border-outline-variant", !isActive);
+          b.classList.toggle("text-on-surface-variant", !isActive);
+        });
+
+        // Mostrar / ocultar cards con animación
+        let visibleCount = 0;
+        cards.forEach((card) => {
+          const matches = filter === "All" || card.dataset.category === filter;
+          if (matches) {
+            card.style.display = "";
+            card.style.opacity = "0";
+            card.style.transform = "translateY(8px)";
+            requestAnimationFrame(() => {
+              card.style.transition = "opacity 0.25s ease, transform 0.25s ease";
+              card.style.opacity = "1";
+              card.style.transform = "translateY(0)";
+            });
+            visibleCount++;
+          } else {
+            card.style.display = "none";
+          }
+        });
+
+        // Mostrar estado vacío si no hay resultados
+        if (emptyState) {
+          emptyState.style.display = visibleCount === 0 ? "" : "none";
+        }
+      });
+    });
+  }
+
+  // Inicializar al cargar y al navegar con View Transitions
+  initProjectFilter();
+  document.addEventListener("astro:page-load", initProjectFilter);
+</script>

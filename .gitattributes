@@ -1,0 +1,16 @@
+# Normaliza line endings al hacer checkout en cualquier OS
+* text=auto eol=lf
+
+# Archivos binarios — sin conversión
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.svg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary

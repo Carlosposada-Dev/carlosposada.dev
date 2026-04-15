@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Bloquear rutas de admin/api si existieran
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://carlosposada.dev/sitemap-index.xml

@@ -1,0 +1,167 @@
+---
+/**
+ * HeroSection.astro
+ * Sección hero de la landing page.
+ * Incluye: badge de status, headline, subtítulo terminal con cursor,
+ * descripción, CTAs y terminal card decorativa en desktop.
+ */
+import { SITE } from "@utils/constants";
+---
+
+<section
+  class="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden"
+  aria-label="Hero"
+>
+  <!-- Textura de fondo: grid de líneas tipo blueprint -->
+  <div class="absolute inset-0 grid-mesh-lines -z-10" aria-hidden="true"></div>
+  <!-- Gradiente que suaviza la textura hacia abajo -->
+  <div
+    class="absolute inset-0 bg-gradient-to-b from-surface/0 via-surface/50 to-surface -z-10"
+    aria-hidden="true"
+  ></div>
+  <!-- Glow decorativo superior izquierdo -->
+  <div
+    class="absolute top-1/4 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10"
+    aria-hidden="true"
+  ></div>
+
+  <div class="max-w-screen-2xl mx-auto px-6 md:px-8 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+
+      <!-- ── Columna izquierda: contenido ──────────────── -->
+      <div class="lg:col-span-7 space-y-8">
+
+        <!-- Badge de status -->
+        <div
+          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full
+                 bg-surface-container text-primary
+                 text-xs font-mono font-medium tracking-widest uppercase
+                 border border-outline-variant/30"
+        >
+          <span class="status-dot" aria-hidden="true"></span>
+          System Online: Deployment Ready
+        </div>
+
+        <!-- Headline principal -->
+        <div class="space-y-3">
+          <h1 class="font-headline font-bold tracking-tighter leading-none">
+            <span class="block text-on-surface/40 text-lg md:text-2xl font-mono mb-3">
+              &gt; Hi, I&apos;m {SITE.author}
+            </span>
+            <span class="text-hero block text-white">
+              Engineering <span class="text-primary">Reliable</span>
+            </span>
+            <span class="text-hero block text-white">Cloud Infrastructure</span>
+          </h1>
+
+          <!-- Subtítulo con cursor terminal animado -->
+          <p class="font-mono text-lg md:text-xl text-secondary terminal-cursor">
+            &gt; Cloud &amp; DevOps Engineer / QA Automation | AI Solutions
+          </p>
+        </div>
+
+        <!-- Descripción -->
+        <p class="max-w-xl text-on-surface-variant text-base md:text-lg leading-relaxed">
+          Architecting high-velocity deployment pipelines and resilient cloud ecosystems.
+          Specializing in infrastructure as code, automated quality gates, and
+          AI-driven operations.
+        </p>
+
+        <!-- CTAs -->
+        <div class="flex flex-wrap gap-4 pt-2">
+          <a href="/projects" class="btn-primary group">
+            View My Work
+            <span
+              class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform"
+              aria-hidden="true"
+            >
+              arrow_forward
+            </span>
+          </a>
+          <a href="/carlos-posada-cv.pdf" download class="btn-ghost group">
+            Download CV
+            <span
+              class="material-symbols-outlined text-lg group-hover:translate-y-0.5 transition-transform"
+              aria-hidden="true"
+            >
+              download
+            </span>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── Columna derecha: terminal card decorativa ── -->
+      <div class="lg:col-span-5 relative hidden lg:flex items-center justify-center">
+
+        <!-- Glow detrás de la card -->
+        <div
+          class="absolute -top-8 -right-8 w-40 h-40 bg-primary/15 rounded-full blur-3xl"
+          aria-hidden="true"
+        ></div>
+        <div
+          class="absolute -bottom-12 -left-12 w-52 h-52 bg-secondary/8 rounded-full blur-3xl"
+          aria-hidden="true"
+        ></div>
+
+        <!-- Terminal window -->
+        <div
+          class="relative w-full glass-card rounded-2xl overflow-hidden"
+          role="img"
+          aria-label="Terminal showing terraform and kubectl commands"
+        >
+          <!-- Barra de título del terminal -->
+          <div class="flex items-center gap-2 px-5 py-3 bg-surface-container-highest/80 border-b border-outline-variant/20">
+            <span class="w-3 h-3 rounded-full bg-red-500/80" aria-hidden="true"></span>
+            <span class="w-3 h-3 rounded-full bg-yellow-500/80" aria-hidden="true"></span>
+            <span class="w-3 h-3 rounded-full bg-green-500/80" aria-hidden="true"></span>
+            <span class="ml-3 font-mono text-xs text-on-surface-variant">
+              ~/infra — zsh
+            </span>
+          </div>
+
+          <!-- Contenido del terminal -->
+          <div class="p-6 font-mono text-sm leading-loose space-y-1">
+            <p>
+              <span class="text-secondary">$</span>
+              <span class="text-on-surface ml-2">terraform plan</span>
+            </p>
+            <p class="text-on-surface/40 pl-4">Refreshing state...</p>
+            <p class="text-secondary pl-4">
+              Plan: 14 to add, 0 to change, 0 to destroy.
+            </p>
+            <p class="mt-3">
+              <span class="text-secondary">$</span>
+              <span class="text-on-surface ml-2">kubectl get pods -n production</span>
+            </p>
+            <!--
+              Bloque de tabla kubectl: usamos <pre> para garantizar
+              alineación perfecta de columnas en fuente monospace.
+              Columnas: NAME(16) READY(6) STATUS(10) RESTARTS(10) AGE
+            -->
+            <pre class="terminal-pre text-xs leading-snug pl-4"><span class="text-on-surface/40">NAME             READY  STATUS     RESTARTS  AGE</span>
+<span class="text-on-surface">api-v2-7df8      </span><span class="text-secondary">1/1</span><span class="text-on-surface">    </span><span class="text-secondary">Running</span><span class="text-on-surface">    0         14m</span>
+<span class="text-on-surface">worker-5xk9      </span><span class="text-secondary">1/1</span><span class="text-on-surface">    </span><span class="text-secondary">Running</span><span class="text-on-surface">    0         14m</span></pre>
+            <p class="mt-2">
+              <span class="text-secondary">$</span>
+              <span class="text-primary ml-2 terminal-cursor">_</span>
+            </p>
+          </div>
+
+          <!-- Badge "Live" sobre la terminal -->
+          <div
+            class="absolute top-4 right-4 flex items-center gap-1.5
+                   bg-surface-container-highest/80 backdrop-blur-sm
+                   px-3 py-1 rounded-lg border border-secondary/20
+                   shadow-glow-secondary"
+          >
+            <span class="status-dot scale-75" aria-hidden="true"></span>
+            <span class="font-label text-[10px] uppercase tracking-widest text-secondary">
+              Live
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

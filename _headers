@@ -1,0 +1,37 @@
+# Cloudflare Pages — Configuración de redirects y headers
+# https://developers.cloudflare.com/pages/configuration/redirects/
+
+# ── Redirects ─────────────────────────────────────────────
+# Forzar www → apex (sin www)
+https://www.carlosposada.dev/* https://carlosposada.dev/:splat 301
+
+# ── Headers de seguridad ──────────────────────────────────
+[build]
+  command = "npm run build"
+  destination = "dist"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    # CSP — ajustar en Fase 3 cuando se agreguen Workers
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self';"
+
+# Cache agresivo para assets estáticos
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"

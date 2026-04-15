@@ -1,0 +1,33 @@
+---
+/**
+ * LocationCard.astro
+ * Card de ubicación y timezone en la página de contacto.
+ */
+import { SITE } from "@utils/constants";
+---
+
+<div
+  class="p-6 rounded-xl bg-surface-container border border-outline-variant/20
+         flex items-center justify-between gap-4"
+  role="region"
+  aria-label="Location and timezone"
+>
+  <!-- Bandera + ciudad -->
+  <div class="flex items-center gap-4">
+    <span class="text-4xl" aria-hidden="true">🇨🇴</span>
+    <div>
+      <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant mb-0.5">
+        Current Location
+      </p>
+      <p class="font-headline font-bold text-on-surface">{SITE.location}</p>
+    </div>
+  </div>
+
+  <!-- Timezone -->
+  <div class="text-right">
+    <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant mb-0.5">
+      Timezone
+    </p>
+    <p class="font-headline font-bold text-primary">{SITE.timezone}</p>
+  </div>
+</div>

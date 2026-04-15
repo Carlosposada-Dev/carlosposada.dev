@@ -1,0 +1,91 @@
+---
+/**
+ * ProfileCard.astro
+ * Tarjeta de perfil izquierda en About:
+ * foto profesional (grayscale → color on hover),
+ * badge "Open to Work" animado y links sociales.
+ */
+import { SOCIAL_LINKS, SITE } from "@utils/constants";
+---
+
+<div class="flex flex-col items-center lg:items-start gap-10">
+
+  <!-- Foto + glow decorativo -->
+  <div class="relative group w-full max-w-sm lg:max-w-none">
+
+    <!-- Glow de fondo que se intensifica al hover -->
+    <div
+      class="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-secondary/20
+             blur-2xl opacity-50 group-hover:opacity-80 transition-opacity duration-500"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Contenedor de la imagen -->
+    <div
+      class="relative w-full aspect-[4/5] rounded-xl overflow-hidden
+             border border-outline-variant/30 bg-surface-container shadow-2xl"
+    >
+      <img
+        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDifMfV8qx7A9sNFcCwOjYvW6KyKsVkDio2YSVxXL1Y5TTPFlNHByjS1VMNq1_obIFv_TovHAsjT6oOb1kYeshxAm8d2NZ43HYFxvnZHVZ_ZhKDvjb1gtKHLANTdW4sQkbXRW0prdlMlZS6f4gWoKhZ7vtDxhAWN7GXf_bSWbImIgnZ0Dq1p4bN71JTurGJuKuR-9y-i5Ilm3vr9e0HNNyIWopRgFQNdN3C_AkH_8JE3DHAgT1H5QeIdKS89VeajU0rvQKoE7LrsUg"
+        alt={`${SITE.author} — Cloud & DevOps Engineer`}
+        class="w-full h-full object-cover object-top
+               grayscale hover:grayscale-0 transition-all duration-700"
+        loading="eager"
+        decoding="async"
+      />
+
+      <!-- Badge "Open to Work" -->
+      {SITE.openToWork && (
+        <div
+          class="absolute top-5 right-5 flex items-center gap-2
+                 bg-surface-container-highest/85 backdrop-blur-md
+                 px-4 py-2 rounded-lg border border-secondary/30
+                 shadow-glow-secondary"
+          aria-label="Currently open to new opportunities"
+        >
+          <!-- Punto pulsante -->
+          <span class="relative flex h-3 w-3" aria-hidden="true">
+            <span
+              class="animate-ping absolute inline-flex h-full w-full
+                     rounded-full bg-secondary opacity-75"
+            ></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+          </span>
+          <span class="font-label text-xs font-bold text-secondary uppercase tracking-widest">
+            Open to Work
+          </span>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- Links sociales -->
+  <div class="flex items-center gap-4" aria-label="Social links">
+    {SOCIAL_LINKS.map((link) => (
+      <a
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={link.label}
+        class="group flex items-center justify-center w-12 h-12 rounded-lg
+               bg-surface-container-low border border-outline-variant/20
+               hover:border-primary/50 hover:bg-surface-container
+               transition-all duration-300"
+      >
+        <span
+          class="material-symbols-outlined text-on-surface-variant
+                 group-hover:text-primary transition-colors"
+          aria-hidden="true"
+        >
+          {link.icon}
+        </span>
+      </a>
+    ))}
+
+    <!-- Separador decorativo -->
+    <div class="h-px w-16 bg-outline-variant/30" aria-hidden="true"></div>
+    <span class="font-label text-xs text-on-surface-variant uppercase tracking-[0.2em]">
+      Connect
+    </span>
+  </div>
+</div>

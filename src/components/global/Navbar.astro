@@ -1,0 +1,177 @@
+---
+/**
+ * Navbar.astro
+ * Barra de navegación superior fija.
+ * Responsive: links completos en desktop, hamburger en mobile.
+ * Destaca el link activo con underline + color cyan.
+ */
+import { NAV_ITEMS, SITE } from "@utils/constants";
+
+export interface Props {
+  /** Ruta actual para marcar el item activo */
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+
+/**
+ * Determina si un link de nav es el activo.
+ * Para "/" solo coincide exactamente; para el resto, comprueba prefijo.
+ */
+function isActive(href: string, current: string): boolean {
+  if (href === "/") return current === "/";
+  return current.startsWith(href);
+}
+---
+
+<nav
+  class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-surface-variant/50 shadow-nav-glow"
+  aria-label="Main navigation"
+>
+  <div class="max-w-screen-2xl mx-auto flex justify-between items-center px-6 md:px-8 py-4">
+
+    <!-- Logo / Brand -->
+    <a
+      href="/"
+      class="text-xl font-mono font-bold text-primary hover:text-primary-dim transition-colors duration-200"
+      aria-label={`${SITE.name} — Home`}
+    >
+      {SITE.name}
+    </a>
+
+    <!-- Desktop nav links -->
+    <div class="hidden md:flex items-center gap-8" role="list">
+      {NAV_ITEMS.map((item) => {
+        const active = isActive(item.href, currentPath);
+        return (
+          <a
+            href={item.href}
+            role="listitem"
+            class:list={[
+              "font-headline font-bold tracking-tight transition-all duration-300",
+              active
+                ? "text-primary border-b-2 border-primary pb-1"
+                : "text-on-surface opacity-70 hover:text-primary hover:opacity-100",
+            ]}
+            aria-current={active ? "page" : undefined}
+          >
+            {item.label}
+          </a>
+        );
+      })}
+    </div>
+
+    <!-- Acciones derecha -->
+    <div class="flex items-center gap-4">
+      <!-- Hire Me CTA -->
+      <a
+        href="/contact"
+        class="hidden md:inline-flex items-center bg-primary-container text-on-primary-container
+               px-6 py-2 rounded-xl font-headline font-bold text-sm
+               shadow-glow-primary hover:shadow-glow-primary-md
+               active:scale-95 transition-all duration-200"
+      >
+        Hire Me
+      </a>
+
+      <!-- Hamburger — solo mobile -->
+      <button
+        id="mobile-menu-btn"
+        class="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5
+               text-on-surface hover:text-primary transition-colors"
+        aria-label="Toggle mobile menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <span class="block w-6 h-0.5 bg-current transition-all duration-300" id="bar1"></span>
+        <span class="block w-6 h-0.5 bg-current transition-all duration-300" id="bar2"></span>
+        <span class="block w-4 h-0.5 bg-current transition-all duration-300 self-end" id="bar3"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu drawer -->
+  <div
+    id="mobile-menu"
+    class="md:hidden hidden bg-surface-container border-t border-surface-variant/30
+           px-6 py-4 space-y-1"
+    role="menu"
+    aria-label="Mobile navigation"
+  >
+    {NAV_ITEMS.map((item) => {
+      const active = isActive(item.href, currentPath);
+      return (
+        <a
+          href={item.href}
+          role="menuitem"
+          class:list={[
+            "flex items-center gap-3 py-3 px-2 rounded-lg font-headline font-bold",
+            "transition-all duration-200",
+            active
+              ? "text-primary bg-primary/5"
+              : "text-on-surface/70 hover:text-primary hover:bg-primary/5",
+          ]}
+          aria-current={active ? "page" : undefined}
+        >
+          <span class="material-symbols-outlined text-xl" aria-hidden="true">
+            {item.mobileIcon}
+          </span>
+          {item.label}
+        </a>
+      );
+    })}
+
+    <!-- CTA en mobile menu -->
+    <div class="pt-4 border-t border-surface-variant/30">
+      <a
+        href="/contact"
+        class="flex justify-center items-center w-full bg-primary-container
+               text-on-primary-container py-3 rounded-xl font-headline font-bold"
+        role="menuitem"
+      >
+        Hire Me
+      </a>
+    </div>
+  </div>
+</nav>
+
+<script>
+  /**
+   * Toggle del menú mobile
+   * Maneja apertura/cierre y animación del ícono hamburger
+   */
+  const btn = document.getElementById("mobile-menu-btn");
+  const menu = document.getElementById("mobile-menu");
+  const bar1 = document.getElementById("bar1");
+  const bar2 = document.getElementById("bar2");
+  const bar3 = document.getElementById("bar3");
+
+  if (btn && menu) {
+    btn.addEventListener("click", () => {
+      const isOpen = menu.classList.toggle("hidden") === false;
+      btn.setAttribute("aria-expanded", String(isOpen));
+
+      // Animación hamburger → X
+      if (isOpen) {
+        bar1?.classList.add("rotate-45", "translate-y-2");
+        bar2?.classList.add("opacity-0");
+        bar3?.classList.add("-rotate-45", "-translate-y-2", "!w-6");
+      } else {
+        bar1?.classList.remove("rotate-45", "translate-y-2");
+        bar2?.classList.remove("opacity-0");
+        bar3?.classList.remove("-rotate-45", "-translate-y-2", "!w-6");
+      }
+    });
+
+    // Cerrar al hacer click fuera del menú
+    document.addEventListener("click", (e) => {
+      if (!btn.contains(e.target as Node) && !menu.contains(e.target as Node)) {
+        menu.classList.add("hidden");
+        btn.setAttribute("aria-expanded", "false");
+        bar1?.classList.remove("rotate-45", "translate-y-2");
+        bar2?.classList.remove("opacity-0");
+        bar3?.classList.remove("-rotate-45", "-translate-y-2", "!w-6");
+      }
+    });
+  }
+</script>

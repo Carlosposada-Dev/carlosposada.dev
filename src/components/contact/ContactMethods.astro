@@ -1,0 +1,77 @@
+---
+/**
+ * ContactMethods.astro
+ * Lista de canales de contacto preferidos:
+ * Email, LinkedIn, WhatsApp.
+ * Cada item tiene ícono, label y flecha animada al hover.
+ */
+import { SITE, SOCIAL_LINKS } from "@utils/constants";
+
+// Canales de contacto con sus datos
+const methods = [
+  {
+    label: "Email",
+    value: SITE.email,
+    href: `mailto:${SITE.email}`,
+    icon: "mail",
+    external: false,
+  },
+  {
+    label: "LinkedIn",
+    value: "carlos-andres-posada-chica",
+    href: SOCIAL_LINKS.find((s) => s.label === "LinkedIn")?.href ?? "#",
+    icon: "link",
+    external: true,
+  },
+  {
+    label: "GitHub",
+    value: "Carlosposada-Dev",
+    href: SOCIAL_LINKS.find((s) => s.label === "GitHub")?.href ?? "#",
+    icon: "code",
+    external: true,
+  },
+];
+---
+
+<div class="space-y-4" role="list" aria-label="Contact channels">
+  {methods.map((method) => (
+    <a
+      href={method.href}
+      role="listitem"
+      target={method.external ? "_blank" : undefined}
+      rel={method.external ? "noopener noreferrer" : undefined}
+      class="group flex items-center gap-4 p-4 rounded-xl
+             bg-surface-container-low hover:bg-surface-container
+             border border-transparent hover:border-primary/30
+             transition-all duration-300"
+      aria-label={`${method.label}: ${method.value}`}
+    >
+      <!-- Ícono -->
+      <div
+        class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-lg
+               bg-primary/10 text-primary
+               group-hover:bg-primary group-hover:text-on-primary
+               transition-all duration-200"
+        aria-hidden="true"
+      >
+        <span class="material-symbols-outlined">{method.icon}</span>
+      </div>
+
+      <!-- Texto -->
+      <div class="min-w-0">
+        <p class="text-xs text-on-surface-variant font-body mb-0.5">{method.label}</p>
+        <p class="font-headline font-bold text-on-surface truncate">{method.value}</p>
+      </div>
+
+      <!-- Flecha animada -->
+      <span
+        class="material-symbols-outlined ml-auto text-on-surface-variant
+               opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5
+               transition-all duration-200 flex-shrink-0"
+        aria-hidden="true"
+      >
+        arrow_outward
+      </span>
+    </a>
+  ))}
+</div>

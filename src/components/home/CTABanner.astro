@@ -1,0 +1,84 @@
+---
+/**
+ * CTABanner.astro
+ * Banner de llamada a la acción final en Home.
+ * Fondo con gradiente + grid mesh para efecto "blueprint".
+ */
+---
+
+<section class="py-section md:py-section-lg" aria-label="Call to action">
+  <div class="max-w-screen-2xl mx-auto px-6 md:px-8">
+
+    <!-- Banner container -->
+    <div
+      class="relative bg-gradient-to-br from-primary/8 via-surface-container to-secondary/8
+             border border-outline-variant/30 rounded-3xl
+             p-10 md:p-16 lg:p-20
+             overflow-hidden text-center"
+    >
+      <!-- Textura interna -->
+      <div
+        class="absolute inset-0 grid-mesh-lines opacity-20 -z-0"
+        aria-hidden="true"
+      ></div>
+
+      <!-- Glows decorativos -->
+      <div
+        class="absolute top-0 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"
+        aria-hidden="true"
+      ></div>
+      <div
+        class="absolute bottom-0 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-3xl"
+        aria-hidden="true"
+      ></div>
+
+      <!-- Contenido -->
+      <div class="relative z-10 max-w-3xl mx-auto space-y-8">
+
+        <!-- Label -->
+        <p class="section-label text-secondary">Ready to Deploy?</p>
+
+        <!-- Headline -->
+        <h2
+          class="font-headline font-bold text-white tracking-tight"
+          style="font-size: clamp(1.75rem, 5vw, 3.75rem); line-height: 1.1;"
+        >
+          Ready to optimize your infrastructure?
+        </h2>
+
+        <p class="text-lg text-on-surface-variant">
+          Let&apos;s build something robust, scalable, and automated together.
+        </p>
+
+        <!-- CTAs -->
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a
+            href="/contact"
+            class="inline-flex items-center justify-center gap-2
+                   bg-primary text-on-primary
+                   px-8 md:px-10 py-4 md:py-5 rounded-xl
+                   font-headline font-bold text-base md:text-lg
+                   hover:shadow-glow-primary-lg
+                   active:scale-95 transition-all duration-200"
+          >
+            Let&apos;s Work Together
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+          </a>
+
+          <a
+            href="/services"
+            class="inline-flex items-center justify-center gap-2
+                   bg-surface-container-highest text-white
+                   border border-outline
+                   px-8 md:px-10 py-4 md:py-5 rounded-xl
+                   font-headline font-bold text-base md:text-lg
+                   hover:bg-surface-bright hover:border-outline-variant
+                   active:scale-95 transition-all duration-200"
+          >
+            View Services
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

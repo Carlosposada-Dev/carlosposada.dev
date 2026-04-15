@@ -1,0 +1,50 @@
+---
+/**
+ * services.astro — Servicios Detallados
+ * Basado en mockup: detailed_services_desktop
+ * Header editorial + 3 ServiceTiles apilados verticalmente
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+import ServiceTile from "@components/services/ServiceTile.astro";
+import CTABanner from "@components/home/CTABanner.astro";
+import { SERVICES_DETAIL } from "@utils/constants";
+---
+
+<PageLayout
+  title="Services"
+  description="DevOps & Cloud Engineering, QA Automation, and AI-powered Solutions by Carlos Posada."
+>
+  <div class="pt-32 pb-12 px-6 md:px-8 max-w-screen-2xl mx-auto">
+
+    <!-- Header editorial -->
+    <header class="mb-20 text-center md:text-left" aria-labelledby="services-page-heading">
+      <p class="section-label text-secondary mb-4">Engineering Capabilities</p>
+      <h1
+        id="services-page-heading"
+        class="font-headline font-bold text-on-surface tracking-tighter mb-6"
+        style="font-size: clamp(2.5rem, 7vw, 5rem); line-height: 1.05;"
+      >
+        Technical <span class="text-primary">Elegance.</span><br />
+        High-Velocity{" "}
+        <span class="text-on-surface/50">Infrastructure.</span>
+      </h1>
+      <p class="max-w-2xl text-on-surface-variant text-lg leading-relaxed">
+        Deploying robust, scalable architectures through the lens of precision
+        and logic. I transform complex infrastructure bottlenecks into
+        streamlined, automated delivery pipelines.
+      </p>
+    </header>
+
+    <!-- Tiles de servicios -->
+    <div class="flex flex-col gap-10" role="list" aria-label="Services list">
+      {SERVICES_DETAIL.map((service) => (
+        <div role="listitem">
+          <ServiceTile service={service} />
+        </div>
+      ))}
+    </div>
+
+  </div>
+
+  <CTABanner />
+</PageLayout>

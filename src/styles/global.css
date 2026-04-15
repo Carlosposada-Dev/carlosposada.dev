@@ -1,0 +1,221 @@
+/*
+ * global.css — Estilos base del Design System "Architectural Pulse"
+ * Importa Tailwind base, components y utilities
+ * Define clases utilitarias custom que se reutilizan en todos los componentes
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────
+ * BASE — Variables CSS y resets
+ * ───────────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-surface text-on-surface font-body antialiased overflow-x-hidden;
+    @apply selection:bg-primary/30 selection:text-primary;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-container-low;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-outline rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/60;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+ * COMPONENTS — Clases reutilizables del Design System
+ * ───────────────────────────────────────────────────────── */
+@layer components {
+
+  /* ── Texturas de fondo ──────────────────────────────── */
+
+  .grid-mesh-lines {
+    background-size: 40px 40px;
+    background-image:
+      linear-gradient(to right, rgba(68, 71, 86, 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(68, 71, 86, 0.08) 1px, transparent 1px);
+  }
+
+  .grid-mesh-dots {
+    background-image: radial-gradient(circle at 2px 2px, rgba(68, 71, 86, 0.12) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
+  /* ── Glassmorphism ──────────────────────────────────── */
+
+  .glass-card {
+    background: rgba(32, 37, 55, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(113, 117, 132, 0.12);
+  }
+
+  .glass-panel {
+    background: rgba(20, 25, 40, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* ── Terminal ───────────────────────────────────────── */
+
+  .terminal-block {
+    @apply bg-surface-container-lowest border-l-2 border-primary p-4 font-mono text-sm;
+  }
+
+  .terminal-cursor::after {
+    content: '_';
+    animation: blink 1s step-end infinite;
+  }
+
+  /* Neutraliza margin/padding del reset de Tailwind en <pre> dentro del terminal */
+  .terminal-pre {
+    @apply m-0 p-0 bg-transparent border-none rounded-none;
+    font-size: inherit;
+    line-height: inherit;
+    font-family: inherit;
+    white-space: pre;
+    overflow: visible;
+  }
+
+  /* ── Botones ────────────────────────────────────────── */
+
+  .btn-primary {
+    @apply bg-primary-container text-on-primary-container px-8 py-4 rounded-xl
+           font-headline font-bold flex items-center gap-2
+           shadow-glow-primary hover:shadow-glow-primary-md
+           active:scale-95 transition-all duration-200;
+  }
+
+  .btn-secondary {
+    @apply border border-secondary text-secondary px-8 py-4 rounded-xl
+           font-headline font-bold flex items-center gap-2
+           hover:bg-secondary/5 hover:shadow-glow-secondary
+           active:scale-95 transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply border border-outline text-on-surface px-8 py-4 rounded-xl
+           font-headline font-bold flex items-center gap-2
+           hover:border-primary hover:text-primary
+           active:scale-95 transition-all duration-200;
+  }
+
+  /* ── Cards ──────────────────────────────────────────── */
+
+  .card {
+    @apply bg-surface-container rounded-xl border border-outline-variant/20
+           transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply card hover:-translate-y-1 hover:border-primary/40
+           hover:shadow-glow-primary;
+  }
+
+  /* ── Badges / Tags ──────────────────────────────────── */
+
+  .tech-tag {
+    @apply px-2 py-1 rounded bg-surface-variant text-[10px] font-mono
+           border border-outline-variant/20;
+  }
+  .tech-tag-primary { @apply tech-tag text-primary; }
+  .tech-tag-secondary { @apply tech-tag text-secondary; }
+  .tech-tag-tertiary { @apply tech-tag text-tertiary; }
+
+  .badge {
+    @apply px-3 py-1 rounded text-[10px] font-headline font-bold
+           uppercase tracking-widest;
+  }
+
+  /* ── Inputs ─────────────────────────────────────────── */
+
+  .input-base {
+    @apply w-full bg-surface-container-low border border-outline-variant/30
+           rounded-lg px-4 py-3 text-on-surface
+           placeholder:text-on-surface-variant/40
+           transition-all duration-200
+           focus:outline-none focus:border-primary focus:shadow-input-glow;
+  }
+
+  /* ── Secciones ──────────────────────────────────────── */
+
+  .section-divider {
+    @apply flex items-center gap-4;
+  }
+  .section-divider::after {
+    content: '';
+    @apply flex-1 h-px bg-outline-variant/30;
+  }
+
+  .section-label {
+    @apply font-headline text-sm font-bold tracking-widest uppercase;
+  }
+
+  /* ── Status indicators ──────────────────────────────── */
+
+  .status-dot {
+    @apply relative flex h-2.5 w-2.5;
+  }
+  .status-dot::before {
+    content: '';
+    @apply animate-ping absolute inline-flex h-full w-full
+           rounded-full bg-secondary opacity-75;
+  }
+  .status-dot::after {
+    content: '';
+    @apply relative inline-flex rounded-full h-2.5 w-2.5 bg-secondary;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+ * UTILITIES — Helpers personalizados
+ * ───────────────────────────────────────────────────────── */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-primary to-primary-dim bg-clip-text text-transparent;
+  }
+
+  .text-hero {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .material-symbols-filled {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+}

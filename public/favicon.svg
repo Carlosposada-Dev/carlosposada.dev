@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Background -->
+  <rect width="32" height="32" rx="6" fill="#0a0e1a"/>
+  <!-- Terminal bracket left -->
+  <path d="M8 10L4 16L8 22" stroke="#6dddff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Terminal bracket right -->
+  <path d="M24 10L28 16L24 22" stroke="#6dddff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Slash / -->
+  <path d="M19 9L13 23" stroke="#2ff801" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

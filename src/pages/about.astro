@@ -1,0 +1,40 @@
+---
+/**
+ * about.astro — Página About Me
+ * Basado en mockups: about_me_desktop_1 / about_me_desktop_2
+ * Layout: 5/12 foto+sociales | 7/12 bio+timeline
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+import ProfileCard from "@components/about/ProfileCard.astro";
+import BioSection from "@components/about/BioSection.astro";
+import CareerTimeline from "@components/about/CareerTimeline.astro";
+import CTABanner from "@components/home/CTABanner.astro";
+---
+
+<PageLayout
+  title="About Me"
+  description="Learn about Carlos Posada — Cloud & DevOps Engineer and AI Solutions Lead based in Medellín, Colombia."
+>
+  <main class="pt-32 pb-20 px-6 md:px-8 max-w-screen-2xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+
+      <!-- Columna izquierda: foto + redes -->
+      <div class="lg:col-span-5">
+        <!-- Sticky en desktop para que la foto acompañe el scroll del contenido -->
+        <div class="lg:sticky lg:top-28">
+          <ProfileCard />
+        </div>
+      </div>
+
+      <!-- Columna derecha: bio + timeline -->
+      <div class="lg:col-span-7 space-y-16">
+        <BioSection />
+        <CareerTimeline />
+      </div>
+
+    </div>
+  </main>
+
+  <!-- CTA reutilizado del home -->
+  <CTABanner />
+</PageLayout>

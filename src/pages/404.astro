@@ -1,0 +1,40 @@
+---
+/**
+ * 404.astro — Página de error
+ * Mantiene el design system y ofrece navegación de vuelta al home.
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+---
+
+<PageLayout title="404 — Page Not Found">
+  <div class="min-h-screen pt-32 pb-20 px-6 md:px-8 max-w-screen-2xl mx-auto flex items-center justify-center">
+    <div class="text-center space-y-6 max-w-lg">
+
+      <!-- Bloque terminal con el error -->
+      <div class="terminal-block rounded-xl text-left">
+        <p>
+          <span class="text-on-surface/40">$</span>
+          <span class="text-on-surface ml-2">curl -I {Astro.url.pathname}</span>
+        </p>
+        <p class="text-error mt-1">HTTP/2 404 Not Found</p>
+        <p class="text-on-surface-variant text-xs mt-1">
+          The requested resource could not be located.
+        </p>
+      </div>
+
+      <h1 class="font-headline text-6xl font-bold text-primary">404</h1>
+      <p class="font-headline text-xl font-bold text-white">Page Not Found</p>
+      <p class="text-on-surface-variant text-sm">
+        This route doesn&apos;t exist in the infrastructure. Let&apos;s get you back online.
+      </p>
+
+      <div class="flex flex-wrap justify-center gap-4 pt-2">
+        <a href="/" class="btn-primary inline-flex">
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">home</span>
+          Go Home
+        </a>
+        <a href="/contact" class="btn-ghost inline-flex">Contact Me</a>
+      </div>
+    </div>
+  </div>
+</PageLayout>
