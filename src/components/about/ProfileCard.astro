@@ -72,13 +72,14 @@ import { SOCIAL_LINKS, SITE } from "@utils/constants";
                hover:border-primary/50 hover:bg-surface-container
                transition-all duration-300"
       >
-        <span
-          class="material-symbols-outlined text-on-surface-variant
-                 group-hover:text-primary transition-colors"
+        <svg
+          viewBox={link.svgViewBox ?? "0 0 24 24"}
+          class="w-5 h-5 fill-current text-on-surface-variant group-hover:text-primary transition-colors"
           aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          {link.icon}
-        </span>
+          <path d={link.svgPath} />
+        </svg>
       </a>
     ))}
 

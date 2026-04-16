@@ -2,32 +2,44 @@
 /**
  * ContactMethods.astro
  * Lista de canales de contacto preferidos:
- * Email, LinkedIn, WhatsApp.
- * Cada item tiene ícono, label y flecha animada al hover.
+ * Email, LinkedIn, GitHub, WhatsApp.
+ * Cada item tiene ícono SVG de marca, label y flecha animada al hover.
  */
 import { SITE, SOCIAL_LINKS } from "@utils/constants";
 
-// Canales de contacto con sus datos
+// Ícono de email como SVG (Material Symbols no tiene iconos de marca)
+const EMAIL_SVG =
+  "M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z";
+
+const getSocial = (label: string) => SOCIAL_LINKS.find((s) => s.label === label);
+
 const methods = [
   {
     label: "Email",
     value: SITE.email,
     href: `mailto:${SITE.email}`,
-    icon: "mail",
+    svgPath: EMAIL_SVG,
     external: false,
   },
   {
     label: "LinkedIn",
     value: "carlos-andres-posada-chica",
-    href: SOCIAL_LINKS.find((s) => s.label === "LinkedIn")?.href ?? "#",
-    icon: "link",
+    href: getSocial("LinkedIn")?.href ?? "#",
+    svgPath: getSocial("LinkedIn")?.svgPath ?? "",
     external: true,
   },
   {
     label: "GitHub",
     value: "Carlosposada-Dev",
-    href: SOCIAL_LINKS.find((s) => s.label === "GitHub")?.href ?? "#",
-    icon: "code",
+    href: getSocial("GitHub")?.href ?? "#",
+    svgPath: getSocial("GitHub")?.svgPath ?? "",
+    external: true,
+  },
+  {
+    label: "WhatsApp",
+    value: "+57 · WhatsApp",
+    href: getSocial("WhatsApp")?.href ?? "#",
+    svgPath: getSocial("WhatsApp")?.svgPath ?? "",
     external: true,
   },
 ];
@@ -46,7 +58,7 @@ const methods = [
              transition-all duration-300"
       aria-label={`${method.label}: ${method.value}`}
     >
-      <!-- Ícono -->
+      <!-- Ícono SVG de marca -->
       <div
         class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-lg
                bg-primary/10 text-primary
@@ -54,7 +66,14 @@ const methods = [
                transition-all duration-200"
         aria-hidden="true"
       >
-        <span class="material-symbols-outlined">{method.icon}</span>
+        <svg
+          viewBox="0 0 24 24"
+          class="w-5 h-5 fill-current"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path d={method.svgPath} />
+        </svg>
       </div>
 
       <!-- Texto -->
