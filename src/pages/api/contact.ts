@@ -128,13 +128,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
   }
 
-  // ── 3. Leer variables de entorno (Cloudflare Pages env) ──
-  // En Cloudflare Workers el env se accede via locals.runtime.env
-  const env = (locals as { runtime?: { env?: Record<string, string> } })
-    .runtime?.env ?? {};
-
-  const RESEND_API_KEY = env.RESEND_API_KEY;
-  const CONTACT_TO_EMAIL = env.CONTACT_TO_EMAIL ?? "hello@carlosposada.dev";
+  // ── 3. Leer variables de entorno (Cloudflare Workers runtime) ──
+  // locals.runtime.env es el objeto env del Worker, tipado via App.Locals en env.d.ts
+  const { runtime } = locals;
+  const RESEND_API_KEY = runtime?.env?.RESEND_API_KEY;
+  const CONTACT_TO_EMAIL = runtime?.env?.CONTACT_TO_EMAIL ?? "hello@carlosposada.dev";
 
   if (!RESEND_API_KEY) {
     console.error("[contact] RESEND_API_KEY not configured");

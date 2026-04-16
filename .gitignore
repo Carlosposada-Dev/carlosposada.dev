@@ -16,6 +16,9 @@ dist/
 # Cloudflare
 .wrangler/
 
+# Contexto privado del proyecto (solo uso local)
+PROJECT_STATUS.md
+
 # OS
 .DS_Store
 Thumbs.db
