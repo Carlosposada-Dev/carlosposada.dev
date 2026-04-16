@@ -135,21 +135,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const CONTACT_TO_EMAIL = runtime?.env?.CONTACT_TO_EMAIL ?? "hello@carlosposada.dev";
 
   if (!RESEND_API_KEY) {
-    // Debug temporal — muestra qué hay en locals.runtime para diagnosticar.
-    // ELIMINAR cuando el formulario funcione correctamente.
-    const debug = {
-      hasLocalsRuntime: "runtime" in locals,
-      runtimeType: typeof runtime,
-      hasEnv: !!runtime?.env,
-      envKeys: runtime?.env ? Object.keys(runtime.env) : [],
-      localsKeys: Object.keys(locals),
-    };
-    console.error("[contact] RESEND_API_KEY not configured", debug);
+    console.error("[contact] RESEND_API_KEY not configured");
     return new Response(
-      JSON.stringify({
-        error: "Email service not configured. Please contact me directly.",
-        _debug: debug,
-      }),
+      JSON.stringify({ error: "Email service not configured. Please contact me directly." }),
       { status: 503, headers }
     );
   }

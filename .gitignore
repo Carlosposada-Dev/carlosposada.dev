@@ -15,6 +15,7 @@ dist/
 
 # Cloudflare
 .wrangler/
+.dev.vars
 
 # Contexto privado del proyecto (solo uso local)
 PROJECT_STATUS.md
