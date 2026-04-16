@@ -15,6 +15,11 @@
 
 import type { APIRoute } from "astro";
 
+// Requerido en Astro v5 output:"static" para que el adapter de Cloudflare
+// incluya esta ruta en _routes.json → include[] en lugar de exclude[].
+// Sin esto, /api/contact se sirve como archivo estático → 405 en POST.
+export const prerender = false;
+
 // ── Tipos ───────────────────────────────────────────────────
 interface ContactPayload {
   name: string;
@@ -173,6 +178,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 };
 
-// Rechazar métodos distintos a POST
+// Preflight CORS — necesario para fetch cross-origin desde el formulario
+export const OPTIONS: APIRoute = () =>
+  new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "https://carlosposada.dev",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
+
+// Rechazar métodos distintos a POST / OPTIONS
 export const GET: APIRoute = () =>
   new Response(JSON.stringify({ error: "Method not allowed." }), { status: 405 });
