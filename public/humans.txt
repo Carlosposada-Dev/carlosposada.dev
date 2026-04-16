@@ -1,0 +1,17 @@
+/* humanstxt.org */
+
+/* TEAM */
+Developer: Carlos Posada
+Role: Cloud & DevOps Engineer
+Location: Medellín, Colombia
+Contact: hello@carlosposada.dev
+GitHub: https://github.com/Carlosposada-Dev
+LinkedIn: https://www.linkedin.com/in/carlos-andres-posada-chica-software-engineer/
+X: https://x.com/CarlosposadaDev
+
+/* SITE */
+Built with: Astro 5, Tailwind CSS, TypeScript
+Hosting: Cloudflare Pages
+Backend: Cloudflare Workers + Resend API
+Last updated: 2025-04-15
+Standards: HTML5, CSS3, Schema.org, llmstxt.org

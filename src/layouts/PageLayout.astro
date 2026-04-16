@@ -9,6 +9,8 @@ import BaseLayout from "./BaseLayout.astro";
 import Navbar from "@components/global/Navbar.astro";
 import Footer from "@components/global/Footer.astro";
 import BottomNav from "@components/global/BottomNav.astro";
+import SchemaOrg from "@components/seo/SchemaOrg.astro";
+import { SITE } from "@utils/constants";
 
 export interface Props {
   title?: string;
@@ -16,9 +18,14 @@ export interface Props {
   canonical?: string;
   ogImage?: string;
   ogType?: "website" | "article";
+  /** Tipo de página para Schema.org structured data */
+  schemaType?: "home" | "about" | "services" | "projects" | "contact" | "blog" | "article";
 }
 
-const { title, description, canonical, ogImage, ogType } = Astro.props;
+const { title, description, canonical, ogImage, ogType, schemaType = "home" } = Astro.props;
+
+// URL canónica de esta página
+const pageUrl = canonical ?? new URL(Astro.url.pathname, SITE.url).toString();
 
 // Ruta activa para highlight en nav
 const currentPath = Astro.url.pathname;
@@ -31,6 +38,14 @@ const currentPath = Astro.url.pathname;
   ogImage={ogImage}
   ogType={ogType}
 >
+  <!-- Schema.org JSON-LD structured data -->
+  <SchemaOrg
+    slot="head"
+    type={schemaType}
+    title={title ? `${title} | ${SITE.name}` : SITE.title}
+    description={description ?? SITE.description}
+    url={pageUrl}
+  />
   <!-- Textura de fondo global — blueprint dots -->
   <div class="fixed inset-0 grid-mesh-dots pointer-events-none -z-10" aria-hidden="true"></div>
 

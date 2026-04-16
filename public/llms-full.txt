@@ -1,0 +1,96 @@
+# Carlos Posada — Cloud & DevOps Engineer (Full Context)
+
+> Carlos Posada is a Cloud & DevOps Engineer based in Medellín, Colombia. He architects high-velocity deployment pipelines and resilient cloud ecosystems, specializing in Infrastructure as Code, automated quality gates, and AI-driven operations. He is currently open to work and available for full-time positions, freelance projects, and collaboration.
+
+## Professional Profile
+
+**Name:** Carlos Posada
+**Title:** Cloud & DevOps Engineer | AI Solutions Lead | QA Automation Specialist
+**Location:** Medellín, Colombia (COT, UTC-5)
+**Email:** hello@carlosposada.dev
+**Website:** https://carlosposada.dev
+**Status:** Open to Work
+
+Carlos has 10+ years of experience in software engineering, with deep expertise across three domains:
+
+### 1. DevOps & Cloud Engineering
+Architecting cloud-native ecosystems that prioritize resilience and speed. He focuses on the structural pulse of deployments, ensuring 99.9% availability through automated orchestration.
+
+**Capabilities:**
+- CI/CD Pipelines: GitHub Actions, GitLab CI, Jenkins
+- Infrastructure as Code: Terraform, Pulumi, AWS CloudFormation, AWS CDK
+- Container Orchestration: Kubernetes, Docker, Helm, Istio
+- Cloud Providers: AWS (primary), GCP, Azure
+- Site Reliability Engineering: Prometheus, Grafana, PagerDuty
+- DevSecOps: Vault, security hardening, compliance automation
+
+### 2. QA Automation
+Ensuring zero-defect releases through end-to-end automated testing strategies. He builds frameworks that act as the immune system for software architecture.
+
+**Capabilities:**
+- E2E Testing: Playwright, Cypress, Selenium
+- API Testing: RestAssured, Postman, k6
+- Performance & Load Testing: k6, JMeter, Locust
+- Visual Regression Testing: Percy, Chromatic
+- Test Data Management & CI integration
+
+### 3. AI-powered Solutions
+Integrating machine intelligence into the engineering lifecycle. From LLM-assisted coding agents to predictive infrastructure scaling, he builds the next generation of smart systems.
+
+**Capabilities:**
+- Custom LLM Implementation & Fine-tuning
+- RAG Pipeline Architecture (LangChain, vector databases)
+- AIOps for Anomaly Detection
+- MLOps Training Workflows (PyTorch, MLflow)
+- Self-healing test frameworks using LLM-based element analysis
+
+## Technical Skills
+
+**Cloud & Infrastructure:** AWS, GCP, Azure, Terraform, Kubernetes, Docker, Helm, Istio, Envoy, Vault
+**CI/CD & DevOps:** GitHub Actions, GitLab CI, Jenkins, ArgoCD, Prometheus, Grafana
+**Programming:** Python, TypeScript, Go, Java, Bash
+**Testing:** Playwright, Selenium, Cypress, RestAssured, k6, Postman
+**AI/ML:** PyTorch, LangChain, AutoGPT, RAG, MLOps, LLM fine-tuning
+**Databases:** PostgreSQL, DynamoDB, Redis, Pinecone, Weaviate
+
+## Career History
+
+1. **AI Solutions Lead** (2022 — Present)
+   Spearheading the integration of LLMs into enterprise CI/CD pipelines. Developed self-healing test suites and predictive analytics for deployment risk assessment.
+   Technologies: PyTorch, LangChain, AutoGPT
+
+2. **Senior Cloud / DevOps Engineer** (2018 — 2022)
+   Orchestrated large-scale Kubernetes migrations and implemented Infrastructure as Code across AWS and Azure environments for Fortune 500 fintech clients.
+   Technologies: Terraform, Kubernetes, GitHub Actions
+
+3. **QA Automation Specialist** (2014 — 2018)
+   Established automated testing frameworks from scratch, reducing regression testing cycles by 70%. Pioneered Shift-Left testing culture.
+   Technologies: Selenium, Jenkins, TypeScript
+
+## Featured Projects
+
+1. **Automated Multi-Cloud Drifting Engine** — A real-time monitoring tool that detects configuration drift across AWS and GCP environments using Terraform state analysis. Tags: Terraform, Python, Prometheus.
+
+2. **Self-Healing Automation Framework** — AI-powered Selenium framework that automatically updates selectors and heals flaky tests using LLM-based element analysis. Tags: Selenium, OpenAI API, Java.
+
+3. **Infrastructure Intelligence Bot** — A Slack-integrated AI agent that troubleshoots production logs and provides root cause analysis for incident response. Tags: LangChain, AWS Lambda, Docker.
+
+4. **KubeStreamer v2** — Automated CI/CD pipeline for high-availability Kubernetes clusters with real-time log streaming and thermal monitoring. Tags: Kubernetes, Terraform, Go.
+
+5. **Sentinel QA Hub** — End-to-end testing orchestration platform using Playwright and Python, featuring automated regression reports and Slack integration. Tags: Playwright, Python, GitHub Actions.
+
+## Contact Information
+
+- **Website:** https://carlosposada.dev
+- **Email:** hello@carlosposada.dev
+- **GitHub:** https://github.com/Carlosposada-Dev
+- **LinkedIn:** https://www.linkedin.com/in/carlos-andres-posada-chica-software-engineer/
+- **X (Twitter):** https://x.com/CarlosposadaDev
+- **WhatsApp:** https://wa.me/573106207381
+
+## How to Hire Carlos Posada
+
+Visit https://carlosposada.dev/contact to send a message through the contact form, or email hello@carlosposada.dev directly. Response time is typically within 24 hours. Carlos is available for:
+- Full-time remote positions (Cloud/DevOps/SRE roles)
+- Freelance infrastructure and automation projects
+- Technical collaboration and consulting

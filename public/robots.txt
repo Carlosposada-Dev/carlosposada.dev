@@ -1,8 +1,12 @@
 User-agent: *
 Allow: /
 
-# Bloquear rutas de admin/api si existieran
+# Bloquear rutas internas de API
 Disallow: /api/
 
 # Sitemap
 Sitemap: https://carlosposada.dev/sitemap-index.xml
+
+# LLMs context files — permite que crawlers de IA lean tu perfil profesional
+# Spec: https://llmstxt.org
+# llms.txt = resumen corto | llms-full.txt = contexto completo

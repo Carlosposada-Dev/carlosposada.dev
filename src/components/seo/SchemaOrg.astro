@@ -1,0 +1,157 @@
+---
+/**
+ * SchemaOrg.astro
+ * Genera JSON-LD structured data para Google Rich Results y LLMs.
+ * Se incluye en BaseLayout.astro via <slot name="head">.
+ *
+ * Schemas implementados:
+ * - Person (identidad profesional)
+ * - WebSite (búsqueda de sitio)
+ * - WebPage (cada página individual)
+ * - ProfessionalService (servicios ofrecidos)
+ *
+ * Referencia: https://schema.org / https://developers.google.com/search/docs/appearance/structured-data
+ */
+import { SITE, SOCIAL_LINKS, SKILLS, SERVICES } from "@utils/constants";
+
+export interface Props {
+  /** Tipo de página para schema contextual */
+  type?: "home" | "about" | "services" | "projects" | "contact" | "blog" | "article";
+  /** Título de la página */
+  title?: string;
+  /** Descripción de la página */
+  description?: string;
+  /** URL canónica */
+  url?: string;
+  /** Datos del artículo (solo para type="article") */
+  article?: {
+    title: string;
+    description: string;
+    datePublished: string;
+    dateModified?: string;
+    tags?: string[];
+    image?: string;
+  };
+}
+
+const {
+  type = "home",
+  title = SITE.title,
+  description = SITE.description,
+  url = SITE.url,
+  article,
+} = Astro.props;
+
+// ── Person Schema — identidad profesional ─────────────────
+const personSchema = {
+  "@type": "Person",
+  "@id": `${SITE.url}/#person`,
+  name: SITE.author,
+  url: SITE.url,
+  email: SITE.email,
+  jobTitle: "Cloud & DevOps Engineer",
+  description:
+    "Cloud & DevOps Engineer specializing in AWS, Terraform, Kubernetes, CI/CD pipelines, QA Automation, and AI-powered infrastructure solutions.",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Medellín",
+    addressCountry: "CO",
+  },
+  sameAs: SOCIAL_LINKS.map((s) => s.href),
+  knowsAbout: [
+    ...SKILLS.map((s) => s.label),
+    "CI/CD Pipelines",
+    "Infrastructure as Code",
+    "Cloud Architecture",
+    "Site Reliability Engineering",
+    "Test Automation",
+    "DevSecOps",
+    "LLM Integration",
+    "MLOps",
+  ],
+};
+
+// ── WebSite Schema — búsqueda del sitio ───────────────────
+const websiteSchema = {
+  "@type": "WebSite",
+  "@id": `${SITE.url}/#website`,
+  url: SITE.url,
+  name: SITE.name,
+  description: SITE.description,
+  publisher: { "@id": `${SITE.url}/#person` },
+  inLanguage: "en-US",
+};
+
+// ── WebPage Schema — la página actual ─────────────────────
+const webPageSchema = {
+  "@type": "WebPage",
+  "@id": `${url}/#webpage`,
+  url: url,
+  name: title,
+  description: description,
+  isPartOf: { "@id": `${SITE.url}/#website` },
+  about: { "@id": `${SITE.url}/#person` },
+  inLanguage: "en-US",
+};
+
+// ── ProfessionalService Schema — servicios ofrecidos ──────
+const serviceSchema = {
+  "@type": "ProfessionalService",
+  "@id": `${SITE.url}/#services`,
+  name: `${SITE.author} — Cloud & DevOps Services`,
+  url: `${SITE.url}/services`,
+  provider: { "@id": `${SITE.url}/#person` },
+  areaServed: "Worldwide",
+  serviceType: SERVICES.map((s) => s.title),
+  description:
+    "Professional DevOps consulting, cloud architecture, QA automation, and AI integration services for startups and enterprises.",
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Engineering Services",
+    itemListElement: SERVICES.map((s, i) => ({
+      "@type": "Offer",
+      itemOffered: {
+        "@type": "Service",
+        name: s.title,
+        description: s.shortDescription,
+      },
+      position: i + 1,
+    })),
+  },
+};
+
+// ── Article Schema — para posts del blog ──────────────────
+const articleSchema = article
+  ? {
+      "@type": "Article",
+      "@id": `${url}/#article`,
+      headline: article.title,
+      description: article.description,
+      datePublished: article.datePublished,
+      dateModified: article.dateModified ?? article.datePublished,
+      author: { "@id": `${SITE.url}/#person` },
+      publisher: { "@id": `${SITE.url}/#person` },
+      mainEntityOfPage: { "@id": `${url}/#webpage` },
+      inLanguage: "en-US",
+      ...(article.image && { image: new URL(article.image, SITE.url).toString() }),
+      ...(article.tags && { keywords: article.tags.join(", ") }),
+    }
+  : null;
+
+// ── Ensamblar el @graph según el tipo de página ───────────
+const graphItems: Record<string, unknown>[] = [personSchema, websiteSchema, webPageSchema];
+
+if (type === "services" || type === "home") {
+  graphItems.push(serviceSchema);
+}
+if (type === "article" && articleSchema) {
+  graphItems.push(articleSchema);
+}
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": graphItems,
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

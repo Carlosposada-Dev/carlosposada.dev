@@ -1,0 +1,37 @@
+# Carlos Posada — Cloud & DevOps Engineer
+
+> Carlos Posada is a Cloud & DevOps Engineer based in Medellín, Colombia, specializing in AWS, Terraform, Kubernetes, CI/CD pipelines, QA Automation, and AI-powered infrastructure solutions. Available for hire.
+
+## About
+
+Carlos Posada architects high-velocity deployment pipelines and resilient cloud ecosystems. He specializes in Infrastructure as Code, automated quality gates, and AI-driven operations. Currently open to new opportunities.
+
+- Location: Medellín, Colombia (COT, UTC-5)
+- Email: hello@carlosposada.dev
+- Website: https://carlosposada.dev
+
+## Services
+
+- [DevOps & Cloud Engineering](/services#devops-cloud): CI/CD pipelines (GitHub Actions, GitLab), Infrastructure as Code (Terraform, Pulumi, CloudFormation), Kubernetes cluster management, DevSecOps & security hardening.
+- [QA Automation](/services#qa-automation): Playwright & Cypress frameworks, API testing (RestAssured, Postman), performance & load testing (k6), visual regression testing.
+- [AI-powered Solutions](/services#ai-solutions): Custom LLM implementation, AIOps for anomaly detection, RAG pipeline architecture, MLOps training workflows.
+
+## Skills
+
+AWS, GCP, Terraform, Kubernetes, Docker, GitHub Actions, Playwright, Python, LLM / AI, Selenium, Jenkins, TypeScript, Go, PyTorch, LangChain.
+
+## Links
+
+- GitHub: https://github.com/Carlosposada-Dev
+- LinkedIn: https://www.linkedin.com/in/carlos-andres-posada-chica-software-engineer/
+- X: https://x.com/CarlosposadaDev
+- Contact: https://carlosposada.dev/contact
+
+## Pages
+
+- [Home](https://carlosposada.dev/)
+- [About](https://carlosposada.dev/about)
+- [Services](https://carlosposada.dev/services)
+- [Projects](https://carlosposada.dev/projects)
+- [Blog](https://carlosposada.dev/blog)
+- [Contact](https://carlosposada.dev/contact)
