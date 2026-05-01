@@ -19,6 +19,7 @@ dist/
 
 # Contexto privado del proyecto (solo uso local)
 PROJECT_STATUS.md
+design-improvements.md
 
 # OS
 .DS_Store

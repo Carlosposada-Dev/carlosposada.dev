@@ -190,6 +190,37 @@
     content: '';
     @apply relative inline-flex rounded-full h-2.5 w-2.5 bg-secondary;
   }
+
+  /* ── Scroll Reveal Animations ──────────────────────── */
+
+  .scroll-reveal {
+    opacity: 0;
+    transition:
+      opacity var(--reveal-duration, 600ms) cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms),
+      transform var(--reveal-duration, 600ms) cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .scroll-reveal.revealed {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+
+  /* Variantes de animación */
+  .fade-up    { transform: translateY(30px); }
+  .fade-in    { transform: none; }
+  .fade-left  { transform: translateX(-30px); }
+  .fade-right { transform: translateX(30px); }
+  .scale-in   { transform: scale(0.95); }
+
+  /* Respeta prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
 }
 
 /* ─────────────────────────────────────────────────────────

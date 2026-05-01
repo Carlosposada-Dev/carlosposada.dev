@@ -117,5 +117,25 @@ const ogImageURL = new URL(ogImage, SITE.url).toString();
       // Este script garantiza que 'dark' siempre esté presente en <html>
       document.documentElement.classList.add("dark");
     </script>
+
+    <!-- ScrollReveal: Intersection Observer para animaciones al scroll -->
+    <script is:inline>
+      (function() {
+        const observer = new IntersectionObserver(
+          function(entries) {
+            entries.forEach(function(entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+        );
+        document.querySelectorAll('.scroll-reveal').forEach(function(el) {
+          observer.observe(el);
+        });
+      })();
+    </script>
   </body>
 </html>

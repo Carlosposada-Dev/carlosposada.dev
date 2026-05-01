@@ -1,0 +1,45 @@
+---
+/**
+ * ScrollReveal.astro
+ * Componente reutilizable para animaciones de entrada al scroll.
+ * Usa Intersection Observer API (0 dependencias JS externas).
+ * Variantes: fade-up, fade-in, fade-left, fade-right, scale-in.
+ *
+ * Uso:
+ *   <ScrollReveal>
+ *     <h2>Contenido que se revela al scroll</h2>
+ *   </ScrollReveal>
+ *
+ *   <ScrollReveal animation="fade-left" delay={200}>
+ *     <p>Con animación lateral y delay</p>
+ *   </ScrollReveal>
+ */
+
+export interface Props {
+  /** Animation variant */
+  animation?: "fade-up" | "fade-in" | "fade-left" | "fade-right" | "scale-in";
+  /** Delay in ms before animation starts */
+  delay?: number;
+  /** Animation duration in ms */
+  duration?: number;
+  /** HTML tag to render (default: div) */
+  as?: string;
+  /** Additional CSS classes */
+  class?: string;
+}
+
+const {
+  animation = "fade-up",
+  delay = 0,
+  duration = 600,
+  as: Tag = "div",
+  class: className = "",
+} = Astro.props;
+---
+
+<Tag
+  class:list={["scroll-reveal", animation, className]}
+  style={`--reveal-delay: ${delay}ms; --reveal-duration: ${duration}ms;`}
+>
+  <slot />
+</Tag>
