@@ -25,7 +25,7 @@ function isActive(href: string, current: string): boolean {
 ---
 
 <nav
-  class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-surface-variant/50 shadow-nav-glow"
+  class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-surface-variant/50 shadow-nav-glow transition-all duration-300"
   aria-label="Main navigation"
 >
   <div class="max-w-screen-2xl mx-auto flex justify-between items-center px-6 md:px-8 py-4">
@@ -173,5 +173,13 @@ function isActive(href: string, current: string): boolean {
         bar3?.classList.remove("-rotate-45", "-translate-y-2", "!w-6");
       }
     });
+  }
+
+  // ── Navbar scroll effect (Feature #4) ─────────────────
+  const nav = document.querySelector("nav");
+  if (nav) {
+    window.addEventListener("scroll", () => {
+      nav.classList.toggle("nav-scrolled", window.scrollY > 30);
+    }, { passive: true });
   }
 </script>
