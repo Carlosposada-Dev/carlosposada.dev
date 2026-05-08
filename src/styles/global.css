@@ -11,6 +11,12 @@
 /* ─────────────────────────────────────────────────────────
  * BASE — Variables CSS y resets
  * ───────────────────────────────────────────────────────── */
+@property --scanner-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
 @layer base {
   :root {
     color-scheme: dark;
@@ -109,6 +115,26 @@
            font-headline font-bold flex items-center gap-2
            shadow-glow-primary hover:shadow-glow-primary-md
            active:scale-95 transition-all duration-200;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.1),
+      transparent
+    );
+    transition: left 0.5s ease;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
   }
 
   .btn-secondary {
@@ -137,6 +163,34 @@
            hover:shadow-glow-primary;
   }
 
+  .card-scanner {
+    position: relative;
+  }
+  .card-scanner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      var(--scanner-angle, 0deg),
+      transparent 40%,
+      var(--scanner-color, #6dddff) 50%,
+      transparent 60%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card-scanner:hover::before {
+    opacity: 1;
+    animation: border-scan 2s linear infinite;
+  }
+
   /* ── Badges / Tags ──────────────────────────────────── */
 
   .tech-tag {
@@ -158,8 +212,9 @@
     @apply w-full bg-surface-container-low border border-outline-variant/30
            rounded-lg px-4 py-3 text-on-surface
            placeholder:text-on-surface-variant/40
-           transition-all duration-200
-           focus:outline-none focus:border-primary focus:shadow-input-glow;
+           transition-all duration-300
+           focus:outline-none focus:border-primary
+           focus:shadow-[0_0_0_3px_rgba(109,221,255,0.15),0_0_20px_rgba(109,221,255,0.1)];
   }
 
   /* ── Secciones ──────────────────────────────────────── */
@@ -282,6 +337,11 @@
   50% { background-position: 100% center; }
 }
 
+@keyframes border-scan {
+  from { --scanner-angle: 0deg; }
+  to { --scanner-angle: 360deg; }
+}
+
 /* ── Navbar scroll effect (Feature #4) ───────────────── */
 nav.nav-scrolled {
   @apply py-2 border-b-outline-variant/40;
@@ -289,4 +349,22 @@ nav.nav-scrolled {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
   box-shadow: 0 1px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(109, 221, 255, 0.05);
+}
+
+/* ── View Transitions (Feature #5) ───────────────────── */
+::view-transition-old(root) {
+  animation: fade-out 200ms ease-in;
+}
+::view-transition-new(root) {
+  animation: fade-in 300ms ease-out;
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

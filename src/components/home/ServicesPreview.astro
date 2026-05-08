@@ -14,18 +14,21 @@ const colorMap = {
     bullet: "bg-primary",
     cardHover: "hover:border-primary/50",
     cardBorder: "border-outline-variant/20",
+    scannerColor: "#6dddff",
   },
   secondary: {
     icon: "bg-secondary/10 text-secondary border-secondary/20",
     bullet: "bg-secondary",
     cardHover: "hover:border-secondary/50",
     cardBorder: "border-secondary/10",
+    scannerColor: "#2ff801",
   },
   tertiary: {
     icon: "bg-tertiary/10 text-tertiary border-tertiary/20",
     bullet: "bg-tertiary",
     cardHover: "hover:border-tertiary/50",
     cardBorder: "border-outline-variant/20",
+    scannerColor: "#82a3ff",
   },
 };
 ---
@@ -54,18 +57,23 @@ const colorMap = {
         return (
           <article
             class:list={[
-              "glass-card p-8 rounded-xl group scroll-reveal fade-up",
+              "glass-card p-8 rounded-xl group scroll-reveal fade-up card-scanner",
               "border transition-all duration-300",
               colors.cardBorder,
               colors.cardHover,
             ]}
-            style={`--reveal-delay: ${index * 100}ms;`}
+            style={`--reveal-delay: ${index * 100}ms; --scanner-color: ${colors.scannerColor};`}
           >
+            <!-- Number Indicator -->
+            <div class="absolute top-8 right-8 font-mono text-4xl font-bold text-outline-variant/10 group-hover:text-outline-variant/20 transition-colors pointer-events-none select-none">
+              0{index + 1}
+            </div>
+
             <!-- Ícono -->
             <div
               class:list={[
-                "w-12 h-12 rounded-lg flex items-center justify-center mb-6",
-                "border group-hover:scale-110 transition-transform duration-300",
+                "w-12 h-12 rounded-lg flex items-center justify-center mb-6 relative z-10",
+                "border group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300",
                 colors.icon,
               ]}
               aria-hidden="true"

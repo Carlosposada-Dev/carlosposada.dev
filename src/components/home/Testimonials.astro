@@ -29,21 +29,22 @@
         </div>
 
         <!-- Métricas -->
-        <div class="grid grid-cols-2 gap-6">
+        <div class="relative grid grid-cols-2 gap-6">
+          <div class="absolute inset-0 grid-mesh-dots opacity-10 -z-10" aria-hidden="true"></div>
           <div class="terminal-block rounded-xl">
-            <p class="font-headline text-3xl font-bold text-primary mb-1">50+</p>
+            <p class="font-headline text-3xl font-bold text-primary mb-1" data-count="50" data-suffix="+">0</p>
             <p class="text-on-surface-variant text-sm">Projects Delivered</p>
           </div>
           <div class="terminal-block rounded-xl">
-            <p class="font-headline text-3xl font-bold text-secondary mb-1">99.9%</p>
+            <p class="font-headline text-3xl font-bold text-secondary mb-1" data-count="99.9" data-suffix="%">0</p>
             <p class="text-on-surface-variant text-sm">Uptime SLA Met</p>
           </div>
           <div class="terminal-block rounded-xl">
-            <p class="font-headline text-3xl font-bold text-tertiary mb-1">70%</p>
+            <p class="font-headline text-3xl font-bold text-tertiary mb-1" data-count="70" data-suffix="%">0</p>
             <p class="text-on-surface-variant text-sm">QA Cycle Reduction</p>
           </div>
           <div class="terminal-block rounded-xl">
-            <p class="font-headline text-3xl font-bold text-primary mb-1">10+</p>
+            <p class="font-headline text-3xl font-bold text-primary mb-1" data-count="10" data-suffix="+">0</p>
             <p class="text-on-surface-variant text-sm">Years of Experience</p>
           </div>
         </div>
@@ -86,6 +87,14 @@
             &ldquo;
           </span>
 
+          <div class="flex gap-1 text-yellow-500 mb-4 relative z-10" aria-hidden="true">
+            <span class="material-symbols-outlined material-symbols-filled text-lg">star</span>
+            <span class="material-symbols-outlined material-symbols-filled text-lg">star</span>
+            <span class="material-symbols-outlined material-symbols-filled text-lg">star</span>
+            <span class="material-symbols-outlined material-symbols-filled text-lg">star</span>
+            <span class="material-symbols-outlined material-symbols-filled text-lg">star</span>
+          </div>
+
           <p class="italic text-on-surface/90 leading-relaxed relative z-10 text-sm md:text-base">
             &ldquo;Carlos transformed our deployment process. We went from weekly manual
             releases to daily automated deploys with zero downtime. A truly exceptional
@@ -114,3 +123,37 @@
     </div>
   </div>
 </section>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const counters = document.querySelectorAll('[data-count]');
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = el.getAttribute('data-count');
+          const suffix = el.getAttribute('data-suffix') || '';
+          const isDecimal = target?.includes('.');
+          const end = parseFloat(target || '0');
+          const duration = 1500;
+          const start = performance.now();
+
+          function tick(now: number) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+            const current = isDecimal
+              ? (eased * end).toFixed(1)
+              : Math.floor(eased * end);
+            el.textContent = current + suffix;
+            if (progress < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+          counterObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    counters.forEach((c) => counterObserver.observe(c));
+  });
+</script>
