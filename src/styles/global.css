@@ -342,12 +342,14 @@
   to { --scanner-angle: 360deg; }
 }
 
-@media (max-width: 767px) {
-  .skills-marquee {
-    display: flex;
-    animation: marquee 20s linear infinite;
-    width: max-content;
-  }
+.skills-marquee {
+  display: flex;
+  animation: marquee 30s linear infinite;
+  width: max-content;
+}
+
+.skills-marquee:hover {
+  animation-play-state: paused;
 }
 
 @keyframes marquee {

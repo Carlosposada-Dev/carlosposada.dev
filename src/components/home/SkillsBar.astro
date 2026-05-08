@@ -15,32 +15,39 @@ import { SKILLS } from "@utils/constants";
   <div class="max-w-screen-2xl mx-auto px-6 md:px-8">
     <!-- Scrollable en mobile, distribuido en desktop -->
     <div
-      class="skills-marquee gap-8 md:gap-6
-             overflow-x-hidden md:overflow-visible
-             md:flex-wrap
-             md:justify-center lg:justify-between
-             items-center"
+      class="skills-marquee gap-8 md:gap-12
+             overflow-x-hidden items-center py-4"
       role="list"
       aria-label="Technologies I work with"
     >
-      {[...SKILLS, ...SKILLS].map((skill, index) => (
+      {[...SKILLS, ...SKILLS, ...SKILLS, ...SKILLS].map((skill, index) => (
         <div
           class:list={[
             "flex items-center gap-2 text-on-surface",
             "font-headline font-bold text-sm",
             "flex-shrink-0 whitespace-nowrap",
-            "opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300",
-            index >= SKILLS.length ? "md:hidden" : ""
+            "opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300"
           ]}
           role="listitem"
           aria-hidden={index >= SKILLS.length ? "true" : undefined}
         >
-          <span
-            class="material-symbols-outlined text-primary text-xl"
-            aria-hidden="true"
-          >
-            {skill.icon}
-          </span>
+          {skill.svgPath ? (
+            <svg 
+              viewBox="0 0 24 24" 
+              class="w-5 h-5 fill-current" 
+              style={`color: ${skill.color}`}
+              aria-hidden="true"
+            >
+              <path d={skill.svgPath} />
+            </svg>
+          ) : (
+            <span
+              class="material-symbols-outlined text-primary text-xl"
+              aria-hidden="true"
+            >
+              {skill.icon}
+            </span>
+          )}
           {skill.label}
         </div>
       ))}
