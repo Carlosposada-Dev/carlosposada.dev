@@ -342,6 +342,19 @@
   to { --scanner-angle: 360deg; }
 }
 
+@media (max-width: 767px) {
+  .skills-marquee {
+    display: flex;
+    animation: marquee 20s linear infinite;
+    width: max-content;
+  }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
 /* ── Navbar scroll effect (Feature #4) ───────────────── */
 nav.nav-scrolled {
   @apply py-2 border-b-outline-variant/40;

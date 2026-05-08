@@ -15,23 +15,25 @@ import { SKILLS } from "@utils/constants";
   <div class="max-w-screen-2xl mx-auto px-6 md:px-8">
     <!-- Scrollable en mobile, distribuido en desktop -->
     <div
-      class="flex gap-8 md:gap-6
-             overflow-x-auto no-scrollbar
-             md:overflow-visible md:flex-wrap
+      class="skills-marquee gap-8 md:gap-6
+             overflow-x-hidden md:overflow-visible
+             md:flex-wrap
              md:justify-center lg:justify-between
-             items-center
-             opacity-60 grayscale
-             hover:grayscale-0 hover:opacity-100
-             transition-all duration-700"
+             items-center"
       role="list"
       aria-label="Technologies I work with"
     >
-      {SKILLS.map((skill) => (
+      {[...SKILLS, ...SKILLS].map((skill, index) => (
         <div
-          class="flex items-center gap-2 text-on-surface
-                 font-headline font-bold text-sm
-                 flex-shrink-0 whitespace-nowrap"
+          class:list={[
+            "flex items-center gap-2 text-on-surface",
+            "font-headline font-bold text-sm",
+            "flex-shrink-0 whitespace-nowrap",
+            "opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-300",
+            index >= SKILLS.length ? "md:hidden" : ""
+          ]}
           role="listitem"
+          aria-hidden={index >= SKILLS.length ? "true" : undefined}
         >
           <span
             class="material-symbols-outlined text-primary text-xl"

@@ -54,7 +54,7 @@ const projectImages: Record<string, { src: string; alt: string }> = {
         const badge = badgeStyles[project.badgeColor];
         return (
           <article
-            class="card-hover flex flex-col overflow-hidden scroll-reveal fade-up"
+            class="card-hover flex flex-col overflow-hidden scroll-reveal fade-up project-card-tilt transform-gpu"
             style={`--reveal-delay: ${index * 120}ms;`}
           >
 
@@ -77,7 +77,8 @@ const projectImages: Record<string, { src: string; alt: string }> = {
               ></div>
               <!-- Badge de categoría -->
               <span
-                class:list={["absolute top-4 right-4 badge text-[10px]", badge]}
+                class:list={["absolute top-4 right-4 badge text-[10px]", badge, "scroll-reveal scale-in"]}
+                style={`--reveal-delay: ${(index * 120) + 400}ms;`}
               >
                 {project.badge}
               </span>
@@ -94,8 +95,13 @@ const projectImages: Record<string, { src: string; alt: string }> = {
 
               <!-- Tags de tecnología -->
               <div class="flex flex-wrap gap-2 mb-6">
-                {project.tags.map((tag) => (
-                  <span class:list={[`tech-tag-${tag.color}`]}>{tag.label}</span>
+                {project.tags.map((tag, tagIndex) => (
+                  <span 
+                    class:list={[`tech-tag-${tag.color}`, "scroll-reveal fade-up"]}
+                    style={`--reveal-delay: ${(index * 120) + 300 + (tagIndex * 100)}ms;`}
+                  >
+                    {tag.label}
+                  </span>
                 ))}
               </div>
 
@@ -132,3 +138,26 @@ const projectImages: Record<string, { src: string; alt: string }> = {
     </div>
   </div>
 </section>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll('.project-card-tilt').forEach((card) => {
+      const htmlCard = card as HTMLElement;
+      htmlCard.addEventListener('mousemove', (e) => {
+        const mouseEvent = e as MouseEvent;
+        const rect = htmlCard.getBoundingClientRect();
+        const x = (mouseEvent.clientX - rect.left) / rect.width - 0.5;
+        const y = (mouseEvent.clientY - rect.top) / rect.height - 0.5;
+        htmlCard.style.transform =
+          `perspective(1000px) rotateY(${x * 5}deg) rotateX(${-y * 5}deg) translateY(-4px)`;
+      });
+      htmlCard.addEventListener('mouseleave', () => {
+        htmlCard.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) translateY(0)';
+        htmlCard.style.transition = 'transform 0.5s ease, box-shadow 0.3s ease, border-color 0.3s ease';
+      });
+      htmlCard.addEventListener('mouseenter', () => {
+        htmlCard.style.transition = 'transform 0.1s ease';
+      });
+    });
+  });
+</script>

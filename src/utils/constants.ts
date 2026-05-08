@@ -97,8 +97,6 @@ export const SOCIAL_LINKS: SocialLink[] = [
 ];
 
 export const FOOTER_LINKS = [
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/carlos-andres-posada-chica-software-engineer/" },
-  { label: "GitHub", href: "https://github.com/Carlosposada-Dev" },
   { label: "Sitemap", href: "/sitemap-index.xml" },
   { label: "Privacy Policy", href: "/privacy" },
 ];
