@@ -60,14 +60,14 @@ import { SOCIAL_LINKS, SITE } from "@utils/constants";
   </div>
 
   <!-- Links sociales -->
-  <div class="flex items-center gap-4" aria-label="Social links">
+  <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4" aria-label="Social links">
     {SOCIAL_LINKS.map((link) => (
       <a
         href={link.href}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={link.label}
-        class="group flex items-center justify-center w-12 h-12 rounded-lg
+        class="group flex items-center justify-center w-12 h-12 shrink-0 rounded-lg
                bg-surface-container-low border border-outline-variant/20
                hover:border-primary/50 hover:bg-surface-container
                transition-all duration-300"

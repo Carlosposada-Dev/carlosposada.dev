@@ -239,6 +239,36 @@
       });
     }
 
+    /** Crea partículas CSS para éxito (Feature #15) */
+    function triggerConfetti() {
+      const container = document.createElement("div");
+      container.className = "fixed inset-0 pointer-events-none z-50 overflow-hidden";
+      document.body.appendChild(container);
+
+      const colors = ["#6dddff", "#82a3ff", "#2ff801", "#FF9900", "#c682ff"];
+      
+      for (let i = 0; i < 60; i++) {
+        const confetti = document.createElement("div");
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const left = Math.random() * 100;
+        const animDuration = Math.random() * 2 + 2;
+        const animDelay = Math.random() * 0.5;
+        
+        confetti.className = "absolute w-2 h-3 rounded-sm opacity-0";
+        confetti.style.backgroundColor = color;
+        confetti.style.left = `${left}%`;
+        confetti.style.top = "-20px";
+        confetti.style.animation = `confetti-fall ${animDuration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${animDelay}s forwards`;
+        
+        // Rotación inicial aleatoria
+        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+        
+        container.appendChild(confetti);
+      }
+      
+      setTimeout(() => container.remove(), 5000);
+    }
+
     /** Valida el formulario y devuelve true si todo está OK */
     function validate(data: FormData): boolean {
       let valid = true;
@@ -308,6 +338,7 @@
 
         if (response.ok) {
           setStatus("success", "✓ Message received! I'll get back to you within 24 hours.");
+          triggerConfetti();
           form.reset();
         } else {
           // El Worker devuelve JSON con un campo `error`

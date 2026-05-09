@@ -26,6 +26,20 @@
     scroll-behavior: smooth;
   }
 
+  *, ::before, ::after {
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Custom cursor (Feature #14) */
+  @media (hover: hover) {
+    a, button, [role="button"], select {
+      cursor: pointer;
+    }
+    a:hover, button:hover, [role="button"]:hover, select:hover {
+      cursor: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='12' cy='12' r='8' fill='%236dddff' fill-opacity='0.5'/%3E%3Ccircle cx='12' cy='12' r='4' fill='%236dddff'/%3E%3C/svg%3E") 12 12, pointer;
+    }
+  }
+
   body {
     @apply bg-surface text-on-surface font-body antialiased overflow-x-hidden;
     @apply selection:bg-primary/30 selection:text-primary;
@@ -305,6 +319,16 @@
     font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 
+  /* Links con underline animado (Quick Win #5) */
+  .link-animated {
+    background-image: linear-gradient(#6dddff, #6dddff);
+    background-size: 0% 2px;
+    background-position: left bottom;
+    background-repeat: no-repeat;
+    transition: background-size 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .link-animated:hover { background-size: 100% 2px; }
+
   /* ── Animated gradient text (Feature #3) ────────────── */
   .text-gradient-animated {
     background: linear-gradient(
@@ -340,6 +364,11 @@
 @keyframes border-scan {
   from { --scanner-angle: 0deg; }
   to { --scanner-angle: 360deg; }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 
 .skills-marquee {

@@ -137,21 +137,25 @@ function isActive(href: string, current: string): boolean {
 
 <script>
   /**
-   * Toggle del menú mobile
-   * Maneja apertura/cierre y animación del ícono hamburger
+   * Toggle del menú mobile con event delegation
+   * Soporta Astro View Transitions sin necesidad de re-hidratar scripts
    */
-  const btn = document.getElementById("mobile-menu-btn");
-  const menu = document.getElementById("mobile-menu");
-  const bar1 = document.getElementById("bar1");
-  const bar2 = document.getElementById("bar2");
-  const bar3 = document.getElementById("bar3");
+  document.addEventListener("click", (e) => {
+    const target = e.target as Node;
+    const btn = document.getElementById("mobile-menu-btn");
+    const menu = document.getElementById("mobile-menu");
 
-  if (btn && menu) {
-    btn.addEventListener("click", () => {
+    if (!btn || !menu) return;
+
+    // Si el click fue en el botón del menú
+    if (btn.contains(target) || btn === target) {
       const isOpen = menu.classList.toggle("hidden") === false;
       btn.setAttribute("aria-expanded", String(isOpen));
 
-      // Animación hamburger → X
+      const bar1 = document.getElementById("bar1");
+      const bar2 = document.getElementById("bar2");
+      const bar3 = document.getElementById("bar3");
+
       if (isOpen) {
         bar1?.classList.add("rotate-45", "translate-y-2");
         bar2?.classList.add("opacity-0");
@@ -161,25 +165,27 @@ function isActive(href: string, current: string): boolean {
         bar2?.classList.remove("opacity-0");
         bar3?.classList.remove("-rotate-45", "-translate-y-2", "!w-6");
       }
-    });
+    } 
+    // Si el click fue fuera del menú y del botón
+    else if (!menu.contains(target) && !menu.classList.contains("hidden")) {
+      menu.classList.add("hidden");
+      btn.setAttribute("aria-expanded", "false");
 
-    // Cerrar al hacer click fuera del menú
-    document.addEventListener("click", (e) => {
-      if (!btn.contains(e.target as Node) && !menu.contains(e.target as Node)) {
-        menu.classList.add("hidden");
-        btn.setAttribute("aria-expanded", "false");
-        bar1?.classList.remove("rotate-45", "translate-y-2");
-        bar2?.classList.remove("opacity-0");
-        bar3?.classList.remove("-rotate-45", "-translate-y-2", "!w-6");
-      }
-    });
-  }
+      const bar1 = document.getElementById("bar1");
+      const bar2 = document.getElementById("bar2");
+      const bar3 = document.getElementById("bar3");
 
-  // ── Navbar scroll effect (Feature #4) ─────────────────
-  const nav = document.querySelector("nav");
-  if (nav) {
-    window.addEventListener("scroll", () => {
+      bar1?.classList.remove("rotate-45", "translate-y-2");
+      bar2?.classList.remove("opacity-0");
+      bar3?.classList.remove("-rotate-45", "-translate-y-2", "!w-6");
+    }
+  });
+
+  // ── Navbar scroll effect (Feature #4) con delegación
+  window.addEventListener("scroll", () => {
+    const nav = document.querySelector("nav");
+    if (nav) {
       nav.classList.toggle("nav-scrolled", window.scrollY > 30);
-    }, { passive: true });
-  }
+    }
+  }, { passive: true });
 </script>
