@@ -7,6 +7,7 @@
 import PageLayout from "@layouts/PageLayout.astro";
 import ProfileCard from "@components/about/ProfileCard.astro";
 import BioSection from "@components/about/BioSection.astro";
+import Certifications from "@components/about/Certifications.astro";
 import CareerTimeline from "@components/about/CareerTimeline.astro";
 import CTABanner from "@components/home/CTABanner.astro";
 ---
@@ -27,9 +28,10 @@ import CTABanner from "@components/home/CTABanner.astro";
         </div>
       </div>
 
-      <!-- Columna derecha: bio + timeline -->
+      <!-- Right column: bio + certs + timeline -->
       <div class="lg:col-span-7 space-y-16">
         <BioSection />
+        <Certifications />
         <CareerTimeline />
       </div>
 

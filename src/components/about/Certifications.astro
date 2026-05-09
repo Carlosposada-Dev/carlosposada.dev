@@ -1,0 +1,145 @@
+---
+/**
+ * Certifications.astro
+ * Displays Carlos's cloud certifications (AWS + Google Cloud).
+ * Grouped by issuer with glassmorphism badge cards.
+ * Data lives in constants.ts → CERTIFICATIONS array.
+ */
+import { CERTIFICATIONS } from "@utils/constants";
+
+// Group by issuer for visual organization
+const awsCerts = CERTIFICATIONS.filter((c) => c.issuer === "AWS");
+const gcpCerts = CERTIFICATIONS.filter((c) => c.issuer === "Google Cloud");
+const groups = [
+  { issuer: "AWS", color: "#FF9900", certs: awsCerts },
+  { issuer: "Google Cloud", color: "#4285F4", certs: gcpCerts },
+];
+---
+
+<section class="space-y-8" aria-labelledby="certs-heading">
+
+  <!-- Header -->
+  <div class="flex items-center gap-4">
+    <h2
+      id="certs-heading"
+      class="font-headline text-2xl font-bold text-on-surface whitespace-nowrap"
+    >
+      Certifications
+    </h2>
+    <div class="flex-1 h-px bg-outline-variant/30" aria-hidden="true"></div>
+    <span class="font-mono text-xs text-on-surface-variant/60 shrink-0">
+      {CERTIFICATIONS.length} active
+    </span>
+  </div>
+
+  <!-- Grouped by issuer -->
+  <div class="space-y-6">
+    {groups.filter((g) => g.certs.length > 0).map((group, gi) => (
+      <div class="space-y-3 scroll-reveal fade-up" style={`--reveal-delay: ${gi * 150}ms;`}>
+
+        <!-- Issuer label -->
+        <div class="flex items-center gap-2">
+          <svg
+            class="w-4 h-4 fill-current shrink-0"
+            style={`color: ${group.color}`}
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d={group.certs[0].svgPath} />
+          </svg>
+          <span
+            class="font-mono text-xs font-bold uppercase tracking-widest"
+            style={`color: ${group.color}`}
+          >
+            {group.issuer}
+          </span>
+          <div class="flex-1 h-px bg-outline-variant/20" aria-hidden="true"></div>
+          <span class="font-mono text-xs text-on-surface-variant/40">
+            {group.certs.length} cert{group.certs.length > 1 ? "s" : ""}
+          </span>
+        </div>
+
+        <!-- Badge grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {group.certs.map((cert, i) => (
+            <a
+              href={cert.credlyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Verify ${cert.title} credential on Credly`}
+              class="group relative flex items-center gap-4
+                     glass-card rounded-xl p-4
+                     border border-outline-variant/20
+                     hover:border-primary/40 hover:shadow-glow-primary
+                     transition-all duration-300"
+              style={`--reveal-delay: ${(gi * 5 + i) * 80}ms;`}
+            >
+              <!-- Badge image -->
+              <div
+                class="w-14 h-14 shrink-0 rounded-lg overflow-hidden
+                       bg-surface-container-low border border-outline-variant/20
+                       group-hover:scale-105 transition-transform duration-300"
+              >
+                <img
+                  src={cert.badgeUrl}
+                  alt={`${cert.title} official badge`}
+                  class="w-full h-full object-contain p-1"
+                  loading="lazy"
+                  decoding="async"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                />
+                <!-- Fallback if image fails to load -->
+                <div
+                  class="w-full h-full items-center justify-center text-center p-1 hidden"
+                  aria-hidden="true"
+                >
+                  <span
+                    class="font-mono text-xs font-bold"
+                    style={`color: ${cert.accentColor}`}
+                  >
+                    {cert.code}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Info -->
+              <div class="flex-1 min-w-0">
+                <p
+                  class="font-headline font-bold text-sm text-on-surface leading-snug
+                         group-hover:text-primary transition-colors duration-200
+                         line-clamp-2"
+                >
+                  {cert.title}
+                </p>
+                <span
+                  class="inline-block mt-1.5 px-2 py-0.5 rounded font-mono text-[10px]
+                         border font-bold tracking-widest uppercase"
+                  style={`color: ${cert.accentColor}; border-color: ${cert.accentColor}33; background: ${cert.accentColor}10;`}
+                >
+                  {cert.code}
+                </span>
+              </div>
+
+              <!-- Verify icon -->
+              <span
+                class="material-symbols-outlined text-on-surface-variant/30
+                       group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5
+                       transition-all duration-200 shrink-0 self-start mt-1"
+                aria-hidden="true"
+                style="font-size: 1rem;"
+              >
+                open_in_new
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- Footer note -->
+  <p class="text-xs text-on-surface-variant/40 font-mono text-right">
+    Click any badge to verify on Credly ↗
+  </p>
+
+</section>
