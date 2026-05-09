@@ -101,6 +101,9 @@ const ogImageURL = new URL(ogImage, SITE.url).toString();
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="author" href="/humans.txt" />
 
+    <!-- ── PWA Manifest ─────────────────────────────────── -->
+    <link rel="manifest" href="/manifest.json" />
+
     <!-- ── Theme color (browser UI en mobile) ───────────── -->
     <meta name="theme-color" content="#0a0e1a" />
 
@@ -110,6 +113,16 @@ const ogImageURL = new URL(ogImage, SITE.url).toString();
   </head>
 
   <body>
+    <!-- Skip to main content (accessibility) -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999]
+             focus:px-4 focus:py-2 focus:rounded-lg focus:bg-primary focus:text-on-primary
+             focus:font-headline focus:font-bold focus:text-sm"
+    >
+      Skip to main content
+    </a>
+
     <!-- Contenido principal inyectado por layouts hijos -->
     <slot />
 
@@ -139,5 +152,10 @@ const ogImageURL = new URL(ogImage, SITE.url).toString();
         });
       });
     </script>
+
+    <!-- Cloudflare Web Analytics (Q3) -->
+    <!-- Replace TOKEN with your real Cloudflare Analytics token from dash.cloudflare.com -->
+    <!-- <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+         data-cf-beacon='{"token": "YOUR_TOKEN_HERE"}'></script> -->
   </body>
 </html>

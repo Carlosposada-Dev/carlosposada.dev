@@ -1,0 +1,22 @@
+{
+  "name": "carlosposada.dev",
+  "short_name": "carlosposada",
+  "description": "Cloud & DevOps Engineer | QA Automation | AI Solutions",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+}

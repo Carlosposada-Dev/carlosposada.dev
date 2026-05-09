@@ -1,0 +1,134 @@
+---
+/**
+ * PostCard.astro
+ * Blog listing card — used in the blog index grid.
+ */
+export interface Props {
+  title: string;
+  description: string;
+  slug: string;
+  publishedDate: Date;
+  category: string;
+  tags: string[];
+  readingTime?: string;
+  featured?: boolean;
+  coverImage?: string;
+  coverImageAlt?: string;
+}
+
+const {
+  title,
+  description,
+  slug,
+  publishedDate,
+  category,
+  tags,
+  readingTime,
+  featured = false,
+  coverImage,
+  coverImageAlt,
+} = Astro.props;
+
+const CATEGORY_COLORS: Record<string, string> = {
+  DevOps: "text-primary border-primary/30 bg-primary/5",
+  Cloud: "text-tertiary border-tertiary/30 bg-tertiary/5",
+  QA: "text-secondary border-secondary/30 bg-secondary/5",
+  AI: "text-[#c682ff] border-[#c682ff]/30 bg-[#c682ff]/5",
+};
+
+const dateStr = publishedDate.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+});
+---
+
+<article
+  class:list={[
+    "group relative flex flex-col rounded-2xl overflow-hidden",
+    "bg-surface-container border border-outline-variant/20",
+    "hover:border-primary/40 hover:shadow-glow-primary hover:-translate-y-1",
+    "transition-all duration-300",
+    featured && "md:col-span-2 md:flex-row",
+  ]}
+>
+  <!-- Cover image -->
+  {coverImage && (
+    <div
+      class:list={[
+        "overflow-hidden bg-surface-container-low shrink-0",
+        featured ? "md:w-2/5 h-52 md:h-auto" : "h-44",
+      ]}
+    >
+      <img
+        src={coverImage}
+        alt={coverImageAlt ?? title}
+        class="w-full h-full object-cover object-center
+               group-hover:scale-105 transition-transform duration-500"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  )}
+
+  <!-- Content -->
+  <div class="flex flex-col flex-1 p-6">
+    <!-- Category + reading time -->
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <span
+        class:list={[
+          "px-2.5 py-0.5 rounded text-[10px] font-headline font-bold uppercase tracking-widest border",
+          CATEGORY_COLORS[category] ?? "text-on-surface-variant border-outline-variant/30",
+        ]}
+      >
+        {category}
+      </span>
+      {readingTime && (
+        <span class="font-mono text-xs text-on-surface-variant/50 flex items-center gap-1">
+          <span class="material-symbols-outlined" style="font-size: 0.9rem;" aria-hidden="true">schedule</span>
+          {readingTime}
+        </span>
+      )}
+    </div>
+
+    <!-- Title -->
+    <h2
+      class:list={[
+        "font-headline font-bold text-on-surface leading-tight mb-2",
+        "group-hover:text-primary transition-colors duration-200",
+        featured ? "text-xl md:text-2xl" : "text-lg",
+      ]}
+    >
+      <a
+        href={`/blog/${slug}`}
+        class="before:absolute before:inset-0 before:content-['']"
+        aria-label={`Read: ${title}`}
+      >
+        {title}
+      </a>
+    </h2>
+
+    <!-- Description -->
+    <p class="text-on-surface-variant text-sm leading-relaxed line-clamp-2 flex-1">
+      {description}
+    </p>
+
+    <!-- Footer: date + tags -->
+    <div class="flex flex-wrap items-center justify-between gap-2 mt-4 pt-4 border-t border-outline-variant/10">
+      <time
+        datetime={publishedDate.toISOString()}
+        class="font-mono text-xs text-on-surface-variant/50"
+      >
+        {dateStr}
+      </time>
+      <div class="flex flex-wrap gap-1">
+        {tags.slice(0, 3).map((tag) => (
+          <span class="font-mono text-[10px] text-on-surface-variant/60 bg-surface-container-low
+                       px-2 py-0.5 rounded border border-outline-variant/20">
+            #{tag}
+          </span>
+        ))}
+      </div>
+    </div>
+  </div>
+</article>

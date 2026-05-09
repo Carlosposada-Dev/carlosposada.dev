@@ -1,0 +1,212 @@
+---
+/**
+ * blog/[...slug].astro — Individual Blog Post Page
+ * Dynamic route — generates one page per blog post.
+ * Features: cover image hero, reading time, tags, prose content,
+ *           reading progress bar, back navigation.
+ */
+import { getCollection, getEntry } from "astro:content";
+import PageLayout from "@layouts/PageLayout.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+const dateStr = post.data.publishedDate.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+const updatedStr = post.data.updatedDate?.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+const CATEGORY_COLORS: Record<string, string> = {
+  DevOps: "text-primary border-primary/30 bg-primary/5",
+  Cloud: "text-tertiary border-tertiary/30 bg-tertiary/5",
+  QA: "text-secondary border-secondary/30 bg-secondary/5",
+  AI: "text-[#c682ff] border-[#c682ff]/30 bg-[#c682ff]/5",
+};
+---
+
+<PageLayout
+  title={post.data.title}
+  description={post.data.description}
+  ogImage={post.data.coverImage}
+  ogImageAlt={post.data.coverImageAlt}
+  ogType="article"
+  publishedDate={post.data.publishedDate.toISOString()}
+  schemaType="article"
+>
+  <!-- Reading progress bar (Feature #7) -->
+  <div
+    id="reading-progress"
+    class="fixed top-0 left-0 h-0.5 bg-primary z-[100] transition-none"
+    style="width: 0%;"
+    aria-hidden="true"
+    role="progressbar"
+    aria-valuemin={0}
+    aria-valuemax={100}
+    aria-valuenow={0}
+  ></div>
+
+  <article class="pt-28 pb-20" id="post-article">
+
+    <!-- Cover image hero -->
+    {post.data.coverImage && (
+      <div class="w-full h-64 md:h-96 overflow-hidden mb-12 relative">
+        <img
+          src={post.data.coverImage}
+          alt={post.data.coverImageAlt ?? post.data.title}
+          class="w-full h-full object-cover object-center"
+          loading="eager"
+          decoding="async"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent"></div>
+      </div>
+    )}
+
+    <div class="max-w-3xl mx-auto px-6 md:px-8">
+
+      <!-- Back link -->
+      <a
+        href="/blog"
+        class="inline-flex items-center gap-2 text-sm text-on-surface-variant
+               hover:text-primary transition-colors mb-8 group"
+      >
+        <span
+          class="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform"
+          aria-hidden="true"
+        >
+          arrow_back
+        </span>
+        Back to Blog
+      </a>
+
+      <!-- Post header -->
+      <header class="mb-10">
+        <!-- Category badge -->
+        <span
+          class:list={[
+            "inline-block px-3 py-1 rounded text-xs font-headline font-bold uppercase tracking-widest border mb-4",
+            CATEGORY_COLORS[post.data.category] ?? "text-on-surface-variant border-outline-variant/30",
+          ]}
+        >
+          {post.data.category}
+        </span>
+
+        <h1
+          class="font-headline font-bold text-on-surface tracking-tight leading-tight mb-4"
+          style="font-size: clamp(1.75rem, 4vw, 3rem);"
+        >
+          {post.data.title}
+        </h1>
+
+        <p class="text-on-surface-variant text-lg leading-relaxed mb-6">
+          {post.data.description}
+        </p>
+
+        <!-- Meta row -->
+        <div class="flex flex-wrap items-center gap-4 text-sm text-on-surface-variant/60 font-mono
+                    pb-6 border-b border-outline-variant/20">
+          <time datetime={post.data.publishedDate.toISOString()}>
+            {dateStr}
+          </time>
+          {post.data.readingTime && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined" style="font-size: 0.9rem;" aria-hidden="true">schedule</span>
+                {post.data.readingTime}
+              </span>
+            </>
+          )}
+          {updatedStr && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>Updated {updatedStr}</span>
+            </>
+          )}
+        </div>
+
+        <!-- Tags -->
+        <div class="flex flex-wrap gap-2 pt-4">
+          {post.data.tags.map((tag) => (
+            <span class="font-mono text-xs text-on-surface-variant/60
+                         bg-surface-container-low border border-outline-variant/20
+                         px-2.5 py-1 rounded">
+              #{tag}
+            </span>
+          ))}
+        </div>
+      </header>
+
+      <!-- Post content — Tailwind Typography prose -->
+      <div
+        class="prose prose-invert prose-lg max-w-none
+               prose-headings:font-headline prose-headings:tracking-tight
+               prose-h2:text-on-surface prose-h2:border-b prose-h2:border-outline-variant/20 prose-h2:pb-2
+               prose-h3:text-on-surface
+               prose-p:text-on-surface-variant prose-p:leading-relaxed
+               prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+               prose-strong:text-on-surface
+               prose-code:text-secondary prose-code:bg-surface-container-low
+               prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+               prose-code:before:content-none prose-code:after:content-none
+               prose-pre:bg-surface-container-low prose-pre:border prose-pre:border-outline-variant/20
+               prose-pre:rounded-xl
+               prose-blockquote:border-primary prose-blockquote:text-on-surface-variant
+               prose-th:text-on-surface prose-td:text-on-surface-variant
+               prose-img:rounded-xl prose-img:border prose-img:border-outline-variant/20"
+      >
+        <Content />
+      </div>
+
+      <!-- Post footer -->
+      <footer class="mt-16 pt-8 border-t border-outline-variant/20">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <p class="font-headline font-bold text-on-surface">Carlos Posada</p>
+            <p class="text-sm text-on-surface-variant">Cloud & DevOps Engineer · AI Solutions Lead</p>
+          </div>
+          <a href="/blog" class="btn-ghost inline-flex text-sm py-2 px-4">
+            <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_back</span>
+            All Articles
+          </a>
+        </div>
+      </footer>
+
+    </div>
+  </article>
+</PageLayout>
+
+<script>
+  // Reading progress bar (Feature #7)
+  document.addEventListener("astro:page-load", () => {
+    const bar = document.getElementById("reading-progress");
+    const article = document.getElementById("post-article");
+    if (!bar || !article) return;
+
+    const updateProgress = () => {
+      const articleTop = article.offsetTop;
+      const articleHeight = article.offsetHeight;
+      const scrolled = window.scrollY - articleTop;
+      const progress = Math.min(Math.max((scrolled / articleHeight) * 100, 0), 100);
+      bar.style.width = `${progress}%`;
+      bar.setAttribute("aria-valuenow", String(Math.round(progress)));
+    };
+
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    updateProgress();
+  });
+</script>

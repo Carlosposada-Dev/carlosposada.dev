@@ -132,7 +132,7 @@ export const CERTIFICATIONS: Certification[] = [
     title: "AWS Solutions Architect — Associate",
     code: "SAA-C03",
     issuer: "AWS",
-    credlyUrl: "https://www.credly.com/badges/your-saa-badge-id",
+    credlyUrl: "https://www.credly.com/badges/b9a1d29b-f8ce-421c-915b-6c3d3d49a2e2/public_url",
     badgeUrl: "https://images.credly.com/size/340x340/images/0e284c3f-5164-4b21-8660-0d84737941bc/image.png",
     accentColor: "#FF9900",
     svgPath: AWS_SVG,
