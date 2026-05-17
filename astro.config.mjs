@@ -21,6 +21,12 @@ export default defineConfig({
     // Workers de Cloudflare Pages (no Workers standalone)
     platformProxy: { enabled: true },
   }),
+  markdown: {
+    shikiConfig: {
+      theme: "houston",
+      wrap: true,
+    },
+  },
   build: {
     inlineStylesheets: "auto",
   },
