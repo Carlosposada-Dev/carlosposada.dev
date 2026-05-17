@@ -17,6 +17,9 @@ dist/
 .wrangler/
 .dev.vars
 
+# Claude
+.claude
+
 # Contexto privado del proyecto (solo uso local)
 PROJECT_STATUS.md
 design-improvements.md
