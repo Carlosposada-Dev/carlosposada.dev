@@ -5,7 +5,7 @@
  * Features: cover image hero, reading time, tags, prose content,
  *           reading progress bar, back navigation.
  */
-import { getCollection, getEntry } from "astro:content";
+import { getCollection, render } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 
 export async function getStaticPaths() {
@@ -17,7 +17,7 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await post.render();
+const { Content } = await render(post);
 
 const dateStr = post.data.publishedDate.toLocaleDateString("en-US", {
   year: "numeric",
