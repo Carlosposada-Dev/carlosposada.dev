@@ -240,3 +240,63 @@ const CATEGORY_COLORS: Record<string, string> = {
     updateProgress();
   });
 </script>
+
+<script>
+  // Mermaid diagram rendering (Feature #23)
+  // Dynamic import: loads mermaid.js from CDN only when the post has mermaid blocks.
+  // Zero cost on posts without diagrams.
+  document.addEventListener("astro:page-load", async () => {
+    const codeBlocks = document.querySelectorAll<HTMLElement>("code.language-mermaid");
+    if (!codeBlocks.length) return;
+
+    const { default: mermaid } = await import(
+      "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
+    );
+
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "dark",
+      themeVariables: {
+        primaryColor: "#131929",
+        primaryTextColor: "#e2e4f6",
+        primaryBorderColor: "#6dddff33",
+        lineColor: "#6dddff",
+        background: "#0a0e1a",
+        mainBkg: "#131929",
+        nodeBorder: "#6dddff40",
+        clusterBkg: "#0d1526",
+        titleColor: "#6dddff",
+        edgeLabelBackground: "#0a0e1a",
+        fontFamily: "JetBrains Mono, monospace",
+        fontSize: "14px",
+        secondaryColor: "#0d1e3d",
+        tertiaryColor: "#0d1526",
+        secondaryBorderColor: "#82a3ff33",
+        tertiaryBorderColor: "#2ff80133",
+      },
+    });
+
+    const containers: HTMLElement[] = [];
+
+    codeBlocks.forEach((block) => {
+      const pre = block.parentElement;
+      if (!pre) return;
+
+      const code = block.textContent ?? "";
+
+      const wrapper = document.createElement("div");
+      wrapper.className =
+        "not-prose my-8 rounded-xl overflow-x-auto border border-outline-variant/20 " +
+        "bg-surface-container-low p-6 flex justify-center";
+
+      const mermaidEl = document.createElement("div");
+      mermaidEl.textContent = code;
+
+      wrapper.appendChild(mermaidEl);
+      pre.replaceWith(wrapper);
+      containers.push(mermaidEl);
+    });
+
+    await mermaid.run({ nodes: containers });
+  });
+</script>
