@@ -7,6 +7,7 @@
  */
 import { getCollection, render } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
+import TableOfContents from "@components/blog/TableOfContents.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
@@ -17,7 +18,9 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const hasToc = tocHeadings.length > 2;
 
 const dateStr = post.data.publishedDate.toLocaleDateString("en-US", {
   year: "numeric",
@@ -76,116 +79,143 @@ const CATEGORY_COLORS: Record<string, string> = {
       </div>
     )}
 
-    <div class="max-w-3xl mx-auto px-6 md:px-8">
+    <div class:list={[
+      "mx-auto px-6 md:px-8",
+      hasToc ? "max-w-7xl" : "max-w-3xl",
+    ]}>
+      <div class:list={[
+        hasToc && "lg:grid lg:grid-cols-[1fr_260px] lg:gap-12 xl:gap-16",
+      ]}>
 
-      <!-- Back link -->
-      <a
-        href="/blog"
-        class="inline-flex items-center gap-2 text-sm text-on-surface-variant
-               hover:text-primary transition-colors mb-8 group"
-      >
-        <span
-          class="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform"
-          aria-hidden="true"
-        >
-          arrow_back
-        </span>
-        Back to Blog
-      </a>
+        <!-- ── Main content column ───────────────────────── -->
+        <div class="min-w-0">
 
-      <!-- Post header -->
-      <header class="mb-10">
-        <!-- Category badge -->
-        <span
-          class:list={[
-            "inline-block px-3 py-1 rounded text-xs font-headline font-bold uppercase tracking-widest border mb-4",
-            CATEGORY_COLORS[post.data.category] ?? "text-on-surface-variant border-outline-variant/30",
-          ]}
-        >
-          {post.data.category}
-        </span>
-
-        <h1
-          class="font-headline font-bold text-on-surface tracking-tight leading-tight mb-4"
-          style="font-size: clamp(1.75rem, 4vw, 3rem);"
-        >
-          {post.data.title}
-        </h1>
-
-        <p class="text-on-surface-variant text-lg leading-relaxed mb-6">
-          {post.data.description}
-        </p>
-
-        <!-- Meta row -->
-        <div class="flex flex-wrap items-center gap-4 text-sm text-on-surface-variant/60 font-mono
-                    pb-6 border-b border-outline-variant/20">
-          <time datetime={post.data.publishedDate.toISOString()}>
-            {dateStr}
-          </time>
-          {post.data.readingTime && (
-            <>
-              <span aria-hidden="true">·</span>
-              <span class="flex items-center gap-1">
-                <span class="material-symbols-outlined" style="font-size: 0.9rem;" aria-hidden="true">schedule</span>
-                {post.data.readingTime}
-              </span>
-            </>
-          )}
-          {updatedStr && (
-            <>
-              <span aria-hidden="true">·</span>
-              <span>Updated {updatedStr}</span>
-            </>
-          )}
-        </div>
-
-        <!-- Tags -->
-        <div class="flex flex-wrap gap-2 pt-4">
-          {post.data.tags.map((tag) => (
-            <span class="font-mono text-xs text-on-surface-variant/60
-                         bg-surface-container-low border border-outline-variant/20
-                         px-2.5 py-1 rounded">
-              #{tag}
+          <!-- Back link -->
+          <a
+            href="/blog"
+            class="inline-flex items-center gap-2 text-sm text-on-surface-variant
+                   hover:text-primary transition-colors mb-8 group"
+          >
+            <span
+              class="material-symbols-outlined text-base group-hover:-translate-x-0.5 transition-transform"
+              aria-hidden="true"
+            >
+              arrow_back
             </span>
-          ))}
-        </div>
-      </header>
-
-      <!-- Post content — Tailwind Typography prose -->
-      <div
-        class="prose prose-invert prose-lg max-w-none
-               prose-headings:font-headline prose-headings:tracking-tight
-               prose-h2:text-on-surface prose-h2:border-b prose-h2:border-outline-variant/20 prose-h2:pb-2
-               prose-h3:text-on-surface
-               prose-p:text-on-surface-variant prose-p:leading-relaxed
-               prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-               prose-strong:text-on-surface
-               prose-code:text-secondary prose-code:bg-surface-container-low
-               prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
-               prose-code:before:content-none prose-code:after:content-none
-               prose-pre:bg-surface-container-low prose-pre:border prose-pre:border-outline-variant/20
-               prose-pre:rounded-xl
-               prose-blockquote:border-primary prose-blockquote:text-on-surface-variant
-               prose-th:text-on-surface prose-td:text-on-surface-variant
-               prose-img:rounded-xl prose-img:border prose-img:border-outline-variant/20"
-      >
-        <Content />
-      </div>
-
-      <!-- Post footer -->
-      <footer class="mt-16 pt-8 border-t border-outline-variant/20">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <p class="font-headline font-bold text-on-surface">Carlos Posada</p>
-            <p class="text-sm text-on-surface-variant">Cloud & DevOps Engineer · AI Solutions Lead</p>
-          </div>
-          <a href="/blog" class="btn-ghost inline-flex text-sm py-2 px-4">
-            <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_back</span>
-            All Articles
+            Back to Blog
           </a>
-        </div>
-      </footer>
 
+          <!-- Post header -->
+          <header class="mb-10">
+            <!-- Category badge -->
+            <span
+              class:list={[
+                "inline-block px-3 py-1 rounded text-xs font-headline font-bold uppercase tracking-widest border mb-4",
+                CATEGORY_COLORS[post.data.category] ?? "text-on-surface-variant border-outline-variant/30",
+              ]}
+            >
+              {post.data.category}
+            </span>
+
+            <h1
+              class="font-headline font-bold text-on-surface tracking-tight leading-tight mb-4"
+              style="font-size: clamp(1.75rem, 4vw, 3rem);"
+            >
+              {post.data.title}
+            </h1>
+
+            <p class="text-on-surface-variant text-lg leading-relaxed mb-6">
+              {post.data.description}
+            </p>
+
+            <!-- Meta row -->
+            <div class="flex flex-wrap items-center gap-4 text-sm text-on-surface-variant/60 font-mono
+                        pb-6 border-b border-outline-variant/20">
+              <time datetime={post.data.publishedDate.toISOString()}>
+                {dateStr}
+              </time>
+              {post.data.readingTime && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span class="flex items-center gap-1">
+                    <span class="material-symbols-outlined" style="font-size: 0.9rem;" aria-hidden="true">schedule</span>
+                    {post.data.readingTime}
+                  </span>
+                </>
+              )}
+              {updatedStr && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span>Updated {updatedStr}</span>
+                </>
+              )}
+            </div>
+
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-2 pt-4">
+              {post.data.tags.map((tag) => (
+                <span class="font-mono text-xs text-on-surface-variant/60
+                             bg-surface-container-low border border-outline-variant/20
+                             px-2.5 py-1 rounded">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          </header>
+
+          <!-- Mobile TOC: accordion, hidden on desktop -->
+          {hasToc && (
+            <div class="lg:hidden">
+              <TableOfContents headings={tocHeadings} variant="mobile" />
+            </div>
+          )}
+
+          <!-- Post content — Tailwind Typography prose -->
+          <div
+            id="post-body"
+            class="prose prose-invert prose-lg max-w-none
+                   prose-headings:font-headline prose-headings:tracking-tight
+                   prose-h2:text-on-surface prose-h2:border-b prose-h2:border-outline-variant/20 prose-h2:pb-2
+                   prose-h3:text-on-surface
+                   prose-p:text-on-surface-variant prose-p:leading-relaxed
+                   prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                   prose-strong:text-on-surface
+                   prose-code:text-secondary prose-code:bg-surface-container-low
+                   prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                   prose-code:before:content-none prose-code:after:content-none
+                   prose-pre:bg-surface-container-low prose-pre:border prose-pre:border-outline-variant/20
+                   prose-pre:rounded-xl
+                   prose-blockquote:border-primary prose-blockquote:text-on-surface-variant
+                   prose-th:text-on-surface prose-td:text-on-surface-variant
+                   prose-img:rounded-xl prose-img:border prose-img:border-outline-variant/20"
+          >
+            <Content />
+          </div>
+
+          <!-- Post footer -->
+          <footer class="mt-16 pt-8 border-t border-outline-variant/20">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <p class="font-headline font-bold text-on-surface">Carlos Posada</p>
+                <p class="text-sm text-on-surface-variant">Cloud & DevOps Engineer · AI Solutions Lead</p>
+              </div>
+              <a href="/blog" class="btn-ghost inline-flex text-sm py-2 px-4">
+                <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_back</span>
+                All Articles
+              </a>
+            </div>
+          </footer>
+
+        </div>
+
+        <!-- ── Desktop TOC sidebar ───────────────────────── -->
+        {hasToc && (
+          <aside class="hidden lg:block" aria-label="Table of contents">
+            <TableOfContents headings={tocHeadings} variant="sidebar" />
+          </aside>
+        )}
+
+      </div>
     </div>
   </article>
 </PageLayout>
