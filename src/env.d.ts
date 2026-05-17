@@ -6,6 +6,7 @@
 type CloudflareEnv = {
   RESEND_API_KEY: string;
   CONTACT_TO_EMAIL: string;
+  RESEND_AUDIENCE_ID: string;
 };
 
 declare namespace App {

@@ -8,6 +8,7 @@
 import { getCollection, render } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import TableOfContents from "@components/blog/TableOfContents.astro";
+import NewsletterCTA from "@components/blog/NewsletterCTA.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
@@ -192,8 +193,11 @@ const CATEGORY_COLORS: Record<string, string> = {
             <Content />
           </div>
 
+          <!-- Newsletter CTA -->
+          <NewsletterCTA />
+
           <!-- Post footer -->
-          <footer class="mt-16 pt-8 border-t border-outline-variant/20">
+          <footer class="mt-12 pt-8 border-t border-outline-variant/20">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <p class="font-headline font-bold text-on-surface">Carlos Posada</p>

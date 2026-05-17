@@ -18,5 +18,8 @@ pages_build_output_dir = "dist"
 # Cloudflare Dashboard → Workers & Pages → carlosposada-dev → Settings → Variables
 [vars]
 CONTACT_TO_EMAIL = "hello@carlosposada.dev"
+# Set real value in CF dashboard → Settings → Variables and Secrets:
+# RESEND_AUDIENCE_ID = "your-audience-id-from-resend.com/audiences"
+RESEND_AUDIENCE_ID = ""
 # RESEND_API_KEY debe ir como Secret — NUNCA en texto plano:
 # npx wrangler pages secret put RESEND_API_KEY --project-name=carlosposada-dev
