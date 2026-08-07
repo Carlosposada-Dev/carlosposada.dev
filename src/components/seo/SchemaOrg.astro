@@ -12,7 +12,7 @@
  *
  * Referencia: https://schema.org / https://developers.google.com/search/docs/appearance/structured-data
  */
-import { SITE, SOCIAL_LINKS, SKILLS, SERVICES } from "@utils/constants";
+import { SITE, SOCIAL_LINKS, SKILLS, SERVICES, CERTIFICATIONS } from "@utils/constants";
 
 export interface Props {
   /** Tipo de página para schema contextual */
@@ -57,7 +57,16 @@ const personSchema = {
     addressLocality: "Medellín",
     addressCountry: "CO",
   },
+  image: `${SITE.url}/images/portrait.webp`,
   sameAs: SOCIAL_LINKS.map((s) => s.href),
+  // Certificaciones verificables → rich results de credenciales
+  hasCredential: CERTIFICATIONS.map((cert) => ({
+    "@type": "EducationalOccupationalCredential",
+    name: cert.title,
+    credentialCategory: "certification",
+    url: cert.credlyUrl,
+    recognizedBy: { "@type": "Organization", name: cert.issuer },
+  })),
   knowsAbout: [
     ...SKILLS.map((s) => s.label),
     "CI/CD Pipelines",

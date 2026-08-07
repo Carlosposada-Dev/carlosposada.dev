@@ -1,8 +1,15 @@
 # CLAUDE.md — carlosposada.dev
 
-Guía de trabajo para Claude Code en este repositorio. Complementa a
-[PROJECT_STATUS.md](PROJECT_STATUS.md) (estado/fases) y a
-[new-features.md](new-features.md) (roadmap y specs de features).
+Guía de trabajo para Claude Code en este repositorio.
+
+**Mapa de documentos** (los tres primeros están en `.gitignore`, son contexto local):
+
+| Archivo | Qué contiene |
+|---|---|
+| `PROJECT_STATUS.md` | Stack, estructura, config de Cloudflare, qué está hecho y qué falta |
+| `new-features.md` | **Sólo lo pendiente** del sitio, en orden de implementación |
+| `blog-projects-roadmap.md` | Repos a construir + posts a escribir (una sesión por repo) |
+| `CLAUDE.md` (este) | Cómo trabajar en el repo: comandos, convenciones, trampas |
 
 ---
 
@@ -74,6 +81,11 @@ Siempre con `width`/`height` en el `<img>` para evitar CLS.
 Alias de TS: `@components`, `@layouts`, `@utils`, `@styles` (ver `tsconfig.json`).
 
 ### Reglas que no se rompen
+
+- **Nada inventado en el sitio.** Sin testimonios anónimos, avatares falsos, logos de
+  clientes que no existen ni links a repos que no existen (`href="#"`). Si un dato no es
+  verificable, no se publica: se deja el hueco o se muestra el estado real
+  (`""` en `demoUrl` → chip "No live demo"; `PLANNED_CERTIFICATIONS` → card punteada).
 
 - **Todo dato vive en `src/utils/constants.ts`.** Nav, skills, servicios, proyectos,
   timeline, certificaciones y social links. Nunca hardcodear contenido en un componente.

@@ -435,12 +435,16 @@ export interface Project {
   category: Exclude<ProjectCategory, "All">;
   tags: string[];
   githubUrl: string;
+  /** Empty string = no live demo → the demo button is not rendered */
   demoUrl: string;
   demoLabel: string;
   icon: string; // Material Symbol
   image: string;
   imageAlt: string;
 }
+
+/** Real GitHub profile — used until each project has its own repo */
+const GITHUB_PROFILE = "https://github.com/Carlosposada-Dev";
 
 export const PROJECTS: Project[] = [
   {
@@ -450,8 +454,8 @@ export const PROJECTS: Project[] = [
       "Automated CI/CD pipeline for high-availability Kubernetes clusters with real-time log streaming and thermal monitoring.",
     category: "DevOps",
     tags: ["#k8s", "#terraform", "#go"],
-    githubUrl: "https://github.com/carlosposada",
-    demoUrl: "#",
+    githubUrl: GITHUB_PROFILE,
+    demoUrl: "",
     demoLabel: "View Demo",
     icon: "terminal",
     image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80",
@@ -464,8 +468,8 @@ export const PROJECTS: Project[] = [
       "End-to-end testing orchestration platform using Playwright and Python, featuring automated regression reports and Slack integration.",
     category: "QA",
     tags: ["#playwright", "#python", "#github_actions"],
-    githubUrl: "https://github.com/carlosposada",
-    demoUrl: "#",
+    githubUrl: GITHUB_PROFILE,
+    demoUrl: "",
     demoLabel: "Live Report",
     icon: "bug_report",
     image: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=600&q=80",
@@ -478,8 +482,8 @@ export const PROJECTS: Project[] = [
       "Multi-region AWS infrastructure deployment for low-latency serverless APIs with integrated DDoS protection and WAF rules.",
     category: "Cloud",
     tags: ["#aws", "#lambda", "#cdk"],
-    githubUrl: "https://github.com/carlosposada",
-    demoUrl: "#",
+    githubUrl: GITHUB_PROFILE,
+    demoUrl: "",
     demoLabel: "Docs",
     icon: "cloud_sync",
     image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&q=80",
@@ -492,8 +496,8 @@ export const PROJECTS: Project[] = [
       "Predictive maintenance model for data center hardware using machine learning to forecast component failures with 94% accuracy.",
     category: "AI",
     tags: ["#pytorch", "#pandas", "#docker"],
-    githubUrl: "https://github.com/carlosposada",
-    demoUrl: "#",
+    githubUrl: GITHUB_PROFILE,
+    demoUrl: "",
     demoLabel: "Notebook",
     icon: "psychology",
     image: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80",
@@ -506,8 +510,8 @@ export const PROJECTS: Project[] = [
       "Service mesh implementation focusing on zero-trust networking and mTLS encryption across distributed microservices.",
     category: "DevOps",
     tags: ["#istio", "#envoy", "#vault"],
-    githubUrl: "https://github.com/carlosposada",
-    demoUrl: "#",
+    githubUrl: GITHUB_PROFILE,
+    demoUrl: "",
     demoLabel: "Explore",
     icon: "security",
     image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600&q=80",
