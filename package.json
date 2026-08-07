@@ -12,6 +12,7 @@
     "preview": "wrangler pages dev dist",
     "astro": "astro",
     "og": "node scripts/generate-og-image.mjs",
+    "icons": "node scripts/generate-icons.mjs",
     "lint": "eslint . --ext .ts,.astro",
     "format": "prettier --write ."
   },

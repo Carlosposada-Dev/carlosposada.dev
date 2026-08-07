@@ -50,6 +50,7 @@ npx wrangler pages deploy dist --project-name=carlosposada-dev
 - `og` → regenera `public/images/og-default.png` (1200×630) desde
   `scripts/generate-og-image.mjs` (SVG → PNG con `sharp`). Correr tras cambiar
   nombre, tagline o número de certificaciones
+- `icons` → regenera los PNG de favicon/PWA desde `public/favicon.svg`
 - Node **>= 22** (`engines` en package.json y `NODE_VERSION=22` en Cloudflare)
 
 **Antes de dar por terminado un cambio, correr `npm run build`.** No hay suite de
@@ -209,8 +210,39 @@ Variables en Cloudflare (Workers & Pages → Settings → Variables and Secrets)
 `NODE_VERSION=22`, `CONTACT_TO_EMAIL`, `RESEND_API_KEY` (secret).
 En local se leen de `.dev.vars` (**no commitear**).
 
-`_headers` define la CSP. Si se añade un CDN o un endpoint externo nuevo, hay que
-actualizar `script-src` / `connect-src` ahí o el recurso se bloquea en producción.
+### Headers y CSP
+
+`public/_headers` define la CSP y los headers de seguridad. **Tiene que vivir en
+`public/`**, no en la raíz: Cloudflare Pages sólo lee el `_headers` que queda dentro del
+directorio publicado (`dist/`). Un `_headers` en la raíz del repo no se despliega y se
+ignora en silencio — así estuvo el sitio hasta 2026-08-06, sin CSP en producción.
+
+La sintaxis **no es TOML**: patrón de ruta, y debajo líneas `Header: value` con dos
+espacios de indentación. Reglas que coinciden se concatenan, así que dos patrones que
+matcheen el mismo archivo duplican el header (no poner `/images/*` y `/*.png` a la vez).
+
+Orígenes permitidos hoy (todos en uso real):
+
+| Origen | Para qué |
+|---|---|
+| `fonts.googleapis.com` | hojas de Google Fonts + Material Symbols |
+| `fonts.gstatic.com` | los archivos de fuente |
+| `cdn.jsdelivr.net` | Mermaid, importado dinámicamente en `blog/[...slug].astro` |
+| `*.cloudflareinsights.com` | beacon de Web Analytics (aún apagado) |
+| `img-src https:` | badges de Credly, imágenes de Unsplash |
+
+Si se agrega un CDN o endpoint externo, actualizar `script-src` / `connect-src` ahí o el
+recurso se bloquea en producción. Verificar siempre con `npm run preview` (wrangler sí
+aplica `_headers`; `astro dev` no).
+
+**Ojo**: las rutas SSR (`/api/*`) las sirve el Worker y no pasan por `_headers`.
+
+### Iconos
+
+`npm run icons` regenera desde `public/favicon.svg`: `favicon-32x32.png`,
+`apple-touch-icon.png` (180, opaco), `icon-192.png`, `icon-512.png` y
+`icon-maskable-512.png`. Si cambias el favicon, corre el script — `BaseLayout` y
+`manifest.json` referencian esos archivos por nombre.
 
 ---
 
