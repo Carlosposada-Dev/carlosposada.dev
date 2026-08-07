@@ -9,32 +9,19 @@ import {
   SOCIAL_LINKS,
 } from "@utils/constants";
 import { formatDate } from "@utils/helpers";
+import type { SearchEntry } from "@utils/search";
 
 export const prerender = true;
 
 /**
- * Índice de búsqueda estático — se genera en build y lo consume el
- * Command Palette (Feature #18) y, más adelante, la búsqueda del blog (#22).
+ * Índice de búsqueda estático — se genera en build y lo consumen el command
+ * palette (Feature #18) y el terminal de la 404 (#14). El tipo `SearchEntry` y
+ * el matcher viven en `@utils/search`, que corre en cliente.
  *
- * Una sola fuente para ambos: si mañana hay una página /search, lee este mismo
+ * Una sola fuente para todos: si mañana hay una página /search, lee este mismo
  * JSON. Todo sale de constants.ts + la colección de blog, así que no hay nada
  * que sincronizar a mano.
  */
-export interface SearchEntry {
-  id: string;
-  type: "page" | "post" | "project" | "service" | "certification" | "link";
-  title: string;
-  description: string;
-  href: string;
-  /** Material Symbol mostrado a la izquierda */
-  icon: string;
-  /** Texto extra buscable que no se muestra (tags, categoría, sinónimos) */
-  keywords: string;
-  /** Etiqueta corta a la derecha del resultado */
-  meta?: string;
-  /** true → abre en pestaña nueva */
-  external?: boolean;
-}
 
 /** Sinónimos por página: lo que alguien teclearía sin saber cómo se llama la sección */
 const PAGE_KEYWORDS: Record<string, string> = {
@@ -59,7 +46,7 @@ export const GET: APIRoute = async () => {
       id: `page:${item.href}`,
       type: "page" as const,
       title: item.label,
-      description: "",
+      description: item.summary ?? "",
       href: item.href,
       icon: item.mobileIcon,
       keywords: PAGE_KEYWORDS[item.href] ?? "",

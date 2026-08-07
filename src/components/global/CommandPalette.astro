@@ -84,17 +84,7 @@
    * Todos los listeners cuelgan de `document`, así que un swap de DOM por
    * View Transitions no los rompe: los nodos se vuelven a consultar en cada uso.
    */
-  interface SearchEntry {
-    id: string;
-    type: "page" | "post" | "project" | "service" | "certification" | "link";
-    title: string;
-    description: string;
-    href: string;
-    icon: string;
-    keywords: string;
-    meta?: string;
-    external?: boolean;
-  }
+  import { loadSearchIndex, rankEntries, type SearchEntry } from "@utils/search";
 
   /** Cabeceras de grupo — sólo se usan en el estado vacío */
   const TYPE_LABELS: Record<SearchEntry["type"], string> = {
@@ -120,8 +110,6 @@
   const EMPTY_STATE_TYPES: SearchEntry["type"][] = ["page", "post"];
 
   const MAX_RESULTS = 12;
-  /** Descarta lo que puntúa muy por debajo del mejor match (ruido de subsecuencia) */
-  const RELATIVE_CUTOFF = 0.35;
 
   interface Section {
     label: string | null;
@@ -138,58 +126,6 @@
   const input = () => document.querySelector<HTMLInputElement>("[data-cmdk-input]");
   const list = () => document.querySelector<HTMLElement>("[data-cmdk-results]");
   const isOpen = () => root()?.classList.contains("cmdk-open") ?? false;
-
-  // ── Fuzzy matching ────────────────────────────────────────
-  /**
-   * Subsecuencia con bonus por coincidencias consecutivas y por inicio de
-   * palabra. Devuelve null si algún carácter de la query no aparece en orden.
-   */
-  function fuzzy(query: string, text: string): { score: number; indices: number[] } | null {
-    const haystack = text.toLowerCase();
-    const indices: number[] = [];
-    let cursor = 0;
-    let score = 0;
-    let streak = 0;
-
-    for (const char of query) {
-      const found = haystack.indexOf(char, cursor);
-      if (found === -1) return null;
-
-      if (found === cursor && indices.length > 0) {
-        streak += 1;
-        score += 8 + streak * 2;
-      } else {
-        streak = 0;
-        score += 1;
-      }
-      if (found === 0 || /[\s\-_/#.]/.test(haystack[found - 1])) score += 6;
-
-      indices.push(found);
-      cursor = found + 1;
-    }
-
-    // Penaliza ligeramente los textos largos para que gane el match más ceñido
-    score -= Math.min(haystack.length - query.length, 40) * 0.1;
-    return { score, indices };
-  }
-
-  function rank(query: string, entry: SearchEntry) {
-    const title = fuzzy(query, entry.title);
-    const description = entry.description ? fuzzy(query, entry.description) : null;
-    const keywords = entry.keywords ? fuzzy(query, entry.keywords) : null;
-
-    let score = Math.max(
-      (title?.score ?? 0) * 3,
-      (keywords?.score ?? 0) * 1.5,
-      description?.score ?? 0
-    );
-    if (score === 0) return null;
-
-    // Un substring exacto siempre debe ganarle a una subsecuencia dispersa
-    if (entry.title.toLowerCase().includes(query)) score += 40;
-
-    return { score, indices: title?.indices ?? [] };
-  }
 
   // ── Render ────────────────────────────────────────────────
   function escapeHtml(value: string): string {
@@ -227,23 +163,12 @@
     let sections: Section[];
 
     if (query) {
-      const scored = entries
-        .map((entry) => {
-          const result = rank(query, entry);
-          return result ? { entry, ...result } : null;
-        })
-        .filter((item): item is { entry: SearchEntry; score: number; indices: number[] } => item !== null)
-        .sort((a, b) => b.score - a.score);
-
       // Con query manda la relevancia, no el tipo: una lista plana ordenada.
       // Agrupar por tipo enterraba el mejor match bajo la sección "Pages".
-      const best = scored[0]?.score ?? 0;
-      const kept = scored
-        .filter((item) => item.score >= best * RELATIVE_CUTOFF)
-        .slice(0, MAX_RESULTS);
+      const ranked = rankEntries(query, entries, { limit: MAX_RESULTS });
 
-      for (const item of kept) highlighted.set(item.entry.id, item.indices);
-      sections = [{ label: null, items: kept.map((item) => item.entry) }];
+      for (const item of ranked) highlighted.set(item.entry.id, item.indices);
+      sections = [{ label: null, items: ranked.map((item) => item.entry) }];
     } else {
       // Sin query el palette es un navegador rápido: páginas y posts, agrupados.
       const shortlist = entries
@@ -324,16 +249,9 @@
   async function loadIndex() {
     if (entries || loading) return;
     loading = true;
-    try {
-      const response = await fetch("/search-index.json");
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      entries = (await response.json()).entries as SearchEntry[];
-    } catch {
-      entries = null;
-    } finally {
-      loading = false;
-      if (isOpen()) render(input()?.value.trim().toLowerCase() ?? "");
-    }
+    entries = await loadSearchIndex();
+    loading = false;
+    if (isOpen()) render(input()?.value.trim().toLowerCase() ?? "");
   }
 
   function open() {

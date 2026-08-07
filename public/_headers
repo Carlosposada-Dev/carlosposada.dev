@@ -42,6 +42,8 @@
 /carlos-posada-cv.pdf
   Cache-Control: public, max-age=3600
 
-# Command palette / search index — regenerated on every build
+# Command palette / 404 terminal search index — regenerated on every build.
+# Short max-age so a new post shows up in search minutes after a deploy, with
+# stale-while-revalidate so the fetch still feels instant from cache.
 /search-index.json
-  Cache-Control: public, max-age=3600
+  Cache-Control: public, max-age=300, stale-while-revalidate=3600

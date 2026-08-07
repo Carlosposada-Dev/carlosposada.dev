@@ -34,15 +34,50 @@ export interface NavItem {
   label: string;
   href: string;
   mobileIcon: string; // Material Symbol name
+  /**
+   * Una línea sobre qué hay en la página. No se pinta en el navbar: alimenta el
+   * índice de búsqueda (`/search-index.json`) → command palette y `ls` en la 404.
+   */
+  summary?: string;
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: "Home", href: "/", mobileIcon: "home" },
-  { label: "About", href: "/about", mobileIcon: "person" },
-  { label: "Projects", href: "/projects", mobileIcon: "account_tree" },
-  { label: "Services", href: "/services", mobileIcon: "settings_input_component" },
-  { label: "Blog", href: "/blog", mobileIcon: "article" },
-  { label: "Contact", href: "/contact", mobileIcon: "mail" },
+  {
+    label: "Home",
+    href: "/",
+    mobileIcon: "home",
+    summary: "Cloud, DevOps and AI engineering — the short version.",
+  },
+  {
+    label: "About",
+    href: "/about",
+    mobileIcon: "person",
+    summary: "Bio, career timeline and the certification wall.",
+  },
+  {
+    label: "Projects",
+    href: "/projects",
+    mobileIcon: "account_tree",
+    summary: "Labs and repos, filtered by DevOps, Cloud, QA or AI.",
+  },
+  {
+    label: "Services",
+    href: "/services",
+    mobileIcon: "settings_input_component",
+    summary: "What I can build for you, and what you get.",
+  },
+  {
+    label: "Blog",
+    href: "/blog",
+    mobileIcon: "article",
+    summary: "Reproducible write-ups, including the parts that broke.",
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+    mobileIcon: "mail",
+    summary: "Send a message, or reach me anywhere else.",
+  },
 ];
 
 // Navegación bottom bar mobile (solo 4 items)

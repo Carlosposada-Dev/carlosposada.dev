@@ -122,6 +122,22 @@
     overflow: visible;
   }
 
+  /* ── Terminal interactivo de la 404 (Feature #14) ───── */
+
+  .term-output {
+    @apply space-y-0.5;
+    scrollbar-gutter: stable;
+  }
+
+  .term-line {
+    @apply whitespace-pre-wrap break-words leading-relaxed;
+  }
+
+  .term-link {
+    @apply text-primary underline decoration-primary/30 underline-offset-2
+           hover:decoration-primary;
+  }
+
   /* ── Botones ────────────────────────────────────────── */
 
   .btn-primary {

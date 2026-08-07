@@ -69,7 +69,8 @@ src/
 ├── content/       Content Collections (blog en Markdown) + config.ts con el schema
 ├── pages/         una .astro por ruta + blog/[...slug].astro + api/ (SSR)
 ├── styles/        global.css — Design System en @layer components/utilities
-└── utils/         constants.ts (TODOS los datos) + helpers.ts
+└── utils/         constants.ts (TODOS los datos) + helpers.ts + search.ts (matcher,
+                   corre en cliente)
 
 public/images/     assets propios: portrait.webp, og-default.png
 scripts/           utilidades de build fuera de Astro (generate-og-image.mjs)
@@ -238,25 +239,47 @@ aplica `_headers`; `astro dev` no).
 
 **Ojo**: las rutas SSR (`/api/*`) las sirve el Worker y no pasan por `_headers`.
 
-### Índice de búsqueda
+### Búsqueda: índice + matcher
 
-`src/pages/search-index.json.ts` genera `/search-index.json` en build: páginas, posts,
-proyectos, servicios, certificaciones y enlaces. Lo consume el command palette
-(`components/global/CommandPalette.astro`, ⌘K / Ctrl+K / `/`), que lo descarga la primera
-vez que se abre y lo cachea en memoria.
+Tres piezas, una sola fuente de datos:
 
-Sale entero de `constants.ts` + la colección de blog, así que **no hay nada que mantener a
-mano**: una página nueva en `NAV_ITEMS` o un post nuevo aparecen solos. Lo único que se
-edita a mano es `PAGE_KEYWORDS` (sinónimos por página: lo que alguien teclearía sin saber
-cómo se llama la sección).
+| Archivo | Qué es |
+|---|---|
+| `src/pages/search-index.json.ts` | genera `/search-index.json` en build |
+| `src/utils/search.ts` | tipo `SearchEntry`, matcher fuzzy y carga cacheada del índice |
+| consumidores | command palette (⌘K) y terminal de la 404 (`ls`, `cd`, `cat`, `find`) |
 
-Con query el listado es **plano y ordenado por score**, no agrupado por tipo: agrupar
-enterraba el mejor match bajo la cabecera "Pages" (buscar `saa` devolvía *Home* primero en
-lugar de la certificación SAA-C03). El agrupado sólo queda en el estado vacío. Hay un corte
-relativo al 35% del mejor score para recortar el ruido de la subsecuencia.
+El índice sale entero de `constants.ts` + la colección de blog, así que **no hay nada que
+mantener a mano**: una página nueva en `NAV_ITEMS` o un post nuevo aparecen solos, tanto en
+el palette como en el `ls` de la 404. Lo único manual es `PAGE_KEYWORDS` (sinónimos por
+página) y `NavItem.summary` (la línea de descripción; no se pinta en el navbar).
+
+`search.ts` corre en cliente: nada de imports de `astro:*` ahí.
+
+Dos decisiones del ranking, ambas por un fallo real:
+
+- **Con query el listado es plano y ordenado por score**, no agrupado por tipo. Agrupar
+  enterraba el mejor match bajo la cabecera "Pages": buscar `saa` devolvía *Home* primero en
+  lugar de la certificación SAA-C03. El agrupado sólo queda en el estado vacío del palette.
+- Hay **dos cortes**: uno relativo (35% del mejor score) y un **suelo absoluto**
+  (`min(len, 6) * 6`). El relativo no basta cuando nada hace buen match — si el mejor
+  resultado ya es ruido, el 35% de ese ruido sigue siendo ruido: `find eks` devolvía
+  "QA Automation". Con el suelo, `eks` no devuelve nada, que es la respuesta correcta.
 
 Todos los listeners cuelgan de `document` — igual que el Navbar — para sobrevivir a las
 View Transitions, y `astro:page-load` restaura `body.overflow` y reetiqueta el atajo.
+
+### Terminal de la 404
+
+`src/pages/404.astro`. Tres trampas ya pisadas:
+
+- **No es un `<form>` a propósito.** Con un solo input de texto y sin botón de submit, el
+  navegador hace implicit submission: pulsar Enter *antes de que cargue el JS* navegaba a
+  `?command=ls` y recargaba la página. Enter se maneja en el `keydown` del input.
+- **`Astro.url.pathname` no sirve aquí**: la página es prerenderizada, así que siempre
+  horneaba `/404/`. La ruta real la rellena el script desde `location.pathname`.
+- **`print()` escribe innerHTML**: un `<name>` literal se parseaba como etiqueta y
+  desaparecía. Todo lo que lleve `<` pasa por `escapeHtml`.
 
 ### Contenido público que hay que mantener sincronizado
 

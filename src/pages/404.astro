@@ -1,34 +1,83 @@
 ---
 /**
- * 404.astro — Página de error
- * Mantiene el design system y ofrece navegación de vuelta al home.
+ * 404.astro — Página de error (Feature #14)
+ * Terminal interactivo: en lugar de un callejón sin salida, un prompt donde
+ * `ls` lista las rutas reales y `find <algo>` busca en todo el sitio.
+ * Los datos salen de /search-index.json — el mismo índice del command palette.
  */
 import PageLayout from "@layouts/PageLayout.astro";
 ---
 
 <PageLayout title="404 — Page Not Found">
   <div class="min-h-screen pt-32 pb-20 px-6 md:px-8 max-w-screen-2xl mx-auto flex items-center justify-center">
-    <div class="text-center space-y-6 max-w-lg">
+    <div class="w-full max-w-2xl space-y-8">
 
-      <!-- Bloque terminal con el error -->
-      <div class="terminal-block rounded-xl text-left">
-        <p>
-          <span class="text-on-surface/40">$</span>
-          <span class="text-on-surface ml-2">curl -I {Astro.url.pathname}</span>
-        </p>
-        <p class="text-error mt-1">HTTP/2 404 Not Found</p>
-        <p class="text-on-surface-variant text-xs mt-1">
-          The requested resource could not be located.
+      <!-- Encabezado -->
+      <div class="text-center space-y-3">
+        <h1 class="font-headline text-6xl font-bold text-primary">404</h1>
+        <p class="font-headline text-xl font-bold text-white">Page Not Found</p>
+        <p class="text-on-surface-variant text-sm">
+          This route doesn&apos;t exist in the infrastructure — but the terminal below does.
+          Type <code class="font-mono text-primary">help</code> to get moving.
         </p>
       </div>
 
-      <h1 class="font-headline text-6xl font-bold text-primary">404</h1>
-      <p class="font-headline text-xl font-bold text-white">Page Not Found</p>
-      <p class="text-on-surface-variant text-sm">
-        This route doesn&apos;t exist in the infrastructure. Let&apos;s get you back online.
-      </p>
+      <!--
+        Terminal. Clicar en cualquier parte enfoca el input.
+        Deliberadamente NO es un <form>: sin JS un submit nativo navegaría a
+        `?command=…` y recargaría la página, que es justo lo contrario de lo que
+        el visitante quiere. Enter se maneja en el keydown del input.
+      -->
+      <div
+        class="terminal-block rounded-xl text-left cursor-text"
+        data-term
+      >
+        <div
+          class="term-output max-h-[45vh] overflow-y-auto"
+          role="log"
+          aria-live="polite"
+          aria-label="Terminal output"
+          data-term-output
+        >
+          <p class="term-line">
+            <span class="text-on-surface-variant/50">$</span>
+            <!--
+              La página es prerenderizada, así que `Astro.url.pathname` sería
+              siempre "/404/". La ruta real la rellena el script en cliente.
+            -->
+            <span class="ml-2">curl -I <span data-term-path>/…</span></span>
+          </p>
+          <p class="term-line text-error">HTTP/2 404 Not Found</p>
+          <p class="term-line text-on-surface-variant">
+            The requested resource could not be located.
+          </p>
+          <p class="term-line text-on-surface-variant">
+            Type <span class="text-primary">help</span> for available commands.
+          </p>
+        </div>
 
-      <div class="flex flex-wrap justify-center gap-4 pt-2">
+        <div class="flex items-center gap-2 pt-2">
+          <!-- El prompt completo dejaba 78px para teclear en un móvil de 375 -->
+          <label for="term-input" class="text-secondary shrink-0">
+            <span class="sm:hidden">~$</span>
+            <span class="hidden sm:inline">visitor@carlosposada.dev:~$</span>
+          </label>
+          <input
+            id="term-input"
+            type="text"
+            class="flex-1 min-w-0 bg-transparent text-on-surface focus:outline-none"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            aria-label="Type a command"
+            data-term-input
+          />
+        </div>
+      </div>
+
+      <!-- Salida para quien no quiera jugar -->
+      <div class="flex flex-wrap justify-center gap-4">
         <a href="/" class="btn-primary inline-flex">
           <span class="material-symbols-outlined text-lg" aria-hidden="true">home</span>
           Go Home
@@ -38,3 +87,309 @@ import PageLayout from "@layouts/PageLayout.astro";
     </div>
   </div>
 </PageLayout>
+
+<script>
+  /**
+   * Terminal de la 404.
+   *
+   * El "filesystem" no está escrito a mano: sale de /search-index.json, así que
+   * una página nueva aparece en `ls` sola. `find` reutiliza el mismo matcher
+   * que el command palette (`@utils/search`) — quien llega aquí normalmente
+   * tecleó mal una URL, y buscar es exactamente lo que necesita.
+   */
+  import { loadSearchIndex, rankEntries, type SearchEntry } from "@utils/search";
+
+  /** Mismo prompt responsive que el label, para que el eco no descuadre en móvil */
+  const PROMPT_HTML =
+    '<span class="sm:hidden">~$</span>' +
+    '<span class="hidden sm:inline">visitor@carlosposada.dev:~$</span>';
+  const MAX_HISTORY = 50;
+
+  let entries: SearchEntry[] | null = null;
+  const history: string[] = [];
+  let historyCursor = 0;
+
+  const output = () => document.querySelector<HTMLElement>("[data-term-output]");
+  const field = () => document.querySelector<HTMLInputElement>("[data-term-input]");
+
+  function escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /** Escribe una línea ya escapada; `html` sólo lo usan las respuestas internas */
+  function print(html: string, className = "") {
+    const container = output();
+    if (!container) return;
+    const line = document.createElement("p");
+    line.className = `term-line ${className}`.trim();
+    line.innerHTML = html;
+    container.appendChild(line);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function printCommand(raw: string) {
+    print(
+      `<span class="text-secondary">${PROMPT_HTML}</span> <span>${escapeHtml(raw)}</span>`
+    );
+  }
+
+  /** Enlace interno con el look del terminal */
+  function link(href: string, label: string): string {
+    return `<a href="${escapeHtml(href)}" class="term-link">${escapeHtml(label)}</a>`;
+  }
+
+  function navigate(href: string, external = false) {
+    print(`Opening ${escapeHtml(href)}…`, "text-secondary");
+    if (external) window.open(href, "_blank", "noopener,noreferrer");
+    else window.location.href = href;
+  }
+
+  // ── Filesystem derivado del índice ──────────────────────────
+  /** Nombre de "archivo" para una entrada: /about → about/, /rss.xml → rss.xml */
+  function nodeName(entry: SearchEntry): string {
+    if (entry.href === "/") return "index.html";
+    if (entry.type === "page") return `${entry.href.replace(/^\//, "")}/`;
+    return entry.href.replace(/^\//, "");
+  }
+
+  /** Sólo páginas y recursos propios son "navegables" con cd/cat */
+  function listable(): SearchEntry[] {
+    if (!entries) return [];
+    return entries.filter(
+      (entry) => entry.type === "page" || (entry.type === "link" && entry.href.startsWith("/"))
+    );
+  }
+
+  /** Resuelve lo que teclea el usuario: `about`, `/about`, `about/`, `index.html` */
+  function resolve(target: string): SearchEntry | null {
+    const wanted = target.toLowerCase().replace(/^\.?\//, "").replace(/\/$/, "");
+    if (wanted === "" || wanted === "~" || wanted === "index.html") {
+      return listable().find((entry) => entry.href === "/") ?? null;
+    }
+    return (
+      listable().find((entry) => {
+        const name = nodeName(entry).replace(/\/$/, "").toLowerCase();
+        return name === wanted || entry.href.replace(/^\//, "").toLowerCase() === wanted;
+      }) ?? null
+    );
+  }
+
+  // ── Comandos ────────────────────────────────────────────────
+  const COMMANDS: Record<string, { help: string; run: (args: string[]) => void }> = {
+    help: {
+      help: "show this list",
+      run: () => {
+        print("Available commands:", "text-on-surface-variant");
+        for (const [name, command] of Object.entries(COMMANDS)) {
+          print(
+            `  <span class="text-primary">${escapeHtml(name.padEnd(10))}</span>` +
+              `<span class="text-on-surface-variant">${escapeHtml(command.help)}</span>`
+          );
+        }
+      },
+    },
+
+    ls: {
+      help: "list the routes that do exist",
+      run: () => {
+        const nodes = listable();
+        if (nodes.length === 0) {
+          print("Listing unavailable. Head to " + link("/", "/") + " instead.", "text-error");
+          return;
+        }
+        for (const entry of nodes) {
+          const name = nodeName(entry);
+          print(
+            `  <span class="text-tertiary">${escapeHtml(name.padEnd(24))}</span>` +
+              `<span class="text-on-surface-variant">${escapeHtml(entry.description)}</span>`
+          );
+        }
+        // `print` escribe innerHTML: un `<name>` literal se parsearía como
+        // etiqueta y desaparecería de la salida
+        print(
+          `${nodes.length} entries. Use \`cd ${escapeHtml("<name>")}\` to go there.`,
+          "text-on-surface-variant"
+        );
+      },
+    },
+
+    cd: {
+      help: "go to a route — e.g. cd about",
+      run: ([target]) => {
+        if (!target) {
+          navigate("/");
+          return;
+        }
+        const found = resolve(target);
+        if (!found) {
+          print(
+            `cd: no such route: ${escapeHtml(target)} — try \`ls\` or \`find ${escapeHtml(target)}\``,
+            "text-error"
+          );
+          return;
+        }
+        navigate(found.href, found.external);
+      },
+    },
+
+    cat: {
+      help: "print what lives at a route",
+      run: ([target]) => {
+        if (!target) {
+          print("cat: missing operand. Try `cat about`.", "text-error");
+          return;
+        }
+        const found = resolve(target);
+        if (!found) {
+          print(`cat: ${escapeHtml(target)}: No such file or directory`, "text-error");
+          return;
+        }
+        print(`<span class="text-tertiary">${escapeHtml(found.title)}</span>`);
+        if (found.description) print(escapeHtml(found.description), "text-on-surface-variant");
+        print(link(found.href, found.href));
+      },
+    },
+
+    find: {
+      help: "search the whole site — e.g. find terraform",
+      run: (args) => {
+        const query = args.join(" ").trim().toLowerCase();
+        if (!query) {
+          print("find: missing search term. Try `find terraform`.", "text-error");
+          return;
+        }
+        if (!entries) {
+          print("Search index unavailable. Head to " + link("/", "/") + ".", "text-error");
+          return;
+        }
+        const results = rankEntries(query, entries, { limit: 6 });
+        if (results.length === 0) {
+          print(`No matches for “${escapeHtml(query)}”.`, "text-on-surface-variant");
+          return;
+        }
+        for (const { entry } of results) {
+          print(
+            `  ${link(entry.href, entry.href)} ` +
+              `<span class="text-on-surface-variant">— ${escapeHtml(entry.title)}</span>`
+          );
+        }
+        print("Tip: press ⌘K / Ctrl+K anywhere for the same search.", "text-on-surface-variant");
+      },
+    },
+
+    whoami: {
+      help: "who runs this place",
+      run: () => {
+        print("Carlos Posada — Cloud / DevOps / AI engineer, Medellín (UTC-5).");
+        print(
+          "More at " + link("/about", "/about") + " · " + link("/contact", "/contact"),
+          "text-on-surface-variant"
+        );
+      },
+    },
+
+    pwd: {
+      help: "print the route you tried to reach",
+      run: () => print(escapeHtml(window.location.pathname)),
+    },
+
+    clear: {
+      help: "clear the screen",
+      run: () => {
+        const container = output();
+        if (container) container.innerHTML = "";
+      },
+    },
+
+    exit: {
+      help: "leave — takes you home",
+      run: () => navigate("/"),
+    },
+  };
+
+  /** Respuestas a lo que la gente teclea en un terminal falso por costumbre */
+  const EASTER_EGGS: Array<{ match: RegExp; reply: string }> = [
+    { match: /^sudo\b/, reply: "visitor is not in the sudoers file. This incident will not be reported." },
+    { match: /^rm\s+-rf/, reply: "Not on my watch. `terraform destroy` is the supported teardown." },
+    { match: /^(uname|uname\s+-a)$/, reply: "Cloudflare Workers · Astro 5 · static, edge-rendered at the border." },
+    { match: /^(vim|vi|nano|emacs)\b/, reply: "No editor here. The source lives on GitHub — `find github`." },
+    { match: /^(ping|curl|wget)\b/, reply: "Network access is disabled in this sandbox. `find` searches locally." },
+  ];
+
+  function run(raw: string) {
+    const trimmed = raw.trim();
+    printCommand(trimmed);
+    if (!trimmed) return;
+
+    history.push(trimmed);
+    if (history.length > MAX_HISTORY) history.shift();
+    historyCursor = history.length;
+
+    const egg = EASTER_EGGS.find((item) => item.match.test(trimmed.toLowerCase()));
+    if (egg) {
+      print(escapeHtml(egg.reply), "text-on-surface-variant");
+      return;
+    }
+
+    const [name, ...args] = trimmed.split(/\s+/);
+    const command = COMMANDS[name.toLowerCase()];
+    if (!command) {
+      print(
+        `command not found: ${escapeHtml(name)} — try \`help\``,
+        "text-error"
+      );
+      return;
+    }
+    command.run(args);
+  }
+
+  // ── Wiring ──────────────────────────────────────────────────
+  // Delegado en `document` como el resto del sitio: sobrevive a View Transitions
+  // y no necesita re-bind al volver a esta página.
+  document.addEventListener("keydown", (event) => {
+    const input = field();
+    if (!input || document.activeElement !== input) return;
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      run(input.value);
+      input.value = "";
+      return;
+    }
+
+    // Historial con flechas, como en un shell de verdad
+    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+    event.preventDefault();
+    if (event.key === "ArrowUp") historyCursor = Math.max(0, historyCursor - 1);
+    else historyCursor = Math.min(history.length, historyCursor + 1);
+    input.value = history[historyCursor] ?? "";
+    input.setSelectionRange(input.value.length, input.value.length);
+  });
+
+  // Clicar en el bloque enfoca el prompt, salvo que se esté seleccionando texto
+  document.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest("[data-term]")) return;
+    if (target.closest("a")) return;
+    if ((window.getSelection()?.toString().length ?? 0) > 0) return;
+    field()?.focus();
+  });
+
+  async function init() {
+    if (!document.querySelector("[data-term]")) return;
+
+    // La ruta que el visitante pidió de verdad — en el HTML prerenderizado
+    // sólo hay un placeholder
+    const path = document.querySelector<HTMLElement>("[data-term-path]");
+    if (path) path.textContent = window.location.pathname;
+
+    entries = await loadSearchIndex();
+  }
+
+  document.addEventListener("astro:page-load", init);
+  void init();
+</script>
