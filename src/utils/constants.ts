@@ -97,6 +97,7 @@ export const SOCIAL_LINKS: SocialLink[] = [
 ];
 
 export const FOOTER_LINKS = [
+  { label: "Now", href: "/now" },
   { label: "Sitemap", href: "/sitemap-index.xml" },
   { label: "Privacy Policy", href: "/privacy" },
 ];
@@ -602,3 +603,85 @@ export const SERVICES_DETAIL: ServiceDetail[] = [
     imageAlt: "Abstract neural network with glowing blue and violet connections",
   },
 ];
+
+// ─────────────────────────────────────────────────────────
+// /now — Qué estoy haciendo ahora (nownownow.com)
+// Actualizar cada 2–4 semanas. Si `updated` queda viejo,
+// la página lo muestra como "stale" — es intencional.
+// ─────────────────────────────────────────────────────────
+export interface NowSection {
+  id: string;
+  icon: string; // Material Symbol
+  title: string;
+  accent: "primary" | "secondary" | "tertiary";
+  items: { label: string; detail?: string }[];
+}
+
+export const NOW = {
+  /** Fecha de la última revisión de esta página — formato YYYY-MM-DD */
+  updated: "2026-08-06",
+  intro:
+    "A snapshot of what I'm building, breaking and learning right now. Inspired by nownownow.com — updated every few weeks, not a changelog.",
+  sections: [
+    {
+      id: "building",
+      icon: "construction",
+      title: "Building",
+      accent: "primary",
+      items: [
+        {
+          label: "An AWS Terraform baseline for every lab I publish",
+          detail: "Remote state, GitHub OIDC instead of long-lived keys, VPC module, budget guardrails.",
+        },
+        {
+          label: "This site",
+          detail: "Astro 5 on Cloudflare Pages. Blog, contact and newsletter run on Workers at the edge.",
+        },
+      ],
+    },
+    {
+      id: "learning",
+      icon: "school",
+      title: "Learning",
+      accent: "secondary",
+      items: [
+        {
+          label: "EKS across its three node modes",
+          detail: "Managed node groups, self-managed nodes and Auto Mode — comparing cost, control and upgrade pain.",
+        },
+        {
+          label: "Cluster add-ons in anger",
+          detail: "Istio, Kyverno, Karpenter and ArgoCD — what each one really costs to operate.",
+        },
+        {
+          label: "Platform engineering",
+          detail: "Backstage and Crossplane: where an internal developer platform earns its keep and where it doesn't.",
+        },
+      ],
+    },
+    {
+      id: "writing",
+      icon: "edit_note",
+      title: "Writing",
+      accent: "tertiary",
+      items: [
+        {
+          label: "A series on IaC for ECS and EKS",
+          detail: "One reproducible repo per post, including the parts that broke.",
+        },
+      ],
+    },
+    {
+      id: "next",
+      icon: "flag",
+      title: "Next up",
+      accent: "primary",
+      items: [
+        {
+          label: "The remaining Claude Certified track",
+          detail: "Associate, Developer and Architect — Professional. Foundations done in July 2026.",
+        },
+      ],
+    },
+  ] as NowSection[],
+} as const;

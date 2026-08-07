@@ -1,0 +1,135 @@
+---
+/**
+ * now.astro — "What I'm doing now" (nownownow.com convention)
+ * Contenido en NOW (constants.ts). No es un changelog: se revisa
+ * cada 2–4 semanas y la página muestra cuándo fue la última vez.
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+import CTABanner from "@components/home/CTABanner.astro";
+import { NOW, SITE } from "@utils/constants";
+
+const updated = new Date(`${NOW.updated}T00:00:00Z`);
+const updatedLabel = updated.toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
+
+// Días transcurridos desde la última revisión (calculado en build)
+const daysSinceUpdate = Math.floor((Date.now() - updated.getTime()) / 86_400_000);
+const isStale = daysSinceUpdate > 90;
+
+const ACCENT = {
+  primary: { text: "text-primary", border: "border-primary/30", bg: "bg-primary/10" },
+  secondary: { text: "text-secondary", border: "border-secondary/30", bg: "bg-secondary/10" },
+  tertiary: { text: "text-tertiary", border: "border-tertiary/30", bg: "bg-tertiary/10" },
+} as const;
+---
+
+<PageLayout
+  title="Now"
+  description="What Carlos Posada is building, learning and writing about right now: Terraform on AWS, EKS node modes, cluster add-ons and platform engineering."
+  schemaType="about"
+>
+  <div class="pt-32 pb-12 px-6 md:px-8 max-w-screen-lg mx-auto">
+
+    <!-- Header -->
+    <header class="mb-16" aria-labelledby="now-page-heading">
+      <p class="section-label text-secondary mb-4">Currently</p>
+      <h1
+        id="now-page-heading"
+        class="font-headline font-bold text-on-surface tracking-tighter mb-6"
+        style="font-size: clamp(2.5rem, 7vw, 5rem); line-height: 1.05;"
+      >
+        What I'm doing <span class="text-primary">now.</span>
+      </h1>
+      <p class="max-w-2xl text-on-surface-variant text-lg leading-relaxed mb-6">
+        {NOW.intro}
+      </p>
+
+      <!-- Sello de frescura -->
+      <div class="flex flex-wrap items-center gap-3">
+        <span
+          class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg
+                 bg-surface-container-low border border-outline-variant/20"
+        >
+          <span class="status-dot scale-75" aria-hidden="true"></span>
+          <span class="font-mono text-xs text-on-surface-variant">
+            Last reviewed {updatedLabel}
+          </span>
+        </span>
+        {isStale && (
+          <span class="font-mono text-xs text-on-surface-variant/50">
+            ({daysSinceUpdate} days ago — probably out of date)
+          </span>
+        )}
+      </div>
+    </header>
+
+    <!-- Secciones -->
+    <div class="space-y-10">
+      {NOW.sections.map((section, i) => {
+        const accent = ACCENT[section.accent];
+        return (
+          <section
+            class="scroll-reveal fade-up glass-card rounded-2xl p-6 md:p-8"
+            style={`--reveal-delay: ${i * 100}ms;`}
+            aria-labelledby={`now-${section.id}`}
+          >
+            <div class="flex items-center gap-3 mb-6">
+              <span
+                class={`material-symbols-outlined ${accent.text}`}
+                style="font-size: 1.5rem;"
+                aria-hidden="true"
+              >
+                {section.icon}
+              </span>
+              <h2
+                id={`now-${section.id}`}
+                class="font-headline text-xl md:text-2xl font-bold text-on-surface"
+              >
+                {section.title}
+              </h2>
+              <span class="flex-1 h-px bg-outline-variant/20" aria-hidden="true"></span>
+            </div>
+
+            <ul class="space-y-5">
+              {section.items.map((item) => (
+                <li class="flex gap-4">
+                  <span
+                    class={`mt-2 w-1.5 h-1.5 rounded-full shrink-0 ${accent.bg} ${accent.text}`}
+                    style="background: currentColor;"
+                    aria-hidden="true"
+                  ></span>
+                  <div>
+                    <p class="font-headline font-bold text-on-surface/90 leading-snug">
+                      {item.label}
+                    </p>
+                    {item.detail && (
+                      <p class="text-on-surface-variant text-sm leading-relaxed mt-1">
+                        {item.detail}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
+    </div>
+
+    <!-- Nota al pie -->
+    <p class="text-center text-xs text-on-surface-variant/40 font-mono mt-10">
+      This is a <a
+        href="https://nownownow.com/about"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-primary/60 hover:text-primary transition-colors">now page</a
+      > — {SITE.location}, {SITE.timezone}
+    </p>
+  </div>
+
+  <CTABanner />
+</PageLayout>

@@ -67,17 +67,32 @@ Integrating machine intelligence into the engineering lifecycle. From LLM-assist
    Established automated testing frameworks from scratch, reducing regression testing cycles by 70%. Pioneered Shift-Left testing culture.
    Technologies: Selenium, Jenkins, TypeScript
 
-## Featured Projects
+## Certifications
 
-1. **Automated Multi-Cloud Drifting Engine** — A real-time monitoring tool that detects configuration drift across AWS and GCP environments using Terraform state analysis. Tags: Terraform, Python, Prometheus.
+9 active certifications, all independently verifiable on Credly (linked from https://carlosposada.dev/about):
 
-2. **Self-Healing Automation Framework** — AI-powered Selenium framework that automatically updates selectors and heals flaky tests using LLM-based element analysis. Tags: Selenium, OpenAI API, Java.
+**AWS (5)**
+- AWS Certified Solutions Architect – Associate (SAA-C03)
+- AWS Certified Developer – Associate (DVA-C02)
+- AWS Certified CloudOps Engineer – Associate (SOA-C03)
+- AWS Certified AI Practitioner (AIF-C01)
+- AWS Certified Cloud Practitioner (CLF-C02)
 
-3. **Infrastructure Intelligence Bot** — A Slack-integrated AI agent that troubleshoots production logs and provides root cause analysis for incident response. Tags: LangChain, AWS Lambda, Docker.
+**Google Cloud (3)**
+- Associate Cloud Engineer
+- Professional Cloud Architect
+- Generative AI Leader
 
-4. **KubeStreamer v2** — Automated CI/CD pipeline for high-availability Kubernetes clusters with real-time log streaming and thermal monitoring. Tags: Kubernetes, Terraform, Go.
+**Anthropic (1)**
+- Claude Certified Architect — Foundations
 
-5. **Sentinel QA Hub** — End-to-end testing orchestration platform using Playwright and Python, featuring automated regression reports and Slack integration. Tags: Playwright, Python, GitHub Actions.
+Currently working toward the remaining Claude Certified exams (Associate, Developer, and Architect — Professional).
+
+## Projects
+
+- **carlosposada.dev** — this site. Astro 5 static build on Cloudflare Pages, with SSR Workers at the edge for the contact form and newsletter (Resend API), a Markdown blog with build-time syntax highlighting, RSS, and Schema.org structured data. Source: https://github.com/Carlosposada-Dev
+
+A series of reproducible Infrastructure-as-Code labs (Terraform on AWS: ECS Fargate, and EKS across managed node groups, self-managed nodes and Auto Mode, plus ArgoCD, Kyverno, Istio and platform-engineering tooling) is in progress; each one will be published as a public repository with an accompanying write-up on https://carlosposada.dev/blog. See https://carlosposada.dev/now for what is currently in flight.
 
 ## Contact Information
 

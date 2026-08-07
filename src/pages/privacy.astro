@@ -1,0 +1,118 @@
+---
+/**
+ * privacy.astro — Privacy Policy
+ * El footer enlazaba a /privacy desde todas las páginas y la ruta no existía (404).
+ * Describe únicamente lo que el sitio hace de verdad hoy:
+ *   - /api/contact  → Resend (nombre, email, tipo de consulta, mensaje)
+ *   - /api/newsletter → Resend Audiences (email)
+ *   - Cloudflare Pages como hosting (logs de acceso)
+ * Si se añade un servicio nuevo (analytics, comentarios, embeds), actualizar aquí.
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+import { SITE } from "@utils/constants";
+
+const lastUpdated = "August 6, 2026";
+---
+
+<PageLayout
+  title="Privacy Policy"
+  description="What data carlosposada.dev collects, who processes it, how long it is kept and how to have it deleted."
+  schemaType="about"
+>
+  <div class="pt-32 pb-12 px-6 md:px-8 max-w-3xl mx-auto">
+
+    <header class="mb-12" aria-labelledby="privacy-heading">
+      <p class="section-label text-tertiary mb-4">Legal</p>
+      <h1
+        id="privacy-heading"
+        class="font-headline font-bold text-on-surface tracking-tighter mb-6"
+        style="font-size: clamp(2.25rem, 6vw, 3.5rem); line-height: 1.1;"
+      >
+        Privacy Policy
+      </h1>
+      <p class="font-mono text-xs text-on-surface-variant/60">
+        Last updated: {lastUpdated}
+      </p>
+    </header>
+
+    <div class="prose prose-invert max-w-none
+                prose-headings:font-headline prose-headings:text-on-surface
+                prose-p:text-on-surface-variant prose-li:text-on-surface-variant
+                prose-a:text-primary prose-strong:text-on-surface">
+
+      <p>
+        This is a personal website. It has no accounts, no advertising and no
+        third-party tracking scripts. The only data it receives is what you
+        deliberately submit through one of its two forms.
+      </p>
+
+      <h2>What is collected</h2>
+
+      <h3>Contact form</h3>
+      <p>
+        When you submit the form on the <a href="/contact">contact page</a>, the
+        following is sent: <strong>your name, your email address, the inquiry type
+        you selected and your message</strong>. It is delivered as an email to
+        {SITE.email} through <a href="https://resend.com" target="_blank" rel="noopener noreferrer">Resend</a>,
+        the email provider used by this site. It is not stored in any database here.
+      </p>
+
+      <h3>Newsletter</h3>
+      <p>
+        If you subscribe from a blog post, <strong>only your email address</strong> is
+        stored, in a Resend audience list, so new posts can be sent to you. Every email
+        includes an unsubscribe link, and you can also ask for removal by writing to
+        {SITE.email}.
+      </p>
+
+      <h3>Server logs</h3>
+      <p>
+        This site is hosted on <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare Pages</a>.
+        Like any web host, Cloudflare processes technical request data (IP address,
+        user agent, requested URL) to serve pages and protect against abuse. That
+        processing is governed by Cloudflare's own privacy policy.
+      </p>
+
+      <h2>Cookies</h2>
+      <p>
+        This site sets <strong>no cookies</strong> and uses no local storage for
+        tracking. Nothing follows you across other websites, so there is no cookie
+        banner to dismiss.
+      </p>
+
+      <h2>Third parties</h2>
+      <ul>
+        <li><strong>Cloudflare</strong> — hosting and edge functions.</li>
+        <li><strong>Resend</strong> — delivery of contact emails and the newsletter.</li>
+        <li><strong>Google Fonts</strong> — typefaces and icons are loaded from Google's CDN, which means your browser makes a request to <code>fonts.googleapis.com</code> and <code>fonts.gstatic.com</code>.</li>
+        <li><strong>jsDelivr</strong> — the diagram library used in some blog posts is loaded from <code>cdn.jsdelivr.net</code>.</li>
+        <li><strong>Credly</strong> and <strong>Unsplash</strong> — certification badges and illustrative images are served from their CDNs.</li>
+      </ul>
+      <p>
+        No personal data is sent to any of them; they only see the technical request
+        your browser makes to load the asset.
+      </p>
+
+      <h2>How long data is kept</h2>
+      <p>
+        Contact emails are kept in the inbox for as long as the conversation is useful.
+        Newsletter addresses are kept until you unsubscribe. There is no other retention.
+      </p>
+
+      <h2>Your rights</h2>
+      <p>
+        You can ask what data is held about you, request a copy, or ask for it to be
+        deleted at any time by writing to <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+        Requests are handled personally — expect a reply within a few days, not an
+        automated ticket.
+      </p>
+
+      <h2>Changes</h2>
+      <p>
+        If this site starts using something new — analytics, comments, embedded
+        third-party widgets — this page is updated first and the date at the top
+        changes with it.
+      </p>
+    </div>
+  </div>
+</PageLayout>

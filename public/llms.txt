@@ -34,4 +34,6 @@ AWS, GCP, Terraform, Kubernetes, Docker, GitHub Actions, Playwright, Python, LLM
 - [Services](https://carlosposada.dev/services)
 - [Projects](https://carlosposada.dev/projects)
 - [Blog](https://carlosposada.dev/blog)
+- [Now — current focus](https://carlosposada.dev/now)
 - [Contact](https://carlosposada.dev/contact)
+- [Privacy Policy](https://carlosposada.dev/privacy)

@@ -237,6 +237,20 @@ aplica `_headers`; `astro dev` no).
 
 **Ojo**: las rutas SSR (`/api/*`) las sirve el Worker y no pasan por `_headers`.
 
+### Contenido público que hay que mantener sincronizado
+
+Al añadir una página, un servicio o una certificación, revisar también:
+
+| Archivo | Qué contiene |
+|---|---|
+| `public/llms.txt` | resumen + lista de páginas (para crawlers de IA) |
+| `public/llms-full.txt` | contexto completo: perfil, servicios, skills, carrera, certificaciones, proyectos |
+| `public/humans.txt` | créditos + `Last updated` |
+| `src/pages/privacy.astro` | si se añade un servicio externo nuevo (analytics, comentarios, embeds), va documentado ahí |
+| `src/pages/now.astro` → `NOW` en constants | `NOW.updated`: la página se autodeclara desactualizada a los 90 días |
+
+Estos archivos son contenido público: aplica la misma regla de "nada inventado".
+
 ### Iconos
 
 `npm run icons` regenera desde `public/favicon.svg`: `favicon-32x32.png`,
