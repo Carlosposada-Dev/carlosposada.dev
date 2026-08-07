@@ -269,6 +269,29 @@ Dos decisiones del ranking, ambas por un fallo real:
 Todos los listeners cuelgan de `document` — igual que el Navbar — para sobrevivir a las
 View Transitions, y `astro:page-load` restaura `body.overflow` y reetiqueta el atajo.
 
+### Web Vitals (footer)
+
+`components/global/WebVitals.astro` pinta LCP / INP / CLS **del visitante**, medidos con
+`web-vitals` (3.6 KB gzip en todas las páginas; se importan sólo los tres entry points por
+métrica, no la librería entera). El color sale del `rating` que da la propia librería — los
+umbrales de Google no se hardcodean aquí.
+
+- Arranca oculto y se revela con la primera métrica: Safari no soporta LCP ni CLS, y es
+  mejor no mostrar nada que un widget con tres guiones.
+- `reportAllChanges: true`: por defecto la librería reporta al ocultarse la pestaña, que es
+  justo cuando ya nadie mira el footer.
+- Los valores viven en el módulo y se repintan en `astro:page-load` — View Transitions
+  reemplaza el footer y las métricas son de la *carga*, no de la navegación.
+- CLS 0 se pinta explícitamente: la librería sólo dispara si hay layout shift, así que una
+  página perfecta se quedaría en "—".
+
+**Trampa de especificidad (Tailwind v3)**: el `@layer` de Tailwind v3 es una instrucción de
+build, no una capa CSS nativa, así que el orden de capas *no* gana a la especificidad. Una
+utility suelta (`text-secondary`, 0-1-0) pierde contra un selector descendente como
+`.vitals-item dd` (0-1-1) y el color no se aplica. Por eso los ratings son modificadores
+(`.vitals-item dd.is-good`) definidos junto al selector base. Vale para cualquier clase de
+`global.css` que use selectores descendentes.
+
 ### Terminal de la 404
 
 `src/pages/404.astro`. Tres trampas ya pisadas:

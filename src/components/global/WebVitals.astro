@@ -1,0 +1,125 @@
+---
+/**
+ * WebVitals.astro — Feature #20
+ *
+ * Chip en el footer con los Core Web Vitals **reales del visitante**, medidos
+ * en su navegador con la librería oficial `web-vitals`. No es una promesa sobre
+ * el sitio: es lo que esa persona está experimentando ahora mismo.
+ *
+ * Arranca oculto y se revela con la primera métrica. Safari no soporta LCP ni
+ * CLS, así que ahí no aparece nada en vez de un widget con tres guiones.
+ */
+---
+
+<div
+  class="vitals hidden"
+  data-vitals
+  aria-label="Core Web Vitals measured in your browser"
+>
+  <a
+    href="https://web.dev/articles/vitals"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="vitals-label"
+  >
+    Core Web Vitals
+    <span class="material-symbols-outlined text-[12px]" aria-hidden="true">north_east</span>
+  </a>
+
+  <dl class="vitals-grid">
+    <div class="vitals-item">
+      <dt title="Largest Contentful Paint — how soon the main content rendered">LCP</dt>
+      <dd data-vital="LCP">—</dd>
+    </div>
+    <div class="vitals-item">
+      <dt title="Interaction to Next Paint — how fast the page responded to you. Waits for your first click or keypress">INP</dt>
+      <dd data-vital="INP">—</dd>
+    </div>
+    <div class="vitals-item">
+      <dt title="Cumulative Layout Shift — how much the layout moved under you">CLS</dt>
+      <dd data-vital="CLS">—</dd>
+    </div>
+  </dl>
+
+  <p class="vitals-note">Measured live in your browser</p>
+</div>
+
+<script>
+  /**
+   * Sólo se importan las tres métricas que se pintan — `web-vitals` publica un
+   * entry point por métrica, así que no entra la librería entera.
+   */
+  import { onCLS } from "web-vitals/onCLS.js";
+  import { onINP } from "web-vitals/onINP.js";
+  import { onLCP } from "web-vitals/onLCP.js";
+  import type { Metric } from "web-vitals";
+
+  /**
+   * Clase de color por rating — el propio `web-vitals` clasifica según los
+   * umbrales de Google. Son modificadores definidos en `global.css` junto al
+   * selector del `dd`: una utility suelta (`text-secondary`) pierde por
+   * especificidad contra `.vitals-item dd`.
+   */
+  const RATING_CLASS: Record<Metric["rating"], string> = {
+    good: "is-good",
+    "needs-improvement": "is-needs-improvement",
+    poor: "is-poor",
+  };
+
+  /**
+   * Los valores viven en el módulo, no en el DOM: View Transitions reemplaza el
+   * footer en cada navegación y el chip tiene que repintarse con lo ya medido
+   * (las métricas son de la carga de página, no se reinician al navegar).
+   */
+  const measured = new Map<string, Metric>();
+
+  /**
+   * Un CLS de 0 nunca se reporta: la librería sólo llama al callback cuando hay
+   * un layout shift. Una página perfecta se quedaría en "—", que se lee como
+   * "no medido" cuando en realidad significa "cero". Si el navegador soporta
+   * `layout-shift`, la ausencia de entradas *es* la medida: 0.000.
+   */
+  const SUPPORTS_CLS =
+    PerformanceObserver.supportedEntryTypes?.includes("layout-shift") ?? false;
+
+  function format(metric: Metric): string {
+    if (metric.name === "CLS") return metric.value.toFixed(3);
+    if (metric.name === "LCP") return `${(metric.value / 1000).toFixed(2)} s`;
+    return `${Math.round(metric.value)} ms`;
+  }
+
+  function paint(root: HTMLElement, name: string, text: string, rating: Metric["rating"]) {
+    const cell = root.querySelector<HTMLElement>(`[data-vital="${name}"]`);
+    if (!cell) return;
+    cell.textContent = text;
+    cell.className = RATING_CLASS[rating];
+  }
+
+  function render() {
+    const root = document.querySelector<HTMLElement>("[data-vitals]");
+    // Sin ninguna métrica el chip no se muestra: en Safari (sin LCP ni CLS)
+    // es mejor que no aparezca nada a un widget con tres guiones
+    if (!root || measured.size === 0) return;
+
+    root.classList.remove("hidden");
+    for (const metric of measured.values()) {
+      paint(root, metric.name, format(metric), metric.rating);
+    }
+    if (!measured.has("CLS") && SUPPORTS_CLS) paint(root, "CLS", "0.000", "good");
+  }
+
+  function track(metric: Metric) {
+    measured.set(metric.name, metric);
+    render();
+  }
+
+  // `reportAllChanges` porque esto es un indicador vivo: por defecto la librería
+  // reporta al ocultarse la pestaña, que es justo cuando ya nadie lo va a leer.
+  const options = { reportAllChanges: true };
+  onLCP(track, options);
+  onINP(track, options);
+  onCLS(track, options);
+
+  // INP no existe hasta que hay interacción — hasta entonces su celda queda en "—"
+  document.addEventListener("astro:page-load", render);
+</script>

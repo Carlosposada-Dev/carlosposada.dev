@@ -91,6 +91,13 @@ export default {
           variant: "#444756",
         },
 
+        // Warning — estado intermedio (Web Vitals "needs improvement").
+        // El sistema tenía good (secondary) y poor (error) pero nada en medio.
+        warning: {
+          DEFAULT: "#ffb84d",
+          dim: "#e09a2b",
+        },
+
         // Error
         error: {
           DEFAULT: "#ff716c",

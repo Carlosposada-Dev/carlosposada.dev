@@ -122,6 +122,51 @@
     overflow: visible;
   }
 
+  /* ── Web Vitals chip (Feature #20) ──────────────────── */
+
+  .vitals {
+    /* max-w-full: en la rejilla de 2 columnas del footer mobile el chip se
+       salía de su celda cuando los valores eran largos ("12.34 s") */
+    @apply inline-flex max-w-full flex-col gap-2 rounded-lg
+           border border-outline-variant/20 bg-surface-container-low px-3 py-2;
+  }
+
+  .vitals-label {
+    @apply inline-flex items-center gap-1 font-headline text-[10px] font-bold
+           uppercase tracking-widest text-on-surface-variant/60
+           transition-colors hover:text-primary;
+  }
+
+  .vitals-grid {
+    @apply flex flex-wrap items-center gap-x-4 gap-y-1;
+  }
+
+  .vitals-item {
+    @apply flex flex-col;
+  }
+
+  .vitals-item dt {
+    @apply font-mono text-[10px] text-on-surface-variant/50;
+  }
+
+  .vitals-item dd {
+    @apply font-mono text-xs tabular-nums text-on-surface-variant;
+  }
+
+  /*
+   * Los ratings van como modificadores con el mismo ancestro, no como utilities
+   * sueltas: `.vitals-item dd` (0,1,1) le gana en especificidad a `.text-secondary`
+   * (0,1,0), y el @layer de Tailwind v3 es una instrucción de build, no una capa
+   * CSS nativa — así que ahí decide la especificidad y el color se perdía.
+   */
+  .vitals-item dd.is-good { @apply text-secondary; }
+  .vitals-item dd.is-needs-improvement { @apply text-warning; }
+  .vitals-item dd.is-poor { @apply text-error; }
+
+  .vitals-note {
+    @apply font-body text-[10px] text-on-surface-variant/40;
+  }
+
   /* ── Terminal interactivo de la 404 (Feature #14) ───── */
 
   .term-output {
