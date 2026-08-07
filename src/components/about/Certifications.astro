@@ -2,17 +2,52 @@
 /**
  * Certifications.astro
  * Full-width credential wall on the About page.
- * Shows all 8 certs (AWS + Google Cloud) as large badge cards
- * grouped by issuer, each linking to Credly for verification.
+ * Renders every cert in CERTIFICATIONS as a large badge card, grouped by
+ * issuer (AWS · Google Cloud · Anthropic), each linking to Credly to verify.
+ * Groups are derived from the data — adding a cert with a new issuer only
+ * requires an entry in ISSUER_STYLES below.
+ * PLANNED_CERTIFICATIONS render as dashed ghost cards at the end of their
+ * group (not links, clearly marked as roadmap — never as earned).
  */
-import { CERTIFICATIONS } from "@utils/constants";
+import { CERTIFICATIONS, PLANNED_CERTIFICATIONS } from "@utils/constants";
+import type { Certification, PlannedCertification } from "@utils/constants";
 
-const awsCerts = CERTIFICATIONS.filter((c) => c.issuer === "AWS");
-const gcpCerts = CERTIFICATIONS.filter((c) => c.issuer === "Google Cloud");
-const groups = [
-  { issuer: "AWS", color: "#FF9900", bg: "rgba(255,153,0,0.06)", border: "rgba(255,153,0,0.2)", certs: awsCerts },
-  { issuer: "Google Cloud", color: "#4285F4", bg: "rgba(66,133,244,0.06)", border: "rgba(66,133,244,0.2)", certs: gcpCerts },
-];
+/** Brand color per issuer — drives the group panel tint and border */
+const ISSUER_STYLES: Record<string, { color: string; bg: string; border: string }> = {
+  AWS: { color: "#FF9900", bg: "rgba(255,153,0,0.06)", border: "rgba(255,153,0,0.2)" },
+  "Google Cloud": { color: "#4285F4", bg: "rgba(66,133,244,0.06)", border: "rgba(66,133,244,0.2)" },
+  Anthropic: { color: "#D97757", bg: "rgba(217,119,87,0.06)", border: "rgba(217,119,87,0.2)" },
+};
+
+interface Group {
+  issuer: string;
+  color: string;
+  bg: string;
+  border: string;
+  certs: Certification[];
+  planned: PlannedCertification[];
+}
+
+// Group in the order issuers first appear in CERTIFICATIONS
+const groups = CERTIFICATIONS.reduce<Group[]>((acc, cert) => {
+  const existing = acc.find((g) => g.issuer === cert.issuer);
+  if (existing) {
+    existing.certs.push(cert);
+    return acc;
+  }
+  const style = ISSUER_STYLES[cert.issuer] ?? {
+    color: cert.accentColor,
+    bg: "rgba(255,255,255,0.03)",
+    border: "rgba(255,255,255,0.12)",
+  };
+  acc.push({ issuer: cert.issuer, ...style, certs: [cert], planned: [] });
+  return acc;
+}, []);
+
+// Attach roadmap entries to their issuer group (ignored if the issuer has no earned cert yet)
+for (const planned of PLANNED_CERTIFICATIONS) {
+  groups.find((g) => g.issuer === planned.issuer)?.planned.push(planned);
+}
 ---
 
 <section
@@ -28,7 +63,7 @@ const groups = [
         id="certs-section-heading"
         class="font-headline text-2xl md:text-3xl font-bold text-on-surface"
       >
-        Cloud Certifications
+        Cloud &amp; AI Certifications
       </h2>
     </div>
     <div class="flex-1 h-px bg-outline-variant/30 hidden sm:block" aria-hidden="true"></div>
@@ -66,6 +101,7 @@ const groups = [
           </span>
           <span class="font-mono text-xs text-on-surface-variant/50">
             {group.certs.length} certification{group.certs.length > 1 ? "s" : ""}
+            {group.planned.length > 0 && ` · ${group.planned.length} on the roadmap`}
           </span>
         </div>
 
@@ -92,7 +128,7 @@ const groups = [
                          group-hover:scale-110 transition-transform duration-300 drop-shadow-lg"
                   loading="lazy"
                   decoding="async"
-                  onerror={`this.style.opacity='0'; this.nextElementSibling.style.opacity='1';`}
+                  data-cert-badge
                 />
                 <!-- Fallback: code label -->
                 <div
@@ -133,6 +169,40 @@ const groups = [
               </span>
             </a>
           ))}
+
+          <!-- Roadmap (not earned yet) — dashed ghost cards, never links -->
+          {group.planned.map((cert, i) => (
+            <div
+              class="relative flex flex-col items-center justify-center gap-3 p-4 rounded-xl
+                     border border-dashed border-outline-variant/25 bg-surface-container/30
+                     text-center"
+              aria-label={`Planned certification: ${cert.title}`}
+            >
+              <!-- Placeholder mark -->
+              <div class="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center">
+                <span
+                  class="material-symbols-outlined opacity-30"
+                  style={`font-size: 2.5rem; color: ${cert.accentColor};`}
+                  aria-hidden="true"
+                >
+                  hourglass_top
+                </span>
+              </div>
+
+              <p class="font-headline text-xs font-bold text-on-surface/35
+                        leading-snug line-clamp-2">
+                {cert.title}
+              </p>
+
+              <span
+                class="inline-block px-2 py-0.5 rounded font-mono text-[10px] font-bold
+                       tracking-widest uppercase border border-dashed
+                       border-outline-variant/30 text-on-surface-variant/40"
+              >
+                In progress
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     ))}
@@ -143,3 +213,26 @@ const groups = [
     All credentials verified on Credly — click any badge to view
   </p>
 </section>
+
+<script>
+  /**
+   * Badge fallback: if a Credly image fails to load, fade it out and reveal the
+   * cert code underneath. Replaces an inline onerror= handler so the component
+   * keeps working if 'unsafe-inline' is ever dropped from the CSP.
+   */
+  function initCertBadgeFallback() {
+    document.querySelectorAll<HTMLImageElement>("img[data-cert-badge]").forEach((img) => {
+      const showFallback = () => {
+        img.style.opacity = "0";
+        const fallback = img.nextElementSibling as HTMLElement | null;
+        if (fallback) fallback.style.opacity = "1";
+      };
+      // Already failed before this script ran
+      if (img.complete && img.naturalWidth === 0) showFallback();
+      img.addEventListener("error", showFallback, { once: true });
+    });
+  }
+
+  initCertBadgeFallback();
+  document.addEventListener("astro:page-load", initCertBadgeFallback);
+</script>
