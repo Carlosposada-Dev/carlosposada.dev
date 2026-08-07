@@ -9,6 +9,7 @@ import BaseLayout from "./BaseLayout.astro";
 import Navbar from "@components/global/Navbar.astro";
 import Footer from "@components/global/Footer.astro";
 import BottomNav from "@components/global/BottomNav.astro";
+import CommandPalette from "@components/global/CommandPalette.astro";
 import SchemaOrg from "@components/seo/SchemaOrg.astro";
 import { SITE } from "@utils/constants";
 
@@ -62,4 +63,7 @@ const currentPath = Astro.url.pathname;
 
   <!-- Bottom nav (solo mobile) -->
   <BottomNav currentPath={currentPath} />
+
+  <!-- Command palette (⌘K / Ctrl+K) -->
+  <CommandPalette />
 </BaseLayout>

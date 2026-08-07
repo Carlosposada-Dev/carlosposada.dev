@@ -260,6 +260,67 @@
     @apply relative inline-flex rounded-full h-2.5 w-2.5 bg-secondary;
   }
 
+  /* ── Command Palette (Feature #18) ──────────────────── */
+
+  .cmdk-panel {
+    animation: cmdk-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .cmdk-key {
+    @apply rounded border border-outline-variant/30 bg-surface-container-low
+           px-1 text-[10px] leading-4 text-on-surface-variant/70;
+  }
+
+  .cmdk-group {
+    @apply px-3 pb-1 pt-3 font-headline text-[10px] font-bold uppercase
+           tracking-widest text-on-surface-variant/50;
+  }
+
+  .cmdk-item {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5
+           text-left transition-colors duration-150;
+  }
+
+  .cmdk-item-active {
+    @apply bg-primary/10;
+    box-shadow: inset 2px 0 0 theme('colors.primary.DEFAULT');
+  }
+
+  .cmdk-item-icon {
+    @apply shrink-0 text-[20px] text-on-surface-variant/60;
+  }
+  .cmdk-item-active .cmdk-item-icon {
+    @apply text-primary;
+  }
+
+  .cmdk-item-title {
+    @apply block truncate font-headline text-sm font-bold text-on-surface;
+  }
+
+  .cmdk-item-desc {
+    @apply block truncate text-xs text-on-surface-variant/60;
+  }
+
+  .cmdk-item-meta {
+    @apply shrink-0 font-mono text-[10px] text-on-surface-variant/50;
+  }
+
+  .cmdk-item-ext {
+    @apply shrink-0 text-[14px] text-on-surface-variant/40;
+  }
+
+  .cmdk-mark {
+    @apply bg-transparent text-primary;
+  }
+
+  .cmdk-empty {
+    @apply px-3 py-8 text-center text-sm text-on-surface-variant/60;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cmdk-panel { animation: none; }
+  }
+
   /* ── Scroll Reveal Animations ──────────────────────── */
 
   .scroll-reveal {
@@ -364,6 +425,11 @@
 @keyframes border-scan {
   from { --scanner-angle: 0deg; }
   to { --scanner-angle: 360deg; }
+}
+
+@keyframes cmdk-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes confetti-fall {

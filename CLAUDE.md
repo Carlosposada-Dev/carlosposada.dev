@@ -62,7 +62,8 @@ tests; el build de Astro + TypeScript es el gate de calidad.
 
 ```
 src/
-├── layouts/       BaseLayout (shell HTML + SEO/OG) → PageLayout (Navbar+Footer+BottomNav)
+├── layouts/       BaseLayout (shell HTML + SEO/OG) → PageLayout (Navbar+Footer+BottomNav
+│                  +CommandPalette)
 ├── components/    agrupados por página: global/ seo/ ui/ home/ about/ services/
 │                  projects/ contact/ blog/
 ├── content/       Content Collections (blog en Markdown) + config.ts con el schema
@@ -237,6 +238,26 @@ aplica `_headers`; `astro dev` no).
 
 **Ojo**: las rutas SSR (`/api/*`) las sirve el Worker y no pasan por `_headers`.
 
+### Índice de búsqueda
+
+`src/pages/search-index.json.ts` genera `/search-index.json` en build: páginas, posts,
+proyectos, servicios, certificaciones y enlaces. Lo consume el command palette
+(`components/global/CommandPalette.astro`, ⌘K / Ctrl+K / `/`), que lo descarga la primera
+vez que se abre y lo cachea en memoria.
+
+Sale entero de `constants.ts` + la colección de blog, así que **no hay nada que mantener a
+mano**: una página nueva en `NAV_ITEMS` o un post nuevo aparecen solos. Lo único que se
+edita a mano es `PAGE_KEYWORDS` (sinónimos por página: lo que alguien teclearía sin saber
+cómo se llama la sección).
+
+Con query el listado es **plano y ordenado por score**, no agrupado por tipo: agrupar
+enterraba el mejor match bajo la cabecera "Pages" (buscar `saa` devolvía *Home* primero en
+lugar de la certificación SAA-C03). El agrupado sólo queda en el estado vacío. Hay un corte
+relativo al 35% del mejor score para recortar el ruido de la subsecuencia.
+
+Todos los listeners cuelgan de `document` — igual que el Navbar — para sobrevivir a las
+View Transitions, y `astro:page-load` restaura `body.overflow` y reetiqueta el atajo.
+
 ### Contenido público que hay que mantener sincronizado
 
 Al añadir una página, un servicio o una certificación, revisar también:
@@ -248,6 +269,7 @@ Al añadir una página, un servicio o una certificación, revisar también:
 | `public/humans.txt` | créditos + `Last updated` |
 | `src/pages/privacy.astro` | si se añade un servicio externo nuevo (analytics, comentarios, embeds), va documentado ahí |
 | `src/pages/now.astro` → `NOW` en constants | `NOW.updated`: la página se autodeclara desactualizada a los 90 días |
+| `PAGE_KEYWORDS` en `search-index.json.ts` | sinónimos de la página nueva para el command palette |
 
 Estos archivos son contenido público: aplica la misma regla de "nada inventado".
 

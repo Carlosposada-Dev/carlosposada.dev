@@ -1,0 +1,458 @@
+---
+/**
+ * CommandPalette.astro — Feature #18
+ * Modal ⌘K / Ctrl+K con búsqueda fuzzy sobre /search-index.json
+ * (páginas, posts, proyectos, servicios, certificaciones y enlaces).
+ *
+ * Sin framework: markup estático + un script vanilla que delega en `document`
+ * para sobrevivir a las View Transitions. El índice se descarga la primera vez
+ * que se abre el palette y se cachea en memoria.
+ */
+---
+
+<div
+  id="cmdk"
+  class="cmdk fixed inset-0 z-[100] hidden items-start justify-center p-4 pt-[12vh] sm:pt-[15vh]"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="cmdk-label"
+  data-cmdk-root
+>
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-surface/80 backdrop-blur-sm" data-cmdk-backdrop></div>
+
+  <!-- Panel -->
+  <div
+    class="cmdk-panel glass-card relative w-full max-w-xl overflow-hidden rounded-xl
+           shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7),0_0_40px_-20px_rgba(109,221,255,0.4)]"
+  >
+    <h2 id="cmdk-label" class="sr-only">Search this site</h2>
+
+    <!-- Input -->
+    <div class="flex items-center gap-3 border-b border-outline-variant/20 px-4">
+      <span class="material-symbols-outlined text-xl text-primary" aria-hidden="true">search</span>
+      <input
+        id="cmdk-input"
+        type="text"
+        role="combobox"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="Search pages, posts, projects…"
+        aria-controls="cmdk-results"
+        aria-expanded="true"
+        aria-autocomplete="list"
+        class="w-full bg-transparent py-4 font-body text-on-surface
+               placeholder:text-on-surface-variant/40 focus:outline-none"
+        data-cmdk-input
+      />
+      <kbd
+        class="hidden shrink-0 rounded border border-outline-variant/30 bg-surface-container-low
+               px-1.5 py-0.5 font-mono text-[10px] text-on-surface-variant/60 sm:block"
+      >
+        ESC
+      </kbd>
+    </div>
+
+    <!-- Resultados -->
+    <div
+      id="cmdk-results"
+      role="listbox"
+      aria-label="Search results"
+      class="max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain p-2"
+      data-cmdk-results
+    >
+    </div>
+
+    <!-- Pie con atajos -->
+    <div
+      class="flex items-center gap-4 border-t border-outline-variant/20
+             bg-surface-container-lowest/60 px-4 py-2
+             font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/50"
+    >
+      <span class="flex items-center gap-1"><kbd class="cmdk-key">↑</kbd><kbd class="cmdk-key">↓</kbd> navigate</span>
+      <span class="flex items-center gap-1"><kbd class="cmdk-key">↵</kbd> open</span>
+      <span class="ml-auto hidden sm:inline" data-cmdk-count></span>
+    </div>
+  </div>
+</div>
+
+<script>
+  /**
+   * Command Palette — lógica completa.
+   * Todos los listeners cuelgan de `document`, así que un swap de DOM por
+   * View Transitions no los rompe: los nodos se vuelven a consultar en cada uso.
+   */
+  interface SearchEntry {
+    id: string;
+    type: "page" | "post" | "project" | "service" | "certification" | "link";
+    title: string;
+    description: string;
+    href: string;
+    icon: string;
+    keywords: string;
+    meta?: string;
+    external?: boolean;
+  }
+
+  /** Cabeceras de grupo — sólo se usan en el estado vacío */
+  const TYPE_LABELS: Record<SearchEntry["type"], string> = {
+    page: "Pages",
+    post: "Blog",
+    project: "Projects",
+    service: "Services",
+    certification: "Certifications",
+    link: "Links",
+  };
+
+  /** Chip a la derecha de cada resultado cuando la entrada no trae `meta` */
+  const TYPE_BADGES: Record<SearchEntry["type"], string> = {
+    page: "Page",
+    post: "Post",
+    project: "Project",
+    service: "Service",
+    certification: "Cert",
+    link: "Link",
+  };
+
+  /** Qué se muestra con el input vacío: navegar rápido, no buscar */
+  const EMPTY_STATE_TYPES: SearchEntry["type"][] = ["page", "post"];
+
+  const MAX_RESULTS = 12;
+  /** Descarta lo que puntúa muy por debajo del mejor match (ruido de subsecuencia) */
+  const RELATIVE_CUTOFF = 0.35;
+
+  interface Section {
+    label: string | null;
+    items: SearchEntry[];
+  }
+
+  let entries: SearchEntry[] | null = null;
+  let loading = false;
+  let matches: SearchEntry[] = [];
+  let activeIndex = 0;
+  let lastFocused: HTMLElement | null = null;
+
+  const root = () => document.querySelector<HTMLElement>("[data-cmdk-root]");
+  const input = () => document.querySelector<HTMLInputElement>("[data-cmdk-input]");
+  const list = () => document.querySelector<HTMLElement>("[data-cmdk-results]");
+  const isOpen = () => root()?.classList.contains("cmdk-open") ?? false;
+
+  // ── Fuzzy matching ────────────────────────────────────────
+  /**
+   * Subsecuencia con bonus por coincidencias consecutivas y por inicio de
+   * palabra. Devuelve null si algún carácter de la query no aparece en orden.
+   */
+  function fuzzy(query: string, text: string): { score: number; indices: number[] } | null {
+    const haystack = text.toLowerCase();
+    const indices: number[] = [];
+    let cursor = 0;
+    let score = 0;
+    let streak = 0;
+
+    for (const char of query) {
+      const found = haystack.indexOf(char, cursor);
+      if (found === -1) return null;
+
+      if (found === cursor && indices.length > 0) {
+        streak += 1;
+        score += 8 + streak * 2;
+      } else {
+        streak = 0;
+        score += 1;
+      }
+      if (found === 0 || /[\s\-_/#.]/.test(haystack[found - 1])) score += 6;
+
+      indices.push(found);
+      cursor = found + 1;
+    }
+
+    // Penaliza ligeramente los textos largos para que gane el match más ceñido
+    score -= Math.min(haystack.length - query.length, 40) * 0.1;
+    return { score, indices };
+  }
+
+  function rank(query: string, entry: SearchEntry) {
+    const title = fuzzy(query, entry.title);
+    const description = entry.description ? fuzzy(query, entry.description) : null;
+    const keywords = entry.keywords ? fuzzy(query, entry.keywords) : null;
+
+    let score = Math.max(
+      (title?.score ?? 0) * 3,
+      (keywords?.score ?? 0) * 1.5,
+      description?.score ?? 0
+    );
+    if (score === 0) return null;
+
+    // Un substring exacto siempre debe ganarle a una subsecuencia dispersa
+    if (entry.title.toLowerCase().includes(query)) score += 40;
+
+    return { score, indices: title?.indices ?? [] };
+  }
+
+  // ── Render ────────────────────────────────────────────────
+  function escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /** Resalta los caracteres que hicieron match, escapando el resto */
+  function highlight(text: string, indices: number[]): string {
+    if (indices.length === 0) return escapeHtml(text);
+    let html = "";
+    let cursor = 0;
+    for (const index of indices) {
+      html += escapeHtml(text.slice(cursor, index));
+      html += `<mark class="cmdk-mark">${escapeHtml(text[index])}</mark>`;
+      cursor = index + 1;
+    }
+    return html + escapeHtml(text.slice(cursor));
+  }
+
+  function render(query: string) {
+    const container = list();
+    if (!container) return;
+
+    if (!entries) {
+      container.innerHTML = `<p class="cmdk-empty">${loading ? "Loading index…" : "Index unavailable — use the navigation instead."}</p>`;
+      matches = [];
+      return;
+    }
+
+    const highlighted = new Map<string, number[]>();
+    let sections: Section[];
+
+    if (query) {
+      const scored = entries
+        .map((entry) => {
+          const result = rank(query, entry);
+          return result ? { entry, ...result } : null;
+        })
+        .filter((item): item is { entry: SearchEntry; score: number; indices: number[] } => item !== null)
+        .sort((a, b) => b.score - a.score);
+
+      // Con query manda la relevancia, no el tipo: una lista plana ordenada.
+      // Agrupar por tipo enterraba el mejor match bajo la sección "Pages".
+      const best = scored[0]?.score ?? 0;
+      const kept = scored
+        .filter((item) => item.score >= best * RELATIVE_CUTOFF)
+        .slice(0, MAX_RESULTS);
+
+      for (const item of kept) highlighted.set(item.entry.id, item.indices);
+      sections = [{ label: null, items: kept.map((item) => item.entry) }];
+    } else {
+      // Sin query el palette es un navegador rápido: páginas y posts, agrupados.
+      const shortlist = entries
+        .filter((entry) => EMPTY_STATE_TYPES.includes(entry.type))
+        .slice(0, MAX_RESULTS);
+      sections = EMPTY_STATE_TYPES.map((type) => ({
+        label: TYPE_LABELS[type],
+        items: shortlist.filter((entry) => entry.type === type),
+      })).filter((section) => section.items.length > 0);
+    }
+
+    matches = sections.flatMap((section) => section.items);
+
+    const counter = document.querySelector<HTMLElement>("[data-cmdk-count]");
+    if (counter) {
+      counter.textContent = matches.length
+        ? `${matches.length} result${matches.length === 1 ? "" : "s"}`
+        : "";
+    }
+
+    if (matches.length === 0) {
+      container.innerHTML = `<p class="cmdk-empty">No matches for “${escapeHtml(query)}”.</p>`;
+      return;
+    }
+
+    let html = "";
+    let index = 0;
+
+    for (const section of sections) {
+      if (section.label) html += `<p class="cmdk-group">${section.label}</p>`;
+
+      for (const entry of section.items) {
+        html += `
+          <a
+            href="${escapeHtml(entry.href)}"
+            role="option"
+            id="cmdk-option-${index}"
+            class="cmdk-item"
+            data-cmdk-item="${index}"
+            aria-selected="false"
+            ${entry.external ? 'target="_blank" rel="noopener noreferrer"' : ""}
+          >
+            <span class="material-symbols-outlined cmdk-item-icon" aria-hidden="true">${escapeHtml(entry.icon)}</span>
+            <span class="min-w-0 flex-1">
+              <span class="cmdk-item-title">${highlight(entry.title, highlighted.get(entry.id) ?? [])}</span>
+              ${entry.description ? `<span class="cmdk-item-desc">${escapeHtml(entry.description)}</span>` : ""}
+            </span>
+            <span class="cmdk-item-meta">${escapeHtml(entry.meta ?? TYPE_BADGES[entry.type])}</span>
+            ${entry.external ? '<span class="material-symbols-outlined cmdk-item-ext" aria-hidden="true">north_east</span>' : ""}
+          </a>`;
+        index += 1;
+      }
+    }
+
+    container.innerHTML = html;
+    setActive(0);
+  }
+
+  function setActive(next: number) {
+    const container = list();
+    if (!container) return;
+    const items = container.querySelectorAll<HTMLElement>("[data-cmdk-item]");
+    if (items.length === 0) return;
+
+    activeIndex = (next + items.length) % items.length;
+    items.forEach((item, index) => {
+      const active = index === activeIndex;
+      item.classList.toggle("cmdk-item-active", active);
+      item.setAttribute("aria-selected", String(active));
+      if (active) {
+        item.scrollIntoView({ block: "nearest" });
+        input()?.setAttribute("aria-activedescendant", item.id);
+      }
+    });
+  }
+
+  // ── Abrir / cerrar ────────────────────────────────────────
+  async function loadIndex() {
+    if (entries || loading) return;
+    loading = true;
+    try {
+      const response = await fetch("/search-index.json");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      entries = (await response.json()).entries as SearchEntry[];
+    } catch {
+      entries = null;
+    } finally {
+      loading = false;
+      if (isOpen()) render(input()?.value.trim().toLowerCase() ?? "");
+    }
+  }
+
+  function open() {
+    const element = root();
+    if (!element || isOpen()) return;
+
+    lastFocused = document.activeElement as HTMLElement | null;
+    element.classList.remove("hidden");
+    element.classList.add("flex", "cmdk-open");
+    document.body.style.overflow = "hidden";
+
+    const field = input();
+    if (field) {
+      field.value = "";
+      field.focus();
+    }
+    render("");
+    void loadIndex();
+  }
+
+  function close() {
+    const element = root();
+    if (!element || !isOpen()) return;
+
+    element.classList.add("hidden");
+    element.classList.remove("flex", "cmdk-open");
+    document.body.style.overflow = "";
+    input()?.removeAttribute("aria-activedescendant");
+    lastFocused?.focus();
+    lastFocused = null;
+  }
+
+  // ── Listeners (delegados en document) ─────────────────────
+  document.addEventListener("keydown", (event) => {
+    const key = event.key.toLowerCase();
+
+    // ⌘K / Ctrl+K abre desde cualquier sitio
+    if (key === "k" && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      isOpen() ? close() : open();
+      return;
+    }
+
+    // "/" abre, salvo que se esté escribiendo en un campo
+    if (key === "/" && !isOpen()) {
+      const target = event.target as HTMLElement | null;
+      const typing =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target?.isContentEditable;
+      if (!typing) {
+        event.preventDefault();
+        open();
+      }
+      return;
+    }
+
+    if (!isOpen()) return;
+
+    if (key === "escape") {
+      event.preventDefault();
+      close();
+    } else if (key === "arrowdown") {
+      event.preventDefault();
+      setActive(activeIndex + 1);
+    } else if (key === "arrowup") {
+      event.preventDefault();
+      setActive(activeIndex - 1);
+    } else if (key === "enter") {
+      const active = list()?.querySelector<HTMLAnchorElement>(`[data-cmdk-item="${activeIndex}"]`);
+      if (active) {
+        event.preventDefault();
+        active.click();
+      }
+    } else if (key === "tab") {
+      // Focus trap: sólo el input es focusable dentro del modal
+      event.preventDefault();
+      input()?.focus();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    if (target.closest("[data-cmdk-open]")) {
+      event.preventDefault();
+      open();
+      return;
+    }
+    if (!isOpen()) return;
+    if (target.closest("[data-cmdk-backdrop]")) {
+      close();
+      return;
+    }
+    // Un resultado navega y cierra; los externos abren pestaña y dejan el modal atrás
+    if (target.closest("[data-cmdk-item]")) close();
+  });
+
+  document.addEventListener("input", (event) => {
+    if (!isOpen()) return;
+    const target = event.target as HTMLElement | null;
+    if (!target?.matches("[data-cmdk-input]")) return;
+    render((target as HTMLInputElement).value.trim().toLowerCase());
+  });
+
+  // El trigger del navbar muestra ⌘K en macOS y Ctrl K en el resto.
+  // Se re-aplica en cada navegación porque View Transitions reemplaza el nodo.
+  function labelShortcut() {
+    if (/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) return;
+    document.querySelectorAll("[data-cmdk-kbd]").forEach((node) => {
+      node.textContent = "Ctrl K";
+    });
+  }
+
+  // Tras una View Transition el DOM se reemplaza: el modal vuelve a estado cerrado
+  document.addEventListener("astro:page-load", () => {
+    document.body.style.overflow = "";
+    labelShortcut();
+  });
+  labelShortcut();
+</script>

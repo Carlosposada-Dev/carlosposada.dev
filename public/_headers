@@ -41,3 +41,7 @@
 # The CV is replaced from time to time — keep it short
 /carlos-posada-cv.pdf
   Cache-Control: public, max-age=3600
+
+# Command palette / search index — regenerated on every build
+/search-index.json
+  Cache-Control: public, max-age=3600

@@ -63,6 +63,26 @@ function isActive(href: string, current: string): boolean {
 
     <!-- Acciones derecha -->
     <div class="flex items-center gap-4">
+      <!--
+        Buscador / command palette (Feature #18).
+        Vive fuera del drawer mobile a propósito: así el handler de "click
+        fuera" del menú lo cierra al abrir el palette, sin acoplar componentes.
+      -->
+      <button
+        type="button"
+        data-cmdk-open
+        class="flex items-center justify-center gap-2 rounded-lg border border-outline-variant/30
+               bg-surface-container-low/60 px-2.5 py-1.5 md:px-3
+               min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0
+               text-on-surface-variant/60 transition-colors duration-200
+               hover:border-primary/40 hover:text-primary"
+        aria-label="Search the site"
+        aria-keyshortcuts="Meta+K Control+K"
+      >
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">search</span>
+        <kbd class="hidden md:block font-mono text-[10px] tracking-widest" data-cmdk-kbd>⌘K</kbd>
+      </button>
+
       <!-- Hire Me CTA -->
       <a
         href="/contact"
