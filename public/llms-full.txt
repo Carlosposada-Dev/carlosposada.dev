@@ -69,7 +69,8 @@ Integrating machine intelligence into the engineering lifecycle. From LLM-assist
 
 ## Certifications
 
-9 active certifications, all independently verifiable on Credly (linked from https://carlosposada.dev/about):
+10 active certifications, all independently verifiable — on Credly, except Microsoft's, which
+is published on Microsoft Learn (all linked from https://carlosposada.dev/about):
 
 **AWS (5)**
 - AWS Certified Solutions Architect – Associate (SAA-C03)
@@ -82,6 +83,12 @@ Integrating machine intelligence into the engineering lifecycle. From LLM-assist
 - Associate Cloud Engineer
 - Professional Cloud Architect
 - Generative AI Leader
+
+**Microsoft (1)**
+- Microsoft Certified: Azure Administrator Associate (AZ-104) — earned August 2026.
+  Skills measured: managing Azure identities and governance; implementing and managing
+  storage; deploying and managing Azure compute resources; implementing and managing
+  virtual networking; monitoring and maintaining Azure resources.
 
 **Anthropic (1)**
 - Claude Certified Architect — Foundations

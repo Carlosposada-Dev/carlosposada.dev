@@ -3,21 +3,30 @@
  * Certifications.astro
  * Full-width credential wall on the About page.
  * Renders every cert in CERTIFICATIONS as a large badge card, grouped by
- * issuer (AWS · Google Cloud · Anthropic), each linking to Credly to verify.
+ * issuer (AWS · Google Cloud · Microsoft · Anthropic), each linking to its
+ * verification page — Credly for most, Microsoft Learn for Microsoft.
  * Groups are derived from the data — adding a cert with a new issuer only
  * requires an entry in ISSUER_STYLES below.
  * PLANNED_CERTIFICATIONS render as dashed ghost cards at the end of their
  * group (not links, clearly marked as roadmap — never as earned).
  */
-import { CERTIFICATIONS, PLANNED_CERTIFICATIONS } from "@utils/constants";
+import { CERTIFICATIONS, DEFAULT_VERIFIER, PLANNED_CERTIFICATIONS } from "@utils/constants";
 import type { Certification, PlannedCertification } from "@utils/constants";
 
 /** Brand color per issuer — drives the group panel tint and border */
 const ISSUER_STYLES: Record<string, { color: string; bg: string; border: string }> = {
   AWS: { color: "#FF9900", bg: "rgba(255,153,0,0.06)", border: "rgba(255,153,0,0.2)" },
   "Google Cloud": { color: "#4285F4", bg: "rgba(66,133,244,0.06)", border: "rgba(66,133,244,0.2)" },
+  // #00A4EF (el azul del logo) en vez del gris de SimpleIcons: legible sobre
+  // fondo oscuro y suficientemente distinto del azul de Google
+  Microsoft: { color: "#00A4EF", bg: "rgba(0,164,239,0.06)", border: "rgba(0,164,239,0.2)" },
   Anthropic: { color: "#D97757", bg: "rgba(217,119,87,0.06)", border: "rgba(217,119,87,0.2)" },
 };
+
+/** Verificadores presentes, para la nota del pie (hoy: Credly y Microsoft Learn) */
+const verifiers = [
+  ...new Set(CERTIFICATIONS.map((cert) => cert.verifier ?? DEFAULT_VERIFIER)),
+];
 
 interface Group {
   issuer: string;
@@ -109,10 +118,10 @@ for (const planned of PLANNED_CERTIFICATIONS) {
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
           {group.certs.map((cert, i) => (
             <a
-              href={cert.credlyUrl}
+              href={cert.credentialUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Verify ${cert.title} on Credly`}
+              aria-label={`Verify ${cert.title} on ${cert.verifier ?? DEFAULT_VERIFIER}`}
               class="group relative flex flex-col items-center gap-3 p-4 rounded-xl
                      bg-surface-container border border-outline-variant/20
                      hover:border-primary/50 hover:shadow-glow-primary hover:-translate-y-1
@@ -208,9 +217,9 @@ for (const planned of PLANNED_CERTIFICATIONS) {
     ))}
   </div>
 
-  <!-- Footer note -->
+  <!-- Footer note — los verificadores salen de los datos, no hardcodeados -->
   <p class="text-center text-xs text-on-surface-variant/40 font-mono mt-6">
-    All credentials verified on Credly — click any badge to view
+    All credentials independently verifiable on {verifiers.join(" and ")} — click any badge
   </p>
 </section>
 

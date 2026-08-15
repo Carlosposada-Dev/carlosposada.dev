@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import {
   CERTIFICATIONS,
+  DEFAULT_VERIFIER,
   NAV_ITEMS,
   PROJECTS,
   SERVICES_DETAIL,
@@ -110,8 +111,8 @@ export const GET: APIRoute = async () => {
       id: `cert:${cert.id}`,
       type: "certification" as const,
       title: cert.title,
-      description: `${cert.issuer} · verify on Credly`,
-      href: cert.credlyUrl,
+      description: `${cert.issuer} · verify on ${cert.verifier ?? DEFAULT_VERIFIER}`,
+      href: cert.credentialUrl,
       icon: "verified",
       keywords: `${cert.code} ${cert.issuer} certification badge credential`,
       meta: cert.code,

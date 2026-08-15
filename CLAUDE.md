@@ -132,8 +132,36 @@ por `issuer` **en el orden en que aparecen en el array**. Los grupos se derivan 
 datos: para un emisor nuevo basta añadir su entrada en `ISSUER_STYLES` dentro del
 componente (color de marca + tinte de fondo + borde); si falta, cae a un estilo neutro.
 
-Campos de `Certification`: `id`, `title`, `code`, `issuer`, `credlyUrl`, `badgeUrl`,
-`accentColor`, `svgPath` (logo del emisor, SimpleIcons).
+Campos de `Certification`: `id`, `title`, `code`, `issuer`, `credentialUrl`, `badgeUrl`,
+`verifier?`, `accentColor`, `svgPath` (logo del emisor, SimpleIcons).
+
+**El emisor y el verificador no siempre coinciden.** AWS, Google Cloud y Anthropic publican
+en Credly; **Microsoft se salió de Credly** y ahora sus credenciales viven en Microsoft
+Learn. Por eso el campo se llama `credentialUrl` (no `credlyUrl`) y existe `verifier?`, que
+cae a `DEFAULT_VERIFIER` (`"Credly"`) cuando falta. La nota del pie del componente lista los
+verificadores presentes derivándolos de los datos — no hay ningún "Credly" hardcodeado.
+
+### Cómo obtener la credencial de Microsoft Learn
+
+La página de la credencial da un link "Share" con esta forma; sirve tal cual como
+`credentialUrl` y es público:
+
+```
+https://learn.microsoft.com/api/credentials/share/en-us/<PERFIL>/<CREDENTIAL-ID>?sharingId=<ID>
+```
+
+El badge **no** es específico del examen: Microsoft sirve un escudo genérico por nivel.
+Ojo con el `/en-us/` — sin él responde `302`:
+
+```
+https://learn.microsoft.com/en-us/media/learn/certification/badges/microsoft-certified-associate-badge.svg
+```
+
+(Para otros niveles: `microsoft-certified-fundamentals-badge.svg`, `...-expert-badge.svg`.)
+Es un SVG, así que escala sin pixelarse en la card de 96px.
+
+Color de marca en el sitio: `#00A4EF` (el azul del logo). El hex de SimpleIcons para
+Microsoft es un gris que no se lee sobre fondo oscuro, igual que pasó con Anthropic.
 
 ### Cómo obtener la URL real del badge de Credly
 
@@ -154,19 +182,20 @@ https://images.credly.com/size/680x680/images/<IMAGE-ID>/blob
 Ojo: algunos badges responden `403` con el sufijo `/image.png` y `200` con `/blob`.
 Verificar siempre con `curl -o /dev/null -w "%{http_code}"` antes de commitear.
 
-### Inventario actual (9 activas)
+### Inventario actual (10 activas)
 
-| Emisor | Certificación | Código |
-|---|---|---|
-| AWS | Solutions Architect – Associate | SAA-C03 |
-| AWS | Developer – Associate | DVA-C02 |
-| AWS | CloudOps Engineer – Associate | SOA-C03 |
-| AWS | AI Practitioner | AIF-C01 |
-| AWS | Cloud Practitioner | CLF-C02 |
-| Google Cloud | Associate Cloud Engineer | ACE |
-| Google Cloud | Professional Cloud Architect | PCA |
-| Google Cloud | Generative AI Leader | GAIL |
-| Anthropic | Claude Certified Architect — Foundations | CCA-F |
+| Emisor | Certificación | Código | Verificador |
+|---|---|---|---|
+| AWS | Solutions Architect – Associate | SAA-C03 | Credly |
+| AWS | Developer – Associate | DVA-C02 | Credly |
+| AWS | CloudOps Engineer – Associate | SOA-C03 | Credly |
+| AWS | AI Practitioner | AIF-C01 | Credly |
+| AWS | Cloud Practitioner | CLF-C02 | Credly |
+| Google Cloud | Associate Cloud Engineer | ACE | Credly |
+| Google Cloud | Professional Cloud Architect | PCA | Credly |
+| Google Cloud | Generative AI Leader | GAIL | Credly |
+| Microsoft | Azure Administrator Associate | AZ-104 | Microsoft Learn |
+| Anthropic | Claude Certified Architect — Foundations | CCA-F | Credly |
 
 ### Roadmap de certificaciones
 
@@ -189,6 +218,9 @@ Notas de contexto (no se muestran en el sitio):
   **julio de 2026**. La interfaz `Certification` no tiene campo de fecha porque el
   diseño actual no muestra fechas; si algún día se quieren mostrar, añadir
   `earnedDate?: string` en formato `"2026-07"` y renderizarlo condicionalmente.
+- **AZ-104**: obtenida el **2026-08-12**, caduca el **2027-08-13**. Microsoft renueva
+  anualmente y gratis desde Learn a partir de los 6 meses previos — es la que antes vence
+  de todo el inventario, conviene tenerla presente.
 - Las certificaciones de AWS caducan (3 años) y las de Anthropic son válidas 12 meses
   con renovación gratuita a tiempo. Hoy el sitio no muestra vigencias; si se añaden,
   usar `expiresDate?: string` y no mostrar nada cuando falte el dato.
