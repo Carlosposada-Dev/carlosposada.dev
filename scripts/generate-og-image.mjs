@@ -22,6 +22,49 @@ const gridLines = () => {
 const SANS = "Segoe UI, Arial, Helvetica, sans-serif";
 const MONO = "Consolas, Courier New, monospace";
 
+/**
+ * Tira de certificaciones.
+ *
+ * Duplica a mano lo que hay en `CERTIFICATIONS` (src/utils/constants.ts) porque
+ * este script corre en Node plano y no puede importar TypeScript. **Al añadir o
+ * quitar una certificación, actualizar esta lista y correr `npm run og`** — si
+ * no, la preview social queda mintiendo (así se quedó sin Microsoft entre el
+ * 2026-08-15 y el 2026-09-12).
+ *
+ * Las posiciones se calculan: añadir un chip es una línea, no recolocar todo.
+ */
+const CERT_STRIP = [
+  { label: "K8S x1", color: "#5B8DEF" },
+  { label: "AWS x5", color: "#FF9900" },
+  { label: "GCP x3", color: "#4285F4" },
+  { label: "AZURE x1", color: "#00A4EF" },
+  { label: "ANTHROPIC x1", color: "#D97757" },
+];
+
+/** Ancho del chip a partir del texto: ~13px por carácter (mono 21 + tracking 2) + padding */
+const chipWidth = (label) => label.length * 13 + 44;
+
+const certStrip = (() => {
+  const GAP = 16;
+  let x = 0;
+  const parts = CERT_STRIP.map(({ label, color }) => {
+    const w = chipWidth(label);
+    const chip = `
+    <rect x="${x}" y="0" width="${w}" height="44" rx="10" fill="${color}" fill-opacity="0.12" stroke="${color}" stroke-opacity="0.4"/>
+    <text x="${x + w / 2}" y="30" fill="${color}" text-anchor="middle">${label}</text>`;
+    x += w + GAP;
+    return chip;
+  });
+  const total = x - GAP;
+  // 80px de margen a cada lado: si se pasa, hay que acortar etiquetas
+  if (total > W - 160) {
+    throw new Error(
+      `Cert strip mide ${total}px y no cabe en ${W - 160}px. Acorta alguna etiqueta en CERT_STRIP.`
+    );
+  }
+  return parts.join("\n");
+})();
+
 const svg = `
 <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -77,16 +120,9 @@ const svg = `
     Infrastructure as Code &#183; Kubernetes &#183; CI/CD &#183; Platform Engineering
   </text>
 
-  <!-- Cert strip -->
+  <!-- Cert strip — posiciones calculadas, no a mano (ver CERT_STRIP arriba) -->
   <g transform="translate(80, 470)" font-family="${MONO}" font-size="21" font-weight="700" letter-spacing="2">
-    <rect x="0" y="0" width="128" height="44" rx="10" fill="#FF9900" fill-opacity="0.12" stroke="#FF9900" stroke-opacity="0.4"/>
-    <text x="64" y="30" fill="#FF9900" text-anchor="middle">AWS x5</text>
-
-    <rect x="144" y="0" width="128" height="44" rx="10" fill="#4285F4" fill-opacity="0.12" stroke="#4285F4" stroke-opacity="0.4"/>
-    <text x="208" y="30" fill="#4285F4" text-anchor="middle">GCP x3</text>
-
-    <rect x="288" y="0" width="188" height="44" rx="10" fill="#D97757" fill-opacity="0.12" stroke="#D97757" stroke-opacity="0.4"/>
-    <text x="382" y="30" fill="#D97757" text-anchor="middle">ANTHROPIC x1</text>
+    ${certStrip}
   </g>
 
   <!-- Footer: status + domain -->

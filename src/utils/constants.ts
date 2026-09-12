@@ -145,7 +145,14 @@ export interface Certification {
   title: string;
   /** Short credential code shown as badge label */
   code: string;
-  issuer: "AWS" | "Google Cloud" | "Anthropic" | "Microsoft" | "CNCF" | "HashiCorp";
+  issuer:
+    | "AWS"
+    | "Google Cloud"
+    | "Anthropic"
+    | "Microsoft"
+    | "Linux Foundation"
+    | "CNCF"
+    | "HashiCorp";
   /** Public URL where the credential can be verified */
   credentialUrl: string;
   /** Official badge image URL (issuer CDN) */
@@ -171,6 +178,9 @@ const AWS_SVG = "M6.763 10.036c0 .296.032.535.088.71.064.176.144.368.256.576.04.
 // Anthropic SVG path (SimpleIcons)
 const ANTHROPIC_SVG =
   "M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z";
+// Linux Foundation SVG path (SimpleIcons)
+const LINUX_FOUNDATION_SVG =
+  "M4.8 19.2h9.6V24H0V9.6h4.8v9.6zM0 0v7.2h4.8V4.822h14.4V19.2h-2.4V24H24V0H0z";
 // Microsoft SVG path (SimpleIcons) — los cuatro cuadrados del logo
 const MICROSOFT_SVG =
   "M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zm12.6 0H12.6V0H24v11.4z";
@@ -178,6 +188,22 @@ const MICROSOFT_SVG =
 const GCP_SVG = "M12.19 2.38a9.344 9.344 0 0 0-9.234 6.893c.053-.02-.055.013 0 0-3.875 2.551-3.922 8.11-.247 10.941l.006-.007-.007.03a6.717 6.717 0 0 0 4.077 1.356h5.173l.03.03h5.192c6.687.053 9.376-8.605 3.835-12.35a9.365 9.365 0 0 0-2.821-4.552l-.043.043.006-.05A9.344 9.344 0 0 0 12.19 2.38zm-.358 4.146c1.244-.04 2.518.368 3.486 1.15a5.186 5.186 0 0 1 1.862 4.078v.518c3.53-.07 3.53 5.262 0 5.193h-5.193l-.008.009v-.04H6.785a2.59 2.59 0 0 1-1.067-.23h.001a2.597 2.597 0 1 1 3.437-3.437l3.013-3.012A6.747 6.747 0 0 0 8.11 8.24c.018-.01.04-.026.054-.023a5.186 5.186 0 0 1 3.67-1.69z";
 
 export const CERTIFICATIONS: Certification[] = [
+  // ── Linux Foundation ─────────────────────────────────────
+  // Primera del array a propósito: los grupos se pintan en el orden en que
+  // aparece cada emisor, y Kubernetes es el track que se quiere destacar.
+  {
+    id: "lf-kcna",
+    title: "Kubernetes and Cloud Native Associate",
+    code: "KCNA",
+    issuer: "Linux Foundation",
+    credentialUrl: "https://www.credly.com/badges/ce1fb077-5951-494d-89e7-d9c738f1ff95/public_url",
+    // Ojo: esta insignia NO responde con el sufijo /blob (302 → 403).
+    // Hay que conservar el nombre real del archivo. Ver CLAUDE.md.
+    badgeUrl:
+      "https://images.credly.com/size/680x680/images/f28f1d88-428a-47f6-95b5-7da1dd6c1000/KCNA_badge.png",
+    accentColor: "#5B8DEF",
+    svgPath: LINUX_FOUNDATION_SVG,
+  },
   // ── AWS ──────────────────────────────────────────────────
   {
     id: "aws-saa",
@@ -304,6 +330,37 @@ export interface PlannedCertification {
 }
 
 export const PLANNED_CERTIFICATIONS: PlannedCertification[] = [
+  // Linux Foundation — Kubestronaut: exige las 5 certificaciones de Kubernetes
+  // del CNCF (KCNA ya obtenida). Orden real de estudio: CKS requiere una CKA
+  // vigente, así que va al final.
+  {
+    id: "lf-cka",
+    title: "Certified Kubernetes Administrator",
+    code: "CKA",
+    issuer: "Linux Foundation",
+    accentColor: "#5B8DEF",
+  },
+  {
+    id: "lf-ckad",
+    title: "Certified Kubernetes Application Developer",
+    code: "CKAD",
+    issuer: "Linux Foundation",
+    accentColor: "#5B8DEF",
+  },
+  {
+    id: "lf-kcsa",
+    title: "Kubernetes and Cloud Native Security Associate",
+    code: "KCSA",
+    issuer: "Linux Foundation",
+    accentColor: "#5B8DEF",
+  },
+  {
+    id: "lf-cks",
+    title: "Certified Kubernetes Security Specialist",
+    code: "CKS",
+    issuer: "Linux Foundation",
+    accentColor: "#5B8DEF",
+  },
   // Anthropic — Claude Certified track (4 exams, Foundations already earned)
   {
     id: "anthropic-cc-associate",
@@ -683,7 +740,7 @@ export interface NowSection {
 
 export const NOW = {
   /** Fecha de la última revisión de esta página — formato YYYY-MM-DD */
-  updated: "2026-08-06",
+  updated: "2026-09-12",
   intro:
     "A snapshot of what I'm building, breaking and learning right now. Inspired by nownownow.com — updated every few weeks, not a changelog.",
   sections: [
@@ -709,6 +766,11 @@ export const NOW = {
       title: "Learning",
       accent: "secondary",
       items: [
+        {
+          label: "Kubernetes, deliberately and in depth",
+          detail:
+            "Working through the Kubestronaut track — KCNA done, CKA next. Kubernetes is what has been opening doors, so it gets the hours.",
+        },
         {
           label: "EKS across its three node modes",
           detail: "Managed node groups, self-managed nodes and Auto Mode — comparing cost, control and upgrade pain.",
@@ -741,6 +803,10 @@ export const NOW = {
       title: "Next up",
       accent: "primary",
       items: [
+        {
+          label: "CKA, then the rest of the Kubestronaut five",
+          detail: "KCNA earned September 2026. CKA, CKAD, KCSA and CKS still to go.",
+        },
         {
           label: "The remaining Claude Certified track",
           detail: "Associate, Developer and Architect — Professional. Foundations done in July 2026.",

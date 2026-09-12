@@ -172,20 +172,31 @@ La página pública de Credly es una SPA: el `<img>` no se ve en el HTML plano, 
 curl -sL "https://www.credly.com/badges/<BADGE-ID>/public_url" | grep -o 'og:image" content="[^"]*"'
 ```
 
-Del resultado (`https://images.credly.com/images/<IMAGE-ID>/linkedin_thumb_blob`) se
-toma el `<IMAGE-ID>` y se construye el `badgeUrl` en alta resolución:
+El `og:image` tiene la forma `https://images.credly.com/images/<IMAGE-ID>/linkedin_thumb_<ARCHIVO>`.
+**Quitar el prefijo `linkedin_thumb_` y conservar `<ARCHIVO>` tal cual** — es la parte que
+más se falla:
 
 ```
-https://images.credly.com/size/680x680/images/<IMAGE-ID>/blob
+https://images.credly.com/size/680x680/images/<IMAGE-ID>/<ARCHIVO>
 ```
 
-Ojo: algunos badges responden `403` con el sufijo `/image.png` y `200` con `/blob`.
-Verificar siempre con `curl -o /dev/null -w "%{http_code}"` antes de commitear.
+`<ARCHIVO>` suele ser literalmente `blob`, pero **no siempre**: la KCNA es
+`KCNA_badge.png`, y con `/blob` responde `302` → `403`. No asumir `blob`.
 
-### Inventario actual (10 activas)
+Verificar siempre antes de commitear:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" "<BADGE-URL>"
+```
+
+### Inventario actual (11 activas)
+
+El orden de la tabla es el del array, que es el orden en que se pintan los grupos.
+**Linux Foundation va primero a propósito**: Kubernetes es el track que se destaca.
 
 | Emisor | Certificación | Código | Verificador |
 |---|---|---|---|
+| Linux Foundation | Kubernetes and Cloud Native Associate | KCNA | Credly |
 | AWS | Solutions Architect – Associate | SAA-C03 | Credly |
 | AWS | Developer – Associate | DVA-C02 | Credly |
 | AWS | CloudOps Engineer – Associate | SOA-C03 | Credly |
@@ -204,13 +215,24 @@ como cards fantasma (borde punteado, chip `In progress`, sin link, `hourglass_to
 al final del grupo de su emisor. Nunca deben parecer obtenidas: no llevan `badgeUrl`
 ni `credlyUrl`, y no son `<a>`.
 
-Al aprobar una: moverla a `CERTIFICATIONS` con su `credlyUrl` + `badgeUrl` y borrarla
-de `PLANNED_CERTIFICATIONS`. El grupo, el contador y la nota "N on the roadmap" se
-actualizan solos.
+Al aprobar una: moverla a `CERTIFICATIONS` con su `credentialUrl` + `badgeUrl` y borrarla
+de `PLANNED_CERTIFICATIONS`. El grupo, el contador, la nota "N on the roadmap" y el chip de
+progreso del track se actualizan solos.
 
-Hoy hay 3, todas del track de Anthropic (4 exámenes en total, Foundations ya obtenida):
-Claude Certified Associate — Foundations, Claude Certified Developer — Foundations y
-Claude Certified Architect — Professional.
+Hoy hay 7:
+
+- **Linux Foundation (4)** — lo que falta para Kubestronaut: CKA, CKAD, KCSA y CKS.
+- **Anthropic (3)** — del track Claude Certified (4 exámenes, Foundations ya obtenida):
+  Associate — Foundations, Developer — Foundations y Architect — Professional.
+
+### Chip de progreso de track
+
+`ISSUER_TRACKS` en `Certifications.astro` declara programas con meta: hoy sólo
+`Linux Foundation → { label: "Kubestronaut", total: 5 }`. Pinta un chip en la cabecera del
+grupo con icono, barra de progreso y `obtenidas/total`, calculado desde los datos — no hay
+ningún "1/5" escrito a mano. **Kubestronaut exige las cinco certificaciones de Kubernetes
+del CNCF**: KCNA, KCSA, CKA, CKAD y CKS. La barra se oculta por debajo de `sm` y el chip
+cae a su propia línea (la fila de cabecera es `flex-wrap`).
 
 Notas de contexto (no se muestran en el sitio):
 
@@ -224,8 +246,13 @@ Notas de contexto (no se muestran en el sitio):
 - Las certificaciones de AWS caducan (3 años) y las de Anthropic son válidas 12 meses
   con renovación gratuita a tiempo. Hoy el sitio no muestra vigencias; si se añaden,
   usar `expiresDate?: string` y no mostrar nada cuando falte el dato.
+- **KCNA**: obtenida en **septiembre de 2026**. Primera de las cinco de Kubestronaut.
 - Color de marca de Anthropic en el sitio: `#D97757` (el hex oficial de SimpleIcons es
   `#191919`, ilegible sobre fondo oscuro).
+- Color de marca de Linux Foundation en el sitio: `#5B8DEF`, un azul Kubernetes aclarado.
+  El oficial (`#003778`) da **1.59:1** sobre el surface y el de Kubernetes (`#326CE5`)
+  se queda en **4.05:1**; el label del grupo es 16px bold, que WCAG no considera texto
+  grande, así que necesita 4.5:1. `#5B8DEF` llega a 5.96:1.
 - El fallback de badge (si Credly no carga, se muestra el `code`) vive en el `<script>`
   del componente, con `data-cert-badge`. No volver a usar `onerror=` inline: un atributo
   de evento sólo se puede permitir con `'unsafe-inline'` + `'unsafe-hashes'`, mientras que
@@ -348,6 +375,7 @@ Al añadir una página, un servicio o una certificación, revisar también:
 | `src/pages/privacy.astro` | si se añade un servicio externo nuevo (analytics, comentarios, embeds), va documentado ahí |
 | `src/pages/now.astro` → `NOW` en constants | `NOW.updated`: la página se autodeclara desactualizada a los 90 días |
 | `PAGE_KEYWORDS` en `search-index.json.ts` | sinónimos de la página nueva para el command palette |
+| `CERT_STRIP` en `scripts/generate-og-image.mjs` + `npm run og` | la tira de certificaciones de la imagen OG. **Está duplicada a mano**: el script corre en Node plano y no puede importar el TS. Si no se regenera, la preview social miente — estuvo sin Microsoft del 2026-08-15 al 2026-09-12 |
 
 Estos archivos son contenido público: aplica la misma regla de "nada inventado".
 

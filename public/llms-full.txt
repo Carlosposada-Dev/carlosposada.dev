@@ -69,8 +69,15 @@ Integrating machine intelligence into the engineering lifecycle. From LLM-assist
 
 ## Certifications
 
-10 active certifications, all independently verifiable — on Credly, except Microsoft's, which
+11 active certifications, all independently verifiable — on Credly, except Microsoft's, which
 is published on Microsoft Learn (all linked from https://carlosposada.dev/about):
+
+**Linux Foundation / CNCF (1)**
+- Kubernetes and Cloud Native Associate (KCNA) — earned September 2026. Covers deploying
+  applications with kubectl, Kubernetes architecture (containers, pods, nodes, clusters),
+  the cloud-native landscape (storage, networking, GitOps, service mesh) and cloud-native
+  security principles.
+  First of the five certifications required for CNCF Kubestronaut status.
 
 **AWS (5)**
 - AWS Certified Solutions Architect – Associate (SAA-C03)
@@ -93,7 +100,9 @@ is published on Microsoft Learn (all linked from https://carlosposada.dev/about)
 **Anthropic (1)**
 - Claude Certified Architect — Foundations
 
-Currently working toward the remaining Claude Certified exams (Associate, Developer, and Architect — Professional).
+Currently working toward CNCF Kubestronaut status — the remaining four Kubernetes
+certifications are CKA, CKAD, KCSA and CKS — and the remaining Claude Certified exams
+(Associate, Developer, and Architect — Professional). Kubernetes is the current focus.
 
 ## Projects
 

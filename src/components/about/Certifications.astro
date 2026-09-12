@@ -15,6 +15,14 @@ import type { Certification, PlannedCertification } from "@utils/constants";
 
 /** Brand color per issuer — drives the group panel tint and border */
 const ISSUER_STYLES: Record<string, { color: string; bg: string; border: string }> = {
+  // Azul Kubernetes aclarado. El hex oficial de Linux Foundation (#003778) da
+  // 1.59:1 sobre el surface — ilegible; el de Kubernetes (#326CE5) se queda en
+  // 4.05. Este llega a 5.96 y mantiene la familia de color.
+  "Linux Foundation": {
+    color: "#5B8DEF",
+    bg: "rgba(91,141,239,0.06)",
+    border: "rgba(91,141,239,0.2)",
+  },
   AWS: { color: "#FF9900", bg: "rgba(255,153,0,0.06)", border: "rgba(255,153,0,0.2)" },
   "Google Cloud": { color: "#4285F4", bg: "rgba(66,133,244,0.06)", border: "rgba(66,133,244,0.2)" },
   // #00A4EF (el azul del logo) en vez del gris de SimpleIcons: legible sobre
@@ -27,6 +35,16 @@ const ISSUER_STYLES: Record<string, { color: string; bg: string; border: string 
 const verifiers = [
   ...new Set(CERTIFICATIONS.map((cert) => cert.verifier ?? DEFAULT_VERIFIER)),
 ];
+
+/**
+ * Emisores cuyo grupo forma parte de un programa con meta declarada: se pinta
+ * un chip de progreso real (obtenidas / total) en la cabecera del grupo.
+ * Kubestronaut exige las cinco certificaciones de Kubernetes del CNCF:
+ * KCNA, KCSA, CKA, CKAD y CKS.
+ */
+const ISSUER_TRACKS: Record<string, { label: string; total: number; icon: string }> = {
+  "Linux Foundation": { label: "Kubestronaut", total: 5, icon: "rocket_launch" },
+};
 
 interface Group {
   issuer: string;
@@ -92,8 +110,8 @@ for (const planned of PLANNED_CERTIFICATIONS) {
         class="rounded-2xl border p-6 md:p-8"
         style={`background: ${group.bg}; border-color: ${group.border};`}
       >
-        <!-- Issuer label row -->
-        <div class="flex items-center gap-3 mb-6">
+        <!-- Issuer label row — wrap para que el chip de track caiga debajo en mobile -->
+        <div class="flex flex-wrap items-center gap-3 mb-6">
           <svg
             class="w-5 h-5 fill-current shrink-0"
             style={`color: ${group.color}`}
@@ -112,6 +130,42 @@ for (const planned of PLANNED_CERTIFICATIONS) {
             {group.certs.length} certification{group.certs.length > 1 ? "s" : ""}
             {group.planned.length > 0 && ` · ${group.planned.length} on the roadmap`}
           </span>
+
+          <!-- Progreso del programa, si el emisor tiene uno declarado -->
+          {ISSUER_TRACKS[group.issuer] && (
+            <span
+              class="ml-auto shrink-0 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5"
+              style={`border-color: ${group.border}; background: ${group.bg};`}
+              title={`${ISSUER_TRACKS[group.issuer].label}: ${group.certs.length} of ${ISSUER_TRACKS[group.issuer].total} required certifications earned`}
+            >
+              <span
+                class="material-symbols-outlined text-[16px]"
+                style={`color: ${group.color}`}
+                aria-hidden="true"
+              >
+                {ISSUER_TRACKS[group.issuer].icon}
+              </span>
+              <span
+                class="font-headline text-[10px] font-bold uppercase tracking-widest"
+                style={`color: ${group.color}`}
+              >
+                {ISSUER_TRACKS[group.issuer].label}
+              </span>
+              <!-- Barra de progreso -->
+              <span
+                class="hidden sm:block h-1 w-12 rounded-full overflow-hidden bg-on-surface/10"
+                aria-hidden="true"
+              >
+                <span
+                  class="block h-full rounded-full"
+                  style={`width: ${(group.certs.length / ISSUER_TRACKS[group.issuer].total) * 100}%; background: ${group.color};`}
+                ></span>
+              </span>
+              <span class="font-mono text-[11px] font-bold" style={`color: ${group.color}`}>
+                {group.certs.length}<span class="opacity-50">/{ISSUER_TRACKS[group.issuer].total}</span>
+              </span>
+            </span>
+          )}
         </div>
 
         <!-- Badge grid — responsive: 2 col mobile → 3 col md → up to 5 col xl -->
