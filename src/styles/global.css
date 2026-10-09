@@ -412,6 +412,65 @@
       transition: none;
     }
   }
+
+  /* ── Terminal del hero: las líneas aparecen escalonadas al revelarse ── */
+  .terminal-line { opacity: 0; }
+  .revealed .terminal-line {
+    animation: line-in 150ms ease-out both;
+    animation-delay: calc(500ms + var(--line, 0) * 320ms);
+  }
+
+  /* ── Scroll-driven animations (CSS puro) ────────────────
+   * Mejora progresiva: Firefox estable no soporta animation-timeline y
+   * ve el estado estático. La barra de progreso arranca en scaleX(0)
+   * fuera del @supports para que allí simplemente no exista.
+   */
+  .scroll-progress {
+    @apply fixed top-0 left-0 w-full h-0.5 bg-primary z-[100] pointer-events-none;
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .scroll-progress {
+      animation: grow-x linear both;
+      animation-timeline: scroll(root);
+    }
+    /* Parallax del hero: fondo y glow se mueven más lento que el texto */
+    .hero-parallax-grid {
+      animation: grid-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+    .hero-parallax {
+      animation: drift-down linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+    /* Timeline de carrera: la línea se rellena y los nodos se encienden al pasar */
+    .timeline-track::before {
+      content: '';
+      @apply absolute top-0 -left-px w-px h-full bg-primary;
+      transform-origin: top;
+      animation: grow-y linear both;
+      animation-timeline: view();
+      animation-range: cover 5% cover 55%;
+    }
+    .timeline-node {
+      animation: node-on linear both;
+      animation-timeline: view(block 0% 35%);
+      animation-range: entry;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .terminal-line,
+    .revealed .terminal-line { opacity: 1; animation: none; }
+    .hero-parallax-grid,
+    .hero-parallax,
+    .timeline-track::before,
+    .timeline-node { animation: none; }
+  }
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -492,6 +551,13 @@
   from { opacity: 0; transform: translateY(-8px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+@keyframes line-in { to { opacity: 1; } }
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes grow-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes drift-down { to { translate: 0 80px; } }
+@keyframes grid-drift { to { background-position: 0 60px; } }
+@keyframes node-on { to { border-color: #6dddff; } }
 
 @keyframes confetti-fall {
   0% { transform: translateY(0) rotate(0deg); opacity: 1; }

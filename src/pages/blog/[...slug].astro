@@ -52,17 +52,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   publishedDate={post.data.publishedDate.toISOString()}
   schemaType="article"
 >
-  <!-- Reading progress bar (Feature #7) -->
-  <div
-    id="reading-progress"
-    class="fixed top-0 left-0 h-0.5 bg-primary z-[100] transition-none"
-    style="width: 0%;"
-    aria-hidden="true"
-    role="progressbar"
-    aria-valuemin={0}
-    aria-valuemax={100}
-    aria-valuenow={0}
-  ></div>
 
   <article class="pt-28 pb-20" id="post-article">
 
@@ -223,27 +212,6 @@ const CATEGORY_COLORS: Record<string, string> = {
     </div>
   </article>
 </PageLayout>
-
-<script>
-  // Reading progress bar (Feature #7)
-  document.addEventListener("astro:page-load", () => {
-    const bar = document.getElementById("reading-progress");
-    const article = document.getElementById("post-article");
-    if (!bar || !article) return;
-
-    const updateProgress = () => {
-      const articleTop = article.offsetTop;
-      const articleHeight = article.offsetHeight;
-      const scrolled = window.scrollY - articleTop;
-      const progress = Math.min(Math.max((scrolled / articleHeight) * 100, 0), 100);
-      bar.style.width = `${progress}%`;
-      bar.setAttribute("aria-valuenow", String(Math.round(progress)));
-    };
-
-    window.addEventListener("scroll", updateProgress, { passive: true });
-    updateProgress();
-  });
-</script>
 
 <script>
   // Mermaid diagram rendering (Feature #23)

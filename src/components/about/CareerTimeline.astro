@@ -23,7 +23,7 @@ import { CAREER } from "@utils/constants";
 
   <!-- Timeline -->
   <ol
-    class="relative pl-8 border-l border-outline-variant/30"
+    class="relative pl-8 border-l border-outline-variant/30 timeline-track"
     aria-label="Career history"
   >
     {CAREER.map((entry, index) => {
@@ -34,7 +34,7 @@ import { CAREER } from "@utils/constants";
           <!-- Nodo del timeline -->
           <div
             class:list={[
-              "absolute -left-[1.32rem] top-0.5",
+              "absolute -left-[1.32rem] top-0.5 timeline-node",
               "w-4 h-4 rounded-full border-2 transition-colors duration-300",
               entry.isCurrent
                 ? "bg-surface border-primary"

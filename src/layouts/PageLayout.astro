@@ -50,6 +50,9 @@ const currentPath = Astro.url.pathname;
   <!-- Textura de fondo global — blueprint dots -->
   <div class="fixed inset-0 grid-mesh-dots pointer-events-none -z-10" aria-hidden="true"></div>
 
+  <!-- Progreso de scroll: CSS puro (animation-timeline), invisible donde no hay soporte -->
+  <div class="scroll-progress" aria-hidden="true"></div>
+
   <!-- Navegación principal (desktop) -->
   <Navbar currentPath={currentPath} />
 
