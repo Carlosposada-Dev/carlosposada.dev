@@ -92,20 +92,25 @@
     const cell = root.querySelector<HTMLElement>(`[data-vital="${name}"]`);
     if (!cell) return;
     cell.textContent = text;
-    cell.className = RATING_CLASS[rating];
+    // toggle, no replace: la home pinta las mismas métricas en tiles con su propia clase base
+    cell.classList.remove(...Object.values(RATING_CLASS));
+    cell.classList.add(RATING_CLASS[rating]);
+    root.querySelector<HTMLElement>(`[data-vital-rating="${name}"]`)?.replaceChildren(rating);
   }
 
   function render() {
-    const root = document.querySelector<HTMLElement>("[data-vitals]");
-    // Sin ninguna métrica el chip no se muestra: en Safari (sin LCP ni CLS)
-    // es mejor que no aparezca nada a un widget con tres guiones
-    if (!root || measured.size === 0) return;
+    // Varios consumidores: el chip del footer y las tiles de la etapa "observe" de la home.
+    // Sin ninguna métrica no se muestra nada: en Safari (sin LCP ni CLS) es
+    // mejor que no aparezca el chip a un widget con tres guiones
+    if (measured.size === 0) return;
 
-    root.classList.remove("hidden");
-    for (const metric of measured.values()) {
-      paint(root, metric.name, format(metric), metric.rating);
-    }
-    if (!measured.has("CLS") && SUPPORTS_CLS) paint(root, "CLS", "0.000", "good");
+    document.querySelectorAll<HTMLElement>("[data-vitals]").forEach((root) => {
+      root.classList.remove("hidden");
+      for (const metric of measured.values()) {
+        paint(root, metric.name, format(metric), metric.rating);
+      }
+      if (!measured.has("CLS") && SUPPORTS_CLS) paint(root, "CLS", "0.000", "good");
+    });
   }
 
   function track(metric: Metric) {

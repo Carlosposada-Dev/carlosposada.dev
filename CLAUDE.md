@@ -298,6 +298,29 @@ aplica `_headers`; `astro dev` no).
 
 **Ojo**: las rutas SSR (`/api/*`) las sirve el Worker y no pasan por `_headers`.
 
+### Home: la página se despliega al hacer scroll
+
+`src/pages/index.astro` es un pipeline de cinco etapas, una sección `[data-stage]` por
+etapa (`components/home/Stage*.astro`): plan → apply → rollout → observe → deployed.
+`PipelineBar.astro` (sticky bajo el navbar) mide en cada scroll cuánto ha entrado cada
+sección y lo publica como `--p` (0→1) en la propia sección y en el conector de la barra.
+
+- **El revelado es CSS puro a partir de `--p`**: cada hijo con `data-step="n"` y
+  `--step: n` aparece cuando `--p · --steps` supera `n` (ver `.stage [data-step]` en
+  `global.css`). Sin JS, `--p` vale 1 y todo es visible; con `prefers-reduced-motion`,
+  idem. No hay librería de animación ni `animation-timeline` — sólo `calc()` y `clamp()`.
+- **Apply va pinned en desktop**: la sección mide 250 vh y su `.stage-sticky` se pega a
+  `top: 112px` (navbar + barra). Ese 112 está duplicado como `HEADER` en el script de
+  `PipelineBar`: si cambia uno, cambia el otro. En móvil no hay pinned.
+- Todo el contenido sale de `constants.ts`: pods = `CERTIFICATIONS` (+ `PLANNED` punteadas),
+  track = `CERTIFICATION_TRACKS` vía `getTrackProgress()`, deployments =
+  `FEATURED_PROJECTS`, endpoints = `SITE` + `SOCIAL_LINKS`. Las tiles de observe las pinta
+  el script de `WebVitals.astro`, que recorre todos los `[data-vitals]` de la página; las
+  métricas que el navegador no expone se quedan en "measuring…".
+- `html { scroll-behavior: smooth }` + un panel sin frames hace que `scrollTo` no mueva
+  nada y `requestAnimationFrame` no dispare: para probar el scroll desde herramientas, usar
+  `behavior: 'instant'` y disparar `astro:page-load`, que llama a `update()` directo.
+
 ### Búsqueda: índice + matcher
 
 Tres piezas, una sola fuente de datos:
@@ -422,3 +445,6 @@ la tabla de fases y la fecha de "Last updated" en `PROJECT_STATUS.md`.
   en la CSP ya lo permite.
 - `.claude/worktrees/` contiene copias del repo creadas por sesiones anteriores:
   ignorar al buscar código, la fuente es la raíz.
+- `components/home/HeroSection`, `SkillsBar`, `ServicesPreview`, `FeaturedProjects` y
+  `ProofSection` ya no se usan (la home es el pipeline de etapas). Están sin borrar;
+  se pueden eliminar.

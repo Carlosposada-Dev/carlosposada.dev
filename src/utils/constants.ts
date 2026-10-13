@@ -385,6 +385,18 @@ export const PLANNED_CERTIFICATIONS: PlannedCertification[] = [
   },
 ];
 
+/**
+ * Programas con meta declarada: el chip "Kubestronaut 1/5" de la pared de
+ * certificaciones y de la home se calcula desde aquí + CERTIFICATIONS.
+ * Kubestronaut exige las cinco certificaciones de Kubernetes del CNCF.
+ */
+export const CERTIFICATION_TRACKS: Record<
+  string,
+  { label: string; total: number; icon: string }
+> = {
+  "Linux Foundation": { label: "Kubestronaut", total: 5, icon: "rocket_launch" },
+};
+
 // ─────────────────────────────────────────────────────────
 // Stack de habilidades (Skills Bar en Home)
 // ─────────────────────────────────────────────────────────

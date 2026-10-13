@@ -10,7 +10,12 @@
  * PLANNED_CERTIFICATIONS render as dashed ghost cards at the end of their
  * group (not links, clearly marked as roadmap — never as earned).
  */
-import { CERTIFICATIONS, DEFAULT_VERIFIER, PLANNED_CERTIFICATIONS } from "@utils/constants";
+import {
+  CERTIFICATIONS,
+  CERTIFICATION_TRACKS,
+  DEFAULT_VERIFIER,
+  PLANNED_CERTIFICATIONS,
+} from "@utils/constants";
 import type { Certification, PlannedCertification } from "@utils/constants";
 
 /** Brand color per issuer — drives the group panel tint and border */
@@ -36,15 +41,8 @@ const verifiers = [
   ...new Set(CERTIFICATIONS.map((cert) => cert.verifier ?? DEFAULT_VERIFIER)),
 ];
 
-/**
- * Emisores cuyo grupo forma parte de un programa con meta declarada: se pinta
- * un chip de progreso real (obtenidas / total) en la cabecera del grupo.
- * Kubestronaut exige las cinco certificaciones de Kubernetes del CNCF:
- * KCNA, KCSA, CKA, CKAD y CKS.
- */
-const ISSUER_TRACKS: Record<string, { label: string; total: number; icon: string }> = {
-  "Linux Foundation": { label: "Kubestronaut", total: 5, icon: "rocket_launch" },
-};
+// Chip de progreso del programa (Kubestronaut): la meta vive en constants
+const ISSUER_TRACKS = CERTIFICATION_TRACKS;
 
 interface Group {
   issuer: string;

@@ -1,0 +1,78 @@
+---
+/**
+ * StagePlan.astro — etapa 1 de 5.
+ * Pantalla casi vacía: `terraform plan` y el ingeniero como recurso a crear.
+ * El nombre es decorativo; el H1 real es la propuesta de valor.
+ */
+import { SITE, CERTIFICATIONS } from "@utils/constants";
+import { getTrackProgress } from "@utils/helpers";
+
+const track = getTrackProgress()[0];
+---
+
+<section
+  id="stage-plan"
+  class="stage relative flex min-h-screen items-center px-6 pb-16 pt-40 md:px-8"
+  style="--steps: 7;"
+  data-stage
+  aria-labelledby="hero-heading"
+>
+  <div class="mx-auto grid w-full max-w-screen-2xl grid-cols-1 items-center gap-12 lg:grid-cols-12">
+    <div class="space-y-6 lg:col-span-7">
+      <p class="stage-kicker" data-step="0" style="--step: 0;">stage 1 of 5</p>
+      <p class="stage-cmd" data-step="1" style="--step: 1;"><span class="text-secondary">$</span> terraform plan</p>
+      <p
+        class="font-headline text-hero font-bold leading-none text-white"
+        aria-hidden="true"
+        data-step="2"
+        style="--step: 2;"
+      >
+        Carlos<br />Posada
+      </p>
+      <h1
+        class="font-headline text-2xl font-bold text-primary md:text-3xl"
+        id="hero-heading"
+        data-step="3"
+        style="--step: 3;"
+      >
+        Engineering reliable cloud infrastructure
+      </h1>
+      <p class="max-w-xl text-lg leading-relaxed text-on-surface-variant" data-step="4" style="--step: 4;">
+        Cloud &amp; DevOps engineer. Kubernetes is the thing I am going deepest on right now.
+        Keep scrolling — the rest of this page provisions itself.
+      </p>
+      <a
+        href="#stage-apply"
+        class="inline-flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-primary"
+        data-step="5"
+        style="--step: 5;"
+      >
+        <span class="material-symbols-outlined text-lg" aria-hidden="true">arrow_downward</span>
+        scroll to apply
+      </a>
+    </div>
+
+    <!-- El plan: atributos reales del sitio como recurso de Terraform -->
+    <div
+      class="stage-card p-6 font-mono text-sm leading-7 md:p-8 lg:col-span-5"
+      data-step="6"
+      style="--step: 6;"
+      aria-label="Summary as a terraform plan"
+    >
+      <p class="text-on-surface-variant">Terraform will perform the following actions:</p>
+      <p class="mt-3"><span class="text-secondary">+</span> resource "engineer" "carlos_posada" {'{'}</p>
+      <p class="pl-6"><span class="text-secondary">+</span> role           = "Cloud · DevOps · Kubernetes"</p>
+      <p class="pl-6"><span class="text-secondary">+</span> location       = "{SITE.location} · {SITE.timezone}"</p>
+      <p class="pl-6"><span class="text-secondary">+</span> certifications = {CERTIFICATIONS.length}</p>
+      {track && (
+        <p class="pl-6"><span class="text-secondary">+</span> {track.label.toLowerCase()}   = "{track.earned} of {track.total}"</p>
+      )}
+      {SITE.openToWork && (
+        <p class="pl-6"><span class="text-secondary">+</span> status         = "open to work"</p>
+      )}
+      <p class="pl-3">{'}'}</p>
+      <p class="mt-3"><span class="font-bold">Plan:</span> <span class="text-secondary">1 to add</span>, 0 to change, 0 to destroy.</p>
+      <p class="mt-2 text-primary terminal-cursor"></p>
+    </div>
+  </div>
+</section>

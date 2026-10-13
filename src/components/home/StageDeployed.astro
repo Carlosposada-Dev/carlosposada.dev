@@ -1,0 +1,51 @@
+---
+/**
+ * StageDeployed.astro — etapa 5 de 5.
+ * Pipeline en verde, CTA, y el contacto como endpoint expuesto.
+ */
+import { SITE, SOCIAL_LINKS } from "@utils/constants";
+---
+
+<section id="stage-deployed" class="stage px-6 py-24 md:px-8" style="--steps: 5;" data-stage aria-labelledby="deployed-heading">
+  <div class="mx-auto grid w-full max-w-screen-2xl grid-cols-1 items-center gap-12 lg:grid-cols-12">
+    <div class="space-y-7 lg:col-span-7">
+      <p class="stage-kicker" data-step="0" style="--step: 0;">stage 5 of 5</p>
+      <h2 id="deployed-heading" class="flex items-center gap-4 font-headline text-6xl font-bold leading-none tracking-tighter text-white md:text-8xl" data-step="1" style="--step: 1;">
+        <span class="material-symbols-outlined text-5xl text-secondary md:text-7xl" aria-hidden="true">check_circle</span>
+        Deployed.
+      </h2>
+      <p class="max-w-xl text-lg leading-relaxed text-on-surface-variant" data-step="2" style="--step: 2;">
+        The page is up. The only thing left to provision is the conversation — one endpoint,
+        open to anyone building on Kubernetes and the cloud.
+      </p>
+      <div class="flex flex-wrap gap-4" data-step="3" style="--step: 3;">
+        <a href="/contact" class="btn-primary">
+          Start a conversation
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">arrow_forward</span>
+        </a>
+        <a href="/carlos-posada-cv.pdf" class="btn-ghost">Download CV</a>
+      </div>
+    </div>
+
+    <div class="stage-card overflow-hidden font-mono text-sm leading-7 lg:col-span-5" data-step="4" style="--step: 4; border-color: rgba(47,248,1,0.35);">
+      <div class="flex items-center justify-between border-b border-outline-variant/20 px-6 py-3 text-[11px] uppercase tracking-widest text-on-surface-variant">
+        <span>service/contact</span>
+        <span class="text-secondary">● healthy</span>
+      </div>
+      <div class="p-6">
+        <p><span class="text-on-surface-variant">$</span> curl -X POST {SITE.url}/api/contact</p>
+        <p class="text-secondary">HTTP/2 200 OK</p>
+        <p class="mt-3 text-on-surface-variant">endpoints</p>
+        <p class="pl-6">email <a href={`mailto:${SITE.email}`} class="link-animated text-primary">{SITE.email}</a></p>
+        {SOCIAL_LINKS.map((link) => (
+          <p class="pl-6">
+            {link.label.toLowerCase()}{" "}
+            <a href={link.href} class="link-animated text-primary" target="_blank" rel="noopener noreferrer">{link.href.replace(/^https?:\/\/(www\.)?/, "")}</a>
+          </p>
+        ))}
+        <p class="mt-3"><span class="text-on-surface-variant">location</span> {SITE.location} · {SITE.timezone}</p>
+        {SITE.openToWork && <p><span class="text-on-surface-variant">status</span> <span class="text-secondary">open to work</span></p>}
+      </div>
+    </div>
+  </div>
+</section>

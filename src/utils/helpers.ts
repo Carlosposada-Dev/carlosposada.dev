@@ -1,3 +1,5 @@
+import { CERTIFICATIONS, CERTIFICATION_TRACKS } from "./constants";
+
 /**
  * Calcula el tiempo estimado de lectura de un texto
  * Basado en velocidad promedio de lectura técnica: 200 palabras/min
@@ -19,6 +21,18 @@ export function formatDate(date: Date | string): string {
     month: "short",
     day: "numeric",
   });
+}
+
+/**
+ * Progreso de cada programa de certificación (hoy sólo Kubestronaut):
+ * obtenidas / total, calculado desde CERTIFICATIONS. Lo usan la home y /about.
+ */
+export function getTrackProgress() {
+  return Object.entries(CERTIFICATION_TRACKS).map(([issuer, track]) => ({
+    issuer,
+    ...track,
+    earned: CERTIFICATIONS.filter((cert) => cert.issuer === issuer).length,
+  }));
 }
 
 /**

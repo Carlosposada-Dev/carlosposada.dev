@@ -1,17 +1,17 @@
 ---
 /**
- * index.astro — Home Page
- * Landing principal de carlosposada.dev
- * Ensambla todas las secciones del mockup home_landing_page_desktop
+ * index.astro — Home
+ * La página se despliega como un pipeline al hacer scroll:
+ * plan → apply → rollout → observe → deployed. Cada etapa es una sección
+ * `[data-stage]`; PipelineBar mide su progreso y lo publica como `--p`.
  */
 import PageLayout from "@layouts/PageLayout.astro";
-import HeroSection from "@components/home/HeroSection.astro";
-import SkillsBar from "@components/home/SkillsBar.astro";
-import ServicesPreview from "@components/home/ServicesPreview.astro";
-import FeaturedProjects from "@components/home/FeaturedProjects.astro";
-import ProofSection from "@components/home/ProofSection.astro";
-import CTABanner from "@components/home/CTABanner.astro";
-import { SITE } from "@utils/constants";
+import PipelineBar from "@components/home/PipelineBar.astro";
+import StagePlan from "@components/home/StagePlan.astro";
+import StageApply from "@components/home/StageApply.astro";
+import StageRollout from "@components/home/StageRollout.astro";
+import StageObserve from "@components/home/StageObserve.astro";
+import StageDeployed from "@components/home/StageDeployed.astro";
 ---
 
 <PageLayout
@@ -19,10 +19,10 @@ import { SITE } from "@utils/constants";
   description="Carlos Posada — Cloud & DevOps Engineer specializing in AWS, Terraform, Kubernetes, CI/CD pipelines, QA Automation, and AI solutions. Based in Medellín, Colombia. Open to work."
   schemaType="home"
 >
-  <HeroSection />
-  <SkillsBar />
-  <ServicesPreview />
-  <FeaturedProjects />
-  <ProofSection />
-  <CTABanner />
+  <PipelineBar />
+  <StagePlan />
+  <StageApply />
+  <StageRollout />
+  <StageObserve />
+  <StageDeployed />
 </PageLayout>

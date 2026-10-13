@@ -122,6 +122,77 @@
     overflow: visible;
   }
 
+  /* ── Home: pipeline de deploy guiado por scroll ─────── */
+
+  /* Barra de etapas, pegada bajo el navbar. El conector tras la etapa activa
+     se rellena con el progreso de scroll de esa escena (--p, lo pone el JS). */
+  .pipeline {
+    @apply sticky z-40 border-b border-outline-variant/20;
+    top: 64px;
+    background: rgba(10, 14, 26, 0.92);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  .pipeline-stage {
+    @apply flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest
+           text-on-surface-variant;
+  }
+  .pipeline-dot {
+    @apply h-2.5 w-2.5 shrink-0 rounded-full border border-on-surface-variant;
+  }
+  .pipeline-stage.is-active { @apply text-primary; }
+  .pipeline-stage.is-active .pipeline-dot {
+    @apply border-primary bg-primary;
+    box-shadow: 0 0 0 4px rgba(109, 221, 255, 0.18);
+  }
+  .pipeline-stage.is-done { @apply text-secondary; }
+  .pipeline-stage.is-done .pipeline-dot { @apply border-secondary bg-secondary; }
+  .pipeline-conn {
+    @apply relative mx-1.5 h-px w-4 shrink-0 bg-on-surface/15 md:mx-3 md:w-14;
+  }
+  .pipeline-conn::after {
+    content: "";
+    @apply absolute inset-y-0 left-0 bg-secondary;
+    width: calc(var(--p, 0) * 100%);
+  }
+
+  /* Escena. --p va de 0 a 1 mientras entra en pantalla (JS). Sin JS vale 1:
+     todo visible. Cada hijo con data-step aparece cuando --p alcanza su turno. */
+  .stage { --p: 1; --steps: 8; }
+  .stage [data-step] {
+    opacity: calc(var(--p) * var(--steps) - var(--step, 0));
+    transform: translateY(calc((1 - clamp(0, var(--p) * var(--steps) - var(--step, 0), 1)) * 16px));
+  }
+  /* Escena pinned (sólo desktop): alta para dar recorrido, contenido sticky */
+  @media (min-width: 768px) {
+    .stage-pinned { height: 250vh; }
+    .stage-pinned > .stage-sticky {
+      @apply sticky flex items-center;
+      top: 112px;
+      height: calc(100vh - 112px);
+    }
+  }
+  .stage-kicker { @apply font-mono text-xs uppercase tracking-[0.25em] text-on-surface-variant; }
+  .stage-cmd { @apply font-mono text-lg text-on-surface-variant md:text-xl; }
+  .stage-card { @apply rounded-xl border border-outline-variant/30 bg-surface-container-low; }
+  .pod {
+    @apply rounded-md border px-3 py-2 font-mono text-xs font-bold text-on-surface;
+    border-color: rgba(47, 248, 1, 0.6);
+    background: rgba(47, 248, 1, 0.1);
+  }
+  .pod-planned {
+    @apply rounded-md border border-dashed border-outline-variant px-3 py-2 font-mono text-xs
+           text-on-surface-variant;
+  }
+  .vital-value { @apply font-mono text-6xl font-bold leading-none tracking-tighter text-on-surface-variant md:text-7xl; }
+  .vital-value.is-good { @apply text-secondary; }
+  .vital-value.is-needs-improvement { @apply text-warning; }
+  .vital-value.is-poor { @apply text-error; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stage [data-step] { opacity: 1 !important; transform: none !important; }
+  }
+
   /* ── Web Vitals chip (Feature #20) ──────────────────── */
 
   .vitals {
