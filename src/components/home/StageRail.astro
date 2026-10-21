@@ -1,0 +1,25 @@
+---
+/**
+ * StageRail.astro — índice de etapas, fijo a la derecha (sólo desktop).
+ * Etiquetas siempre visibles; ParticleField marca la activa (`.is-on`).
+ */
+const STAGES = [
+  { id: "plan", color: "#82a3ff" },
+  { id: "apply", color: "#6dddff" },
+  { id: "rollout", color: "#6dddff" },
+  { id: "observe", color: "#82a3ff" },
+  { id: "deployed", color: "#2ff801" },
+];
+---
+
+<nav class="stage-rail" aria-label="Page stages">
+  <ol>
+    {STAGES.map((s, i) => (
+      <li>
+        <a href={`#stage-${s.id}`} data-rail style={`--c: ${s.color}`}>
+          0{i + 1} {s.id}<i aria-hidden="true"></i>
+        </a>
+      </li>
+    ))}
+  </ol>
+</nav>

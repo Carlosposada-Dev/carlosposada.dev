@@ -1,4 +1,4 @@
-import { CERTIFICATIONS, CERTIFICATION_TRACKS } from "./constants";
+import { CERTIFICATIONS, CERTIFICATION_TRACKS, PLANNED_CERTIFICATIONS } from "./constants";
 
 /**
  * Calcula el tiempo estimado de lectura de un texto
@@ -33,6 +33,24 @@ export function getTrackProgress() {
     ...track,
     earned: CERTIFICATIONS.filter((cert) => cert.issuer === issuer).length,
   }));
+}
+
+/**
+ * Un nodo por emisor, en el orden en que aparece en CERTIFICATIONS (Linux
+ * Foundation primero a propósito), con sus códigos obtenidos y los del roadmap.
+ * Alimenta el clúster de la etapa "apply" de la home.
+ */
+export function getIssuerNodes() {
+  const nodes: Array<{ issuer: string; slug: string; earned: string[]; pending: string[] }> = [];
+  for (const cert of CERTIFICATIONS) {
+    const node = nodes.find((n) => n.issuer === cert.issuer);
+    if (node) node.earned.push(cert.code);
+    else nodes.push({ issuer: cert.issuer, slug: slugify(cert.issuer), earned: [cert.code], pending: [] });
+  }
+  for (const planned of PLANNED_CERTIFICATIONS) {
+    nodes.find((n) => n.issuer === planned.issuer)?.pending.push(planned.code);
+  }
+  return nodes;
 }
 
 /**

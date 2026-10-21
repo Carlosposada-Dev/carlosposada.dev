@@ -124,73 +124,275 @@
 
   /* ── Home: pipeline de deploy guiado por scroll ─────── */
 
-  /* Barra de etapas, pegada bajo el navbar. El conector tras la etapa activa
-     se rellena con el progreso de scroll de esa escena (--p, lo pone el JS). */
-  .pipeline {
-    @apply sticky z-40 border-b border-outline-variant/20;
-    top: 64px;
-    background: rgba(10, 14, 26, 0.92);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+  /* Canvas fijo de ParticleField: el objeto protagonista de cada etapa */
+  .field-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
   }
-  .pipeline-stage {
-    @apply flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest
-           text-on-surface-variant;
+  .home-stages { position: relative; z-index: 1; }
+
+  /* Cursor propio: el script lo activa sólo con puntero fino, ≥ 768 px y sin reduced-motion */
+  .field-cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+    border-radius: 9999px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
   }
-  .pipeline-dot {
-    @apply h-2.5 w-2.5 shrink-0 rounded-full border border-on-surface-variant;
+  .field-cursor-ring { width: 40px; height: 40px; margin: -20px 0 0 -20px; border: 1px solid rgba(226, 228, 246, 0.45); }
+  .field-cursor-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: #6dddff; }
+  html.has-field-cursor,
+  html.has-field-cursor * { cursor: none !important; }
+
+  /* Texto que entra por línea, con máscara */
+  .reveal-line { display: block; overflow: hidden; padding-bottom: 0.07em; margin-bottom: -0.07em; }
+  .reveal-line > span {
+    display: block;
+    transform: translateY(110%);
+    animation: reveal-rise 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--d, 0ms);
   }
-  .pipeline-stage.is-active { @apply text-primary; }
-  .pipeline-stage.is-active .pipeline-dot {
-    @apply border-primary bg-primary;
-    box-shadow: 0 0 0 4px rgba(109, 221, 255, 0.18);
+  .reveal-fade {
+    opacity: 0;
+    animation: reveal-fade 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--d, 0ms);
   }
-  .pipeline-stage.is-done { @apply text-secondary; }
-  .pipeline-stage.is-done .pipeline-dot { @apply border-secondary bg-secondary; }
-  .pipeline-conn {
-    @apply relative mx-1.5 h-px w-4 shrink-0 bg-on-surface/15 md:mx-3 md:w-14;
-  }
-  .pipeline-conn::after {
-    content: "";
-    @apply absolute inset-y-0 left-0 bg-secondary;
-    width: calc(var(--p, 0) * 100%);
+  /* Con la intro de partículas, el texto del hero espera a que el nombre se escriba */
+  .hero-intro [data-hero] .reveal-line > span,
+  .hero-intro [data-hero] .reveal-fade { animation-delay: calc(var(--d, 0ms) + 850ms); }
+
+  .stage-eyebrow { @apply font-mono text-xs uppercase; letter-spacing: 0.08em; }
+  .stage-note { @apply font-mono text-[11px] uppercase; letter-spacing: 0.08em; color: #8b93ad; }
+  .stage-h2 {
+    @apply m-0 font-headline font-bold text-on-surface;
+    font-size: clamp(2.125rem, 4.6vw, 4.25rem);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
   }
 
-  /* Escena. --p va de 0 a 1 mientras entra en pantalla (JS). Sin JS vale 1:
-     todo visible. Cada hijo con data-step aparece cuando --p alcanza su turno. */
-  .stage { --p: 1; --steps: 8; }
-  .stage [data-step] {
-    opacity: calc(var(--p) * var(--steps) - var(--step, 0));
-    transform: translateY(calc((1 - clamp(0, var(--p) * var(--steps) - var(--step, 0), 1)) * 16px));
+  /* Hero */
+  .stage-hero {
+    @apply relative flex min-h-screen flex-col justify-end;
+    padding: 0 clamp(20px, 9vw, 150px) clamp(36px, 7vh, 72px) clamp(20px, 4vw, 56px);
   }
-  /* Escena pinned (sólo desktop): alta para dar recorrido, contenido sticky */
+  .hero-copy { @apply flex flex-col; gap: clamp(18px, 3vh, 30px); will-change: transform, opacity; }
+  .hero-h1 { @apply m-0 flex flex-col; gap: clamp(18px, 3vh, 30px); }
+  .hero-name {
+    @apply block font-headline font-bold text-on-surface;
+    font-size: clamp(64px, 13.6vw, 196px);
+    line-height: 0.86;
+    letter-spacing: -0.06em;
+  }
+  .hero-value {
+    @apply font-headline font-medium text-on-surface;
+    max-width: 640px;
+    font-size: clamp(20px, 2.1vw, 30px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .hero-row { @apply flex flex-wrap items-center; gap: 28px; }
+
+  /* Botón sólido dentro de un campo magnético (el script mueve el botón) */
+  .magnet { display: inline-block; padding: 24px; margin: -24px; }
+  .btn-solid {
+    @apply inline-flex items-center gap-3 font-headline font-bold;
+    height: 56px;
+    padding: 0 26px;
+    border-radius: 6px;
+    font-size: 15px;
+    white-space: nowrap;
+    background: #6dddff;
+    color: #0a0e1a;
+    transition:
+      background-color 0.24s cubic-bezier(0.2, 0, 0, 1),
+      transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+      scale 0.16s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .btn-solid:hover { background: #e2e4f6; color: #0a0e1a; }
+  .btn-solid:active { scale: 0.97; }
+  .btn-solid .material-symbols-outlined { transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1); }
+  .btn-solid:hover .material-symbols-outlined { transform: translateX(4px); }
+
+  /* Subrayado que se dibuja de izquierda a derecha y se recoge hacia la derecha */
+  .link-draw {
+    background: linear-gradient(currentColor, currentColor) no-repeat 100% 100% / 0 1px;
+    padding-bottom: 3px;
+    transition: background-size 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .link-draw:hover { background-position: 0 100%; background-size: 100% 1px; }
+
+  /* Etapas: pinned en desktop (la altura es el recorrido de scroll); en flujo en
+     móvil y con reduced-motion. El objeto vive en .stage-box */
+  .stage-pin { position: relative; }
+  .stage-sticky {
+    @apply flex flex-col;
+    gap: clamp(16px, 3vh, 32px);
+    padding: clamp(96px, 13vh, 128px) clamp(20px, 9vw, 150px) clamp(24px, 4vh, 44px) clamp(20px, 4vw, 56px);
+  }
+  .stage-box { position: relative; min-height: 0; }
+  .stage-box-apply,
+  .stage-box-rollout { height: min(118vw, 560px); }
+  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    .stage-pin-plan { height: 240vh; }
+    .stage-pin-apply { height: 320vh; }
+    .stage-pin-rollout { height: 280vh; }
+    .stage-pin-observe { height: 220vh; }
+    .stage-sticky { position: sticky; top: 0; height: 100vh; }
+    .stage-box { flex: 1 1 auto; }
+    .stage-box-apply,
+    .stage-box-rollout { height: auto; }
+  }
+  @media (min-width: 768px) and (prefers-reduced-motion: reduce) {
+    .stage-sticky { min-height: 100vh; }
+    .stage-box-apply,
+    .stage-box-rollout { height: min(70vh, 640px); }
+  }
+  .stage-foot { @apply flex flex-wrap items-baseline justify-between font-mono text-xs; gap: 12px 32px; color: #8b93ad; }
+
+  /* Plan */
+  .plan-state { @apply font-mono text-xs text-primary; }
+  .plan-state.is-done { @apply text-secondary; }
+  .plan-code { @apply font-mono; font-size: clamp(10.5px, 2.05vw, 30px); line-height: 1.7; white-space: pre; color: #c3c8dd; }
+  .plan-line { min-height: 1.7em; }
+  .plan-add { @apply text-secondary; }
+  .plan-key { @apply text-on-surface; }
+  .plan-val { @apply text-primary; }
+  .plan-muted { color: #8b93ad; }
+
+  /* Etiquetas que siguen al canvas. Sin JS se ven como lista en flujo */
+  .stage-label { @apply font-mono; }
+  .field-on .stage-label { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; }
+
+  /* Apply */
+  .cp-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8b93ad; white-space: nowrap; }
+  .node-label { @apply flex flex-col items-center text-center; gap: 4px; max-width: 200px; font-size: 11px; }
+  .node-name { @apply font-headline text-[15px] font-bold text-on-surface; white-space: nowrap; }
+  .node-slug { color: #8b93ad; white-space: nowrap; }
+  .node-state { white-space: nowrap; }
+  .node-state-pending { display: none; color: #f2c46b; }
+  .node-state-ready { color: #2ff801; }
+  .field-on .node-label:not(.is-ready) .node-state-pending { display: inline; }
+  .field-on .node-label:not(.is-ready) .node-state-ready { display: none; }
+  .node-codes { font-size: 10px; line-height: 1.5; color: #8b93ad; }
+  .field-on .apply-status { opacity: 0; transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+  .field-on .apply-status.is-on { opacity: 1; }
+  .apply-status b { font-weight: 500; }
+  .legend-dot { display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 9999px; background: #f0faff; }
+  .legend-ring { display: inline-block; width: 8px; height: 8px; margin: 0 8px 0 16px; border: 1px solid #8b93ad; border-radius: 9999px; }
+
+  /* Rollout */
+  .dep-label { display: block; max-width: 260px; font-size: 12px; }
+  .dep-label > span { display: block; margin-top: 6px; }
+  .dep-label > span:first-child { margin: 0 0 6px; }
+  .dep-slug { font-size: 11px; color: #8b93ad; }
+  .dep-name {
+    @apply font-headline font-bold text-on-surface;
+    font-size: clamp(17px, 1.6vw, 24px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  /* Observe */
+  .vitals-stage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 3vw, 48px); align-content: center; }
+  .vital-num {
+    @apply block font-headline font-bold text-on-surface;
+    font-size: clamp(56px, 10.5vw, 184px);
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    white-space: nowrap;
+    transition: color 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .vital-num.is-ghost { color: rgba(226, 228, 246, 0.12); }
+  .vital-unit { @apply font-mono text-[13px]; color: #8b93ad; }
+  .vital-unit.is-good { @apply text-secondary; }
+  .vital-unit.is-needs-improvement { @apply text-warning; }
+  .vital-unit.is-poor { @apply text-error; }
+
+  /* Deployed */
+  .stage-deployed {
+    @apply relative flex min-h-screen flex-col justify-end;
+    gap: clamp(28px, 5vh, 52px);
+    padding: clamp(96px, 14vh, 160px) clamp(20px, 9vw, 150px) clamp(48px, 8vh, 96px) clamp(20px, 4vw, 56px);
+  }
+  .ok-ghost {
+    @apply font-headline font-bold;
+    align-self: center;
+    font-size: clamp(64px, 14vw, 200px);
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    white-space: nowrap;
+    color: rgba(226, 228, 246, 0.1);
+  }
+  .deployed-h2 {
+    @apply m-0 font-headline font-bold text-on-surface;
+    font-size: clamp(64px, 12vw, 184px);
+    line-height: 0.86;
+    letter-spacing: -0.06em;
+  }
+  .endpoint { overflow: hidden; border-radius: 12px; background: #0d1324; box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.8); }
+  .endpoint-head { @apply flex justify-between font-mono text-xs; gap: 12px; padding: 14px 20px; background: #111a30; color: #8b93ad; }
+  .endpoint-body { @apply flex flex-col font-mono; gap: 12px; padding: 22px 20px; font-size: clamp(12px, 1.05vw, 14px); line-height: 1.7; color: #c3c8dd; }
+  .endpoint-links {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px 18px;
+    margin: 0;
+    padding-top: 10px;
+    border-top: 1px solid #1a2340;
+    font-size: 13px;
+  }
+  .endpoint-links dt { color: #8b93ad; }
+  .endpoint-links dd { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .endpoint-links a { color: #e2e4f6; }
+
+  /* Raíl de etapas (sólo desktop) */
+  .stage-rail { position: fixed; right: clamp(14px, 2vw, 32px); top: 50%; z-index: 40; display: none; transform: translateY(-50%); }
+  .stage-rail ol { @apply m-0 flex list-none flex-col p-0; gap: 14px; }
+  .stage-rail a {
+    @apply flex items-center justify-end font-mono text-[11px] uppercase;
+    gap: 10px;
+    letter-spacing: 0.08em;
+    color: #8b93ad;
+    white-space: nowrap;
+    transition: color 0.4s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .stage-rail a i { display: block; width: 14px; height: 2px; background: #2a3350; transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s; }
+  .stage-rail a.is-on { @apply text-on-surface; }
+  .stage-rail a.is-on i { width: 28px; background: var(--c, #6dddff); }
+
   @media (min-width: 768px) {
-    .stage-pinned { height: 250vh; }
-    .stage-pinned > .stage-sticky {
-      @apply sticky flex items-center;
-      top: 112px;
-      height: calc(100vh - 112px);
-    }
+    .stage-rail { display: block; }
   }
-  .stage-kicker { @apply font-mono text-xs uppercase tracking-[0.25em] text-on-surface-variant; }
-  .stage-cmd { @apply font-mono text-lg text-on-surface-variant md:text-xl; }
-  .stage-card { @apply rounded-xl border border-outline-variant/30 bg-surface-container-low; }
-  .pod {
-    @apply rounded-md border px-3 py-2 font-mono text-xs font-bold text-on-surface;
-    border-color: rgba(47, 248, 1, 0.6);
-    background: rgba(47, 248, 1, 0.1);
+  /* Móvil: en los nodos sólo el nombre (el estado lo dan las aristas y la línea de
+     estado); las etiquetas del anillo van en lista bajo él, que ocupa un cuadrado arriba */
+  @media (max-width: 767px) {
+    .stage-hero { padding-bottom: 104px; }
+    .node-slug,
+    .node-state,
+    .node-codes,
+    .cp-label { display: none; }
+    .node-name { font-size: 13px; }
+    .stage-box-rollout { height: auto; padding-top: 100%; }
+    .field-on .dep-label { position: static; margin-top: 20px; opacity: 1; max-width: none; }
+    .vitals-stage { grid-template-columns: 1fr; gap: 28px; }
   }
-  .pod-planned {
-    @apply rounded-md border border-dashed border-outline-variant px-3 py-2 font-mono text-xs
-           text-on-surface-variant;
-  }
-  .vital-value { @apply font-mono text-6xl font-bold leading-none tracking-tighter text-on-surface-variant md:text-7xl; }
-  .vital-value.is-good { @apply text-secondary; }
-  .vital-value.is-needs-improvement { @apply text-warning; }
-  .vital-value.is-poor { @apply text-error; }
-
   @media (prefers-reduced-motion: reduce) {
-    .stage [data-step] { opacity: 1 !important; transform: none !important; }
+    .reveal-line > span,
+    .reveal-fade { animation: none; transform: none; opacity: 1; }
+    .btn-solid,
+    .btn-solid .material-symbols-outlined,
+    .link-draw,
+    .stage-rail a i,
+    .vital-num { transition: none; }
   }
 
   /* ── Web Vitals chip (Feature #20) ──────────────────── */
@@ -676,3 +878,7 @@ nav.nav-scrolled {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Keyframes del revelado de la home (fuera de @layer) */
+@keyframes reveal-rise { to { transform: none; } }
+@keyframes reveal-fade { to { opacity: 1; } }

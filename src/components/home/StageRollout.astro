@@ -1,66 +1,37 @@
 ---
 /**
- * StageRollout.astro — etapa 3 de 5.
- * Los proyectos destacados como Deployments en rolling update: las réplicas
- * se van actualizando con el scroll. Sin demo en vivo no se inventa URL.
+ * StageRollout.astro — etapa 3 de 5, pinned en desktop.
+ * El anillo de ParticleField se divide en un arco por deployment: "shipped" se
+ * llena al 100 %; "building" no tiene un dato real de progreso, así que su arco
+ * se pinta como rolling update en curso, sin porcentaje. Las etiquetas las
+ * coloca el script junto a su arco.
  */
-import { FEATURED_PROJECTS } from "@utils/constants";
-
-const ACCENT = {
-  primary: "text-primary border-primary/50",
-  secondary: "text-secondary border-secondary/50",
-  tertiary: "text-tertiary border-tertiary/50",
-} as const;
-
-const REPLICAS = 3;
+import { HOME_DEPLOYMENTS } from "@utils/constants";
 ---
 
-<section id="stage-rollout" class="stage px-6 py-24 md:px-8" style={`--steps: ${2 + FEATURED_PROJECTS.length * REPLICAS};`} data-stage aria-labelledby="rollout-heading">
-  <div class="mx-auto flex w-full max-w-screen-2xl flex-col gap-10">
-    <div class="flex flex-wrap items-end justify-between gap-6">
-      <div class="space-y-3">
-        <p class="stage-kicker" data-step="0" style="--step: 0;">stage 3 of 5</p>
-        <p class="stage-cmd" data-step="0" style="--step: 0;"><span class="text-secondary">$</span> kubectl rollout status deployment/{FEATURED_PROJECTS[0]?.id}</p>
-        <h2 id="rollout-heading" class="font-headline text-4xl font-bold leading-none tracking-tight text-white md:text-5xl" data-step="1" style="--step: 1;">Rolling out<br />the work</h2>
-      </div>
-      <p class="font-mono text-sm text-on-surface-variant md:text-right" data-step="1" style="--step: 1;">deployments <span class="font-bold text-on-surface">{FEATURED_PROJECTS.length}</span></p>
+<section id="stage-rollout" data-stage="rollout" class="stage-pin stage-pin-rollout" aria-labelledby="rollout-heading">
+  <div class="stage-sticky">
+    <div class="flex flex-col gap-3">
+      <span class="stage-eyebrow text-primary">03 — rollout · $ kubectl rollout status</span>
+      <h2 id="rollout-heading" class="stage-h2">Rolling out the work. Honest states only.</h2>
     </div>
 
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
-      {FEATURED_PROJECTS.map((project, i) => (
-        <article class="stage-card flex flex-col gap-5 p-6" data-step="1" style="--step: 1;">
-          <div class="flex items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-widest">
-            <span class="truncate text-on-surface-variant">deployment/{project.id}</span>
-            <span class:list={["shrink-0 rounded border px-2 py-1", ACCENT[project.badgeColor]]}>{project.badge}</span>
-          </div>
-          <h3 class="font-headline text-xl font-bold leading-snug text-white">{project.title}</h3>
-          <p class="text-sm leading-relaxed text-on-surface-variant">{project.description}</p>
-          <ul class="flex flex-wrap gap-2" aria-label="Stack">
-            {project.tags.map((tag) => (
-              <li class={`tech-tag-${tag.color}`}>{tag.label}</li>
-            ))}
-          </ul>
-          <div class="mt-auto space-y-3">
-            <div class="flex justify-between font-mono text-xs text-on-surface-variant">
-              <span>rolling update</span>
-              <span>{REPLICAS} replicas</span>
-            </div>
-            <div class="flex gap-1.5" aria-hidden="true">
-              {Array.from({ length: REPLICAS }, (_, k) => {
-                const step = 2 + i * REPLICAS + k;
-                return (
-                  <span class="h-1.5 flex-1 overflow-hidden rounded-full bg-on-surface/10">
-                    <span class="block h-full bg-secondary" data-step={step} style={`--step: ${step};`}></span>
-                  </span>
-                );
-              })}
-            </div>
-            <a href={project.href} class="link-animated inline-block font-mono text-xs text-primary">details →</a>
-          </div>
-        </article>
+    <div class="stage-box stage-box-rollout" data-box="rollout">
+      {HOME_DEPLOYMENTS.map((d) => (
+        <div class="stage-label dep-label" data-dep-lbl>
+          <span class="dep-slug">deployment/{d.slug}</span>
+          <a href={d.href} class="dep-name link-draw">{d.name}</a>
+          <span class={d.status === "shipped" ? "text-secondary" : "text-warning"}>
+            ● {d.status}{d.status === "building" && " · in progress"}
+          </span>
+          <span class="dep-slug">{d.stack}</span>
+        </div>
       ))}
     </div>
 
-    <a href="/projects" class="link-animated self-end font-mono text-xs uppercase tracking-widest text-primary">all projects → /projects</a>
+    <div class="stage-foot">
+      <span>shipped = public and live · building = in flight, see /now</span>
+      <a href="/projects" class="link-draw font-headline text-base font-bold text-primary">All work →</a>
+    </div>
   </div>
 </section>

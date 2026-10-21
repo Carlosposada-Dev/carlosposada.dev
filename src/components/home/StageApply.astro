@@ -1,106 +1,67 @@
 ---
 /**
  * StageApply.astro — etapa 2 de 5, pinned en desktop.
- * El clúster se construye con el scroll: un nodo por emisor, un pod por
- * certificación (los del roadmap, punteados). Versión corta: la pared
- * completa vive en /about.
+ * El clúster se ensambla con el scroll (lo dibuja ParticleField): control
+ * plane, un nodo por emisor y un pod por certificación; los del roadmap
+ * orbitan huecos. Aquí sólo van las etiquetas que siguen a los nodos y la
+ * versión en texto para lectores de pantalla. La pared completa vive en /about.
  */
-import { CERTIFICATIONS, PLANNED_CERTIFICATIONS, CERTIFICATION_TRACKS } from "@utils/constants";
-import type { Certification, PlannedCertification } from "@utils/constants";
+import { CERTIFICATIONS } from "@utils/constants";
+import { getIssuerNodes, getTrackProgress } from "@utils/helpers";
 
-interface Node {
-  issuer: string;
-  color: string;
-  certs: Certification[];
-  planned: PlannedCertification[];
-}
-
-// Nodos en el orden en que aparece cada emisor en CERTIFICATIONS
-const nodes = CERTIFICATIONS.reduce<Node[]>((acc, cert) => {
-  const node = acc.find((n) => n.issuer === cert.issuer);
-  if (node) node.certs.push(cert);
-  else acc.push({ issuer: cert.issuer, color: cert.accentColor, certs: [cert], planned: [] });
-  return acc;
-}, []);
-for (const planned of PLANNED_CERTIFICATIONS) {
-  nodes.find((n) => n.issuer === planned.issuer)?.planned.push(planned);
-}
-
-// Un paso de revelado por pod, en orden de aparición
-let step = 2;
-const stepped = nodes.map((node) => ({
-  ...node,
-  certs: node.certs.map((cert) => ({ cert, step: step++ })),
-  planned: node.planned.map((cert) => ({ cert, step: step++ })),
-}));
+const nodes = getIssuerNodes();
+const track = getTrackProgress()[0];
 ---
 
-<section id="stage-apply" class="stage stage-pinned" style={`--steps: ${step + 1};`} data-stage aria-labelledby="apply-heading">
-  <div class="stage-sticky px-6 py-16 md:px-8">
-    <div class="mx-auto flex w-full max-w-screen-2xl flex-col gap-8">
-      <div class="flex flex-wrap items-end justify-between gap-6">
-        <div class="space-y-3">
-          <p class="stage-kicker" data-step="0" style="--step: 0;">stage 2 of 5</p>
-          <p class="stage-cmd" data-step="0" style="--step: 0;"><span class="text-secondary">$</span> terraform apply <span class="text-on-surface-variant/60">-auto-approve</span></p>
-          <h2 id="apply-heading" class="font-headline text-4xl font-bold leading-none tracking-tight text-white md:text-5xl" data-step="1" style="--step: 1;">
-            Scheduling {CERTIFICATIONS.length} pods<br />onto {nodes.length} nodes
-          </h2>
-        </div>
-        <p class="font-mono text-sm leading-7 text-on-surface-variant md:text-right" data-step="1" style="--step: 1;">
-          nodes <span class="font-bold text-on-surface">{nodes.length}/{nodes.length} Ready</span><br />
-          pods <span class="font-bold text-secondary">{CERTIFICATIONS.length}/{CERTIFICATIONS.length} Running</span>
-        </p>
-      </div>
+<section id="stage-apply" data-stage="apply" class="stage-pin stage-pin-apply" aria-labelledby="apply-heading">
+  <div class="stage-sticky">
+    <div class="flex flex-col gap-3">
+      <span class="stage-eyebrow text-primary">02 — apply · $ terraform apply -auto-approve</span>
+      <h2 id="apply-heading" class="stage-h2">
+        Scheduling <span class="text-primary" data-pods>{CERTIFICATIONS.length}</span> pods onto
+        <span class="text-primary" data-nodes>{nodes.length}</span> nodes.
+      </h2>
+    </div>
 
-      <div class="flex items-center gap-4" data-step="1" style="--step: 1;">
-        <span class="rounded-md border border-primary px-3 py-2 font-mono text-[11px] uppercase tracking-widest text-primary">control-plane</span>
-        <span class="h-0.5 flex-1 bg-primary" aria-hidden="true"></span>
-      </div>
+    <div class="stage-box stage-box-apply" data-box="apply">
+      <div class="stage-label cp-label" data-cp-lbl aria-hidden="true">control-plane</div>
+      {nodes.map((node) => {
+        const pending = node.pending.length ? ` · ${node.pending.length} pending` : "";
+        return (
+          <div class="stage-label node-label" data-node-lbl aria-hidden="true">
+            <span class="node-name">{node.issuer}</span>
+            <span class="node-slug">node/{node.slug}</span>
+            <span class="node-state">
+              <span class="node-state-pending">Pending</span>
+              <span class="node-state-ready">Ready · {node.earned.length} running{pending}</span>
+            </span>
+            <span class="node-codes">
+              {node.earned.join(" · ")}
+              {node.pending.length > 0 && <span> ○ {node.pending.join(" · ")}</span>}
+            </span>
+          </div>
+        );
+      })}
+      <ul class="sr-only">
+        {nodes.map((node) => (
+          <li>
+            {node.issuer}: {node.earned.join(", ")} earned
+            {node.pending.length > 0 && `; ${node.pending.join(", ")} on the roadmap`}
+          </li>
+        ))}
+      </ul>
+    </div>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {stepped.map((node) => {
-          const track = CERTIFICATION_TRACKS[node.issuer];
-          return (
-            <div
-              class="stage-card flex flex-col gap-4 p-5"
-              style={track ? `border-color: ${node.color}; border-width: 2px;` : undefined}
-            >
-              <div class="flex items-baseline justify-between gap-3">
-                <span class="font-headline text-lg font-bold" style={`color: ${node.color}`}>{node.issuer}</span>
-                <span class="font-mono text-xs text-on-surface-variant">{node.certs.length} pod{node.certs.length > 1 ? "s" : ""}</span>
-              </div>
-              <ul class="flex flex-wrap gap-2" aria-label={`${node.issuer} certifications`}>
-                {node.certs.map(({ cert, step }) => (
-                  <li class="pod" data-step={step} style={`--step: ${step};`}>{cert.code.toLowerCase()}</li>
-                ))}
-                {node.planned.map(({ cert, step }) => (
-                  <li class="pod-planned" data-step={step} style={`--step: ${step};`} title="On the roadmap">{cert.code.toLowerCase()}</li>
-                ))}
-              </ul>
-              {track && (
-                <div class="mt-auto space-y-2 border-t pt-3" style={`border-color: ${node.color}40`}>
-                  <div class="flex items-center justify-between font-mono text-[11px] uppercase tracking-widest" style={`color: ${node.color}`}>
-                    <span class="flex items-center gap-2">
-                      <span class="material-symbols-outlined text-[14px]" aria-hidden="true">{track.icon}</span>
-                      {track.label}
-                    </span>
-                    <span class="font-bold">{node.certs.length}/{track.total}</span>
-                  </div>
-                  <div class="h-1 rounded-full bg-on-surface/10">
-                    <div class="h-1 rounded-full" style={`width: ${(node.certs.length / track.total) * 100}%; background: ${node.color}`}></div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <div class="flex flex-wrap items-center gap-6 font-mono text-[11px] uppercase tracking-widest text-on-surface-variant">
-        <span class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-sm bg-secondary" aria-hidden="true"></span>Running = earned, verifiable</span>
-        <span class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-sm border border-dashed border-on-surface-variant" aria-hidden="true"></span>Pending = on the roadmap</span>
-        <a href="/about#certs-section-heading" class="link-animated ml-auto text-primary">full credential wall → /about</a>
-      </div>
+    <div class="stage-foot">
+      <span class="apply-status" data-apply-status>
+        nodes <b class="text-secondary">{nodes.length}/{nodes.length} Ready</b> · pods
+        <b class="text-secondary">{CERTIFICATIONS.length}/{CERTIFICATIONS.length} Running</b>
+        {track && <> · {track.label.toLowerCase()} <b class="text-on-surface">{track.earned}/{track.total}</b></>}
+      </span>
+      <span>
+        <span class="legend-dot" aria-hidden="true"></span>Running = earned, verifiable
+        <span class="legend-ring" aria-hidden="true"></span>Pending = on the roadmap
+      </span>
     </div>
   </div>
 </section>

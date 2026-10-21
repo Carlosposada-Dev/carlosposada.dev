@@ -1,72 +1,38 @@
 ---
 /**
- * StageObserve.astro — etapa 4 de 5.
- * Dashboard con las Core Web Vitals del propio visitante. Las tiles arrancan
- * en "measuring…" y las pinta el script de WebVitals.astro (footer), que
- * recorre todos los `[data-vitals]` de la página. Las métricas que el
- * navegador no exponga se quedan midiendo: nada se inventa.
+ * StageObserve.astro — etapa 4 de 5, pinned en desktop.
+ * Las Core Web Vitals del propio visitante en números enormes. Los valores
+ * llegan de WebVitals.astro (librería web-vitals) por el evento `webvitals`;
+ * ParticleField los cuenta desde 0 y luego las partículas rellenan los dígitos.
+ * Lo que el navegador no expone se queda en "measuring…": nada se inventa.
  */
-import { CERTIFICATIONS, SITE } from "@utils/constants";
-import { getTrackProgress } from "@utils/helpers";
-
 const VITALS = [
-  { name: "LCP", title: "largest contentful paint", hint: "threshold 2.5 s · how soon the main content showed up" },
-  { name: "INP", title: "interaction to next paint", hint: "threshold 200 ms · how fast it answered your click" },
-  { name: "CLS", title: "cumulative layout shift", hint: "threshold 0.1 · nothing moved under your cursor" },
+  { name: "LCP", title: "largest contentful paint", hint: "good ≤ 2.5 s · how soon the main content showed up" },
+  { name: "INP", title: "interaction to next paint", hint: "good ≤ 200 ms · how fast it answered your click" },
+  { name: "CLS", title: "cumulative layout shift", hint: "good ≤ 0.1 · nothing moved under your cursor" },
 ];
-
-const issuers = [...new Set(CERTIFICATIONS.map((c) => c.issuer))];
-const track = getTrackProgress()[0];
 ---
 
-<section id="stage-observe" class="stage px-6 py-24 md:px-8" style="--steps: 7;" data-stage aria-labelledby="observe-heading">
-  <div class="mx-auto flex w-full max-w-screen-2xl flex-col gap-10">
-    <div class="flex flex-wrap items-end justify-between gap-6">
-      <div class="space-y-3">
-        <p class="stage-kicker" data-step="0" style="--step: 0;">stage 4 of 5</p>
-        <p class="stage-cmd" data-step="0" style="--step: 0;"><span class="text-secondary">$</span> kubectl top <span class="text-on-surface-variant/60">--visitor=you</span></p>
-        <h2 id="observe-heading" class="font-headline text-4xl font-bold leading-none tracking-tight text-white md:text-5xl" data-step="1" style="--step: 1;">These numbers are yours.<br />Measured in your browser, just now.</h2>
-      </div>
-      <p class="max-w-xs font-mono text-xs leading-6 text-on-surface-variant md:text-right" data-step="1" style="--step: 1;">
-        Core Web Vitals, read live with the web-vitals library. No analytics, no cookies.
-        Only the metrics your browser exposes are shown — the rest stay measuring.
-      </p>
+<section id="stage-observe" data-stage="observe" class="stage-pin stage-pin-observe" aria-labelledby="observe-heading">
+  <div class="stage-sticky">
+    <div class="flex flex-col gap-3">
+      <span class="stage-eyebrow text-tertiary">04 — observe · $ kubectl top --visitor=you</span>
+      <h2 id="observe-heading" class="stage-h2">These numbers are yours.</h2>
     </div>
 
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-3" data-vitals>
-      {VITALS.map((vital, i) => (
-        <div class="stage-card flex flex-col gap-4 p-7" data-step={2 + i} style={`--step: ${2 + i};`}>
-          <div class="flex items-center justify-between font-mono text-[11px] uppercase tracking-widest text-on-surface-variant">
-            <span>{vital.name} · {vital.title}</span>
-            <span data-vital-rating={vital.name}>waiting</span>
-          </div>
-          <p class="vital-value" data-vital={vital.name}>measuring…</p>
-          <p class="font-mono text-xs text-on-surface-variant">{vital.hint}</p>
+    <div class="stage-box vitals-stage" data-box="observe">
+      {VITALS.map((v) => (
+        <div class="flex min-w-0 flex-col gap-2.5">
+          <span class="stage-note normal-case tracking-normal">{v.name} · {v.title}</span>
+          <span class="vital-num" data-vnum={v.name}>—</span>
+          <span class="vital-unit" data-vunit>measuring…</span>
+          <span class="stage-note normal-case tracking-normal">{v.hint}</span>
         </div>
       ))}
     </div>
 
-    <div class="grid grid-cols-2 gap-5 lg:grid-cols-4" data-step="5" style="--step: 5;">
-      <div class="stage-card p-5">
-        <p class="stage-kicker">certifications</p>
-        <p class="mt-2 font-headline text-4xl font-bold text-white">{CERTIFICATIONS.length} <span class="text-base font-medium text-on-surface-variant">verified</span></p>
-      </div>
-      <div class="stage-card p-5">
-        <p class="stage-kicker">issuers</p>
-        <p class="mt-2 font-headline text-4xl font-bold text-white">{issuers.length}</p>
-      </div>
-      {track && (
-        <div class="stage-card p-5" style="border-color: #5b8def80">
-          <p class="stage-kicker" style="color: #5b8def">{track.label}</p>
-          <p class="mt-2 font-headline text-4xl font-bold" style="color: #5b8def">{track.earned}/{track.total}</p>
-        </div>
-      )}
-      {SITE.openToWork && (
-        <div class="stage-card p-5">
-          <p class="stage-kicker">status</p>
-          <p class="mt-2 flex items-center gap-3 font-headline text-2xl font-bold text-white"><span class="status-dot" aria-hidden="true"></span>Open to work</p>
-        </div>
-      )}
-    </div>
+    <p class="stage-foot m-0">
+      Measured in your browser just now with the web-vitals library. No analytics, no cookies.
+    </p>
   </div>
 </section>
