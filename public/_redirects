@@ -1,0 +1,6 @@
+# Cloudflare Pages redirects — https://developers.cloudflare.com/pages/configuration/redirects/
+# Projects y Services se fusionaron en /work
+/projects   /work  301
+/projects/  /work  301
+/services   /work  301
+/services/  /work  301

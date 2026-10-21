@@ -10,11 +10,11 @@ Carlos Posada architects high-velocity deployment pipelines and resilient cloud 
 - Email: hello@carlosposada.dev
 - Website: https://carlosposada.dev
 
-## Services
+## Expertise
 
-- [DevOps & Cloud Engineering](/services#devops-cloud): CI/CD pipelines (GitHub Actions, GitLab), Infrastructure as Code (Terraform, Pulumi, CloudFormation), Kubernetes cluster management, DevSecOps & security hardening.
-- [QA Automation](/services#qa-automation): Playwright & Cypress frameworks, API testing (RestAssured, Postman), performance & load testing (k6), visual regression testing.
-- [AI-powered Solutions](/services#ai-solutions): Custom LLM implementation, AIOps for anomaly detection, RAG pipeline architecture, MLOps training workflows.
+- DevOps & Cloud Engineering: CI/CD pipelines (GitHub Actions, GitLab), Infrastructure as Code (Terraform, Pulumi, CloudFormation), Kubernetes cluster management, DevSecOps & security hardening.
+- QA Automation: Playwright & Cypress frameworks, API testing (RestAssured, Postman), performance & load testing (k6), visual regression testing.
+- AI-powered Solutions: Custom LLM implementation, AIOps for anomaly detection, RAG pipeline architecture, MLOps training workflows.
 
 ## Skills
 
@@ -31,8 +31,7 @@ AWS, GCP, Terraform, Kubernetes, Docker, GitHub Actions, Playwright, Python, LLM
 
 - [Home](https://carlosposada.dev/)
 - [About](https://carlosposada.dev/about)
-- [Services](https://carlosposada.dev/services)
-- [Projects](https://carlosposada.dev/projects)
+- [Work — shipped, in flight and the lab roadmap](https://carlosposada.dev/work)
 - [Blog](https://carlosposada.dev/blog)
 - [Now — current focus](https://carlosposada.dev/now)
 - [Contact](https://carlosposada.dev/contact)

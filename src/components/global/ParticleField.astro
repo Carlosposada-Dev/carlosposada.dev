@@ -12,13 +12,31 @@
  * vive en `[data-box]` y las etiquetas que siguen al canvas (`[data-node-lbl]`,
  * `[data-dep-lbl]`…) las posiciona el script. Todo el contenido es HTML real en
  * las secciones; el canvas es `aria-hidden`.
+ *
+ * Con `preset` (páginas internas) no hay etapas: sólo la malla, con el color y
+ * la altura de esa página, que se atenúa al bajar para no competir con el texto.
+ * El título de la página (`[data-name-line]`) se escribe en partículas igual que
+ * el nombre en la home.
  */
-import { HOME_DEPLOYMENTS } from "@utils/constants";
+import { DEPLOYMENTS } from "@utils/constants";
 import { getIssuerNodes } from "@utils/helpers";
 
+export interface Props {
+  preset?: "work" | "about" | "contact" | "blog";
+}
+
+const PRESETS = {
+  work: { rgb: [109, 221, 255], amp: 0.8, hz: 0.5, al: 0.85 },
+  about: { rgb: [130, 163, 255], amp: 0.7, hz: 0.55, al: 0.8 },
+  contact: { rgb: [47, 248, 1], amp: 0.4, hz: 0.6, al: 0.7 },
+  blog: { rgb: [92, 140, 255], amp: 0.6, hz: 0.58, al: 0.8 },
+};
+
+const { preset } = Astro.props;
 const config = {
   nodes: getIssuerNodes().map((n) => ({ earned: n.earned.length, pending: n.pending.length })),
-  deploys: HOME_DEPLOYMENTS.map((d) => d.status),
+  deploys: DEPLOYMENTS.map((d) => d.status),
+  ambient: preset ? PRESETS[preset] : null,
 };
 ---
 
@@ -30,7 +48,8 @@ const config = {
   type Status = "shipped" | "building";
   type VitalName = "LCP" | "INP" | "CLS";
   type Rating = "good" | "needs-improvement" | "poor";
-  interface Config { nodes: Array<{ earned: number; pending: number }>; deploys: Status[] }
+  interface Ambient { rgb: [number, number, number]; amp: number; hz: number; al: number }
+  interface Config { nodes: Array<{ earned: number; pending: number }>; deploys: Status[]; ambient: Ambient | null }
   interface Vital { name: VitalName; value: number; rating: Rating }
   interface MeshParams { amp: number; hz: number; al: number; bump: number; pulse: number }
   interface Glyphs { M: number; x: Float32Array; y: Float32Array; el: Uint8Array; rects: DOMRect[]; sz: number; t0: number }
@@ -65,7 +84,7 @@ const config = {
     private readonly cfg: Config;
     private readonly rm = matchMedia("(prefers-reduced-motion: reduce)").matches;
     private readonly fine = matchMedia("(pointer: fine)").matches;
-    private readonly secs: HTMLElement[];
+    private readonly secs: Array<HTMLElement | null>;
     private readonly boxes: Array<HTMLElement | null>;
     private readonly ring: HTMLElement;
     private readonly dot: HTMLElement;
@@ -108,7 +127,7 @@ const config = {
     private readonly m = { x: 0, y: 0, px: 0, py: 0, sx: 0, sy: 0, h: 0.35, in: false };
     private readonly cur = { x: 0, y: 0, s: 1 };
     private overLink = false; private mag: HTMLElement | null = null;
-    private pulseZ = 0; private mpObs: MeshParams = MESH[4]; private mpDep: MeshParams = MESH[5];
+    private pulseZ = 0; private mpObs: MeshParams = MESH[4]; private mpDep: MeshParams = MESH[5]; private mpAmb: MeshParams = MESH[0];
     private br: Array<DOMRect | null> = []; private lp: number[] = [0, 0, 0, 0, 0, 0];
     private pk = -1; private act = -1; private runShown = -1; private readyShown = -1; private lblW: number[] = [];
     private pl: { x: number; y: number; w: number; h: number; on: number } | null = null;
@@ -124,7 +143,7 @@ const config = {
       this.cfg = JSON.parse(canvas.dataset.config ?? "{}") as Config;
       const q = <T extends HTMLElement>(s: string) => document.querySelector<T>(s);
       const qa = (s: string) => Array.from(document.querySelectorAll<HTMLElement>(s));
-      this.secs = STAGES.map((k) => q(`[data-stage="${k}"]`)!);
+      this.secs = STAGES.map((k) => q(`[data-stage="${k}"]`));
       this.boxes = STAGES.map((k) => q(`[data-box="${k}"]`));
       this.ring = q("[data-cursor-ring]")!;
       this.dot = q("[data-cursor-dot]")!;
@@ -276,29 +295,36 @@ const config = {
       const { W, H, m } = this;
 
       // lecturas de layout, todas antes de cualquier escritura
-      const sr = this.secs.map((s) => s.getBoundingClientRect());
+      const amb = this.cfg.ambient;
       const br = this.boxes.map((b) => (b ? b.getBoundingClientRect() : null));
       this.br = br;
-      // ancla = centro del objeto de la etapa (o de su pantalla); el morph ocurre entre anclas
-      const anc = sr.map((r, k) => { const b = br[k]; return b ? b.top + b.height / 2 : r.top + H / 2; });
-      const c = H / 2;
-      let k = 0;
-      while (k < 5 && anc[k + 1] <= c) k++;
-      let e = k < 5 ? clamp((c - anc[k]) / Math.max(1, anc[k + 1] - anc[k])) : 0;
-      e = clamp((e - 0.3) / 0.4);
-      if (this.rm) e = e < 0.5 ? 0 : 1;
-      const nx = Math.min(5, k + 1);
-      const w = [0, 0, 0, 0, 0, 0];
-      w[k] += 1 - e; w[nx] += e;
-      const pinned = !this.mobile && !this.rm;
-      this.lp = sr.map((r, j) => {
-        if (j === 0) return clamp(-r.top / H);
-        if (j === 5) return clamp((H - r.top) / H);
-        if (this.rm) return 1;
-        if (pinned) return clamp(-r.top / Math.max(1, r.height - H));
-        const b = br[j] ?? r;
-        return clamp((H * 0.9 - b.top) / (H * 0.9));
-      });
+      let k = 0, e = 0, nx = 0;
+      const w = [1, 0, 0, 0, 0, 0];
+      if (amb) {
+        // páginas internas: una sola forma, la malla de la página
+        this.lp = [clamp(y / H), 0, 0, 0, 0, 0];
+        this.mpAmb = { amp: amb.amp, hz: amb.hz, al: amb.al * (1 - 0.55 * clamp(y / (H * 1.2))), bump: 1, pulse: 1 };
+      } else {
+        const sr = this.secs.map((s) => s!.getBoundingClientRect());
+        // ancla = centro del objeto de la etapa (o de su pantalla); el morph ocurre entre anclas
+        const anc = sr.map((r, j) => { const b = br[j]; return b ? b.top + b.height / 2 : r.top + H / 2; });
+        const c = H / 2;
+        while (k < 5 && anc[k + 1] <= c) k++;
+        e = k < 5 ? clamp((c - anc[k]) / Math.max(1, anc[k + 1] - anc[k])) : 0;
+        e = clamp((e - 0.3) / 0.4);
+        if (this.rm) e = e < 0.5 ? 0 : 1;
+        nx = Math.min(5, k + 1);
+        w[0] = 0; w[k] += 1 - e; w[nx] += e;
+        const pinned = !this.mobile && !this.rm;
+        this.lp = sr.map((r, j) => {
+          if (j === 0) return clamp(-r.top / H);
+          if (j === 5) return clamp((H - r.top) / H);
+          if (this.rm) return 1;
+          if (pinned) return clamp(-r.top / Math.max(1, r.height - H));
+          const b = br[j] ?? r;
+          return clamp((H * 0.9 - b.top) / (H * 0.9));
+        });
+      }
 
       const spd = SPEED[k] + (SPEED[nx] - SPEED[k]) * e;
       if (!this.rm) this.time += dt * spd;
@@ -595,7 +621,7 @@ const config = {
     }
 
     private shape(k: number, i: number, out: Float32Array, o: number): number {
-      if (k === 0) return this.mesh(i, MESH[0], out, o);
+      if (k === 0) return this.mesh(i, this.cfg.ambient ? this.mpAmb : MESH[0], out, o);
       if (k === 1) {
         const c = this.mesh(i, MESH[1], out, o), P = this.pl;
         // los pods nacen sobre el "11" de certifications = 11
@@ -700,7 +726,8 @@ const config = {
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       ctx.fillStyle = "#0a0e1a";
       ctx.fillRect(0, 0, W, H);
-      const base = RGB[k].map((v, j) => Math.round(v + (RGB[nx][j] - v) * e));
+      const ra = this.cfg.ambient?.rgb ?? RGB[k], rb = this.cfg.ambient?.rgb ?? RGB[nx];
+      const base = ra.map((v, j) => Math.round(v + (rb[j] - v) * e));
       const key = base.join(",");
       if (key !== this.baseKey) { this.baseKey = key; this.styles[0] = ramp(base); }
       const S = this.styles;

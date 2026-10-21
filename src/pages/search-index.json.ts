@@ -3,9 +3,9 @@ import { getCollection } from "astro:content";
 import {
   CERTIFICATIONS,
   DEFAULT_VERIFIER,
+  DEPLOYMENTS,
   NAV_ITEMS,
-  PROJECTS,
-  SERVICES_DETAIL,
+  ROADMAP,
   SITE,
   SOCIAL_LINKS,
 } from "@utils/constants";
@@ -28,8 +28,7 @@ export const prerender = true;
 const PAGE_KEYWORDS: Record<string, string> = {
   "/": "home start landing index",
   "/about": "bio biography career timeline experience certifications resume cv",
-  "/projects": "work portfolio repos labs github",
-  "/services": "hire consulting freelance offering what i do",
+  "/work": "projects portfolio repos labs github roadmap services hire consulting freelance what i do",
   "/blog": "posts articles writing rss",
   "/contact": "email hire me get in touch message form",
 };
@@ -83,27 +82,26 @@ export const GET: APIRoute = async () => {
       meta: formatDate(post.data.publishedDate),
     })),
 
-    // ── Proyectos ──────────────────────────────────────────
-    ...PROJECTS.map((project) => ({
-      id: `project:${project.id}`,
+    // ── Trabajo: deployments y labs del roadmap ───────────
+    ...DEPLOYMENTS.map((d) => ({
+      id: `project:${d.slug}`,
       type: "project" as const,
-      title: project.title,
-      description: project.description,
-      href: `/projects#${project.id}`,
-      icon: project.icon,
-      keywords: [project.category, ...project.tags].join(" "),
-      meta: project.category,
+      title: d.name,
+      description: d.summary,
+      href: `/work#${d.slug}`,
+      icon: "rocket_launch",
+      keywords: `${d.status} ${d.stack}`,
+      meta: d.status,
     })),
-
-    // ── Servicios ──────────────────────────────────────────
-    ...SERVICES_DETAIL.map((service) => ({
-      id: `service:${service.id}`,
-      type: "service" as const,
-      title: service.title,
-      description: service.shortDescription,
-      href: `/services#${service.id}`,
-      icon: service.icon,
-      keywords: service.bullets.join(" "),
+    ...ROADMAP.map((r) => ({
+      id: `project:${r.repo}`,
+      type: "project" as const,
+      title: r.repo,
+      description: r.proves,
+      href: r.href ?? "/work#roadmap-heading",
+      icon: "deployed_code",
+      keywords: `${r.id} lab roadmap ${r.status}`,
+      meta: r.status,
     })),
 
     // ── Certificaciones (llevan a la credencial en Credly) ─

@@ -108,7 +108,7 @@ certifications are CKA, CKAD, KCSA and CKS — and the remaining Claude Certifie
 
 - **carlosposada.dev** — this site. Astro 5 static build on Cloudflare Pages, with SSR Workers at the edge for the contact form and newsletter (Resend API), a Markdown blog with build-time syntax highlighting, RSS, and Schema.org structured data. Source: https://github.com/Carlosposada-Dev
 
-A series of reproducible Infrastructure-as-Code labs (Terraform on AWS: ECS Fargate, and EKS across managed node groups, self-managed nodes and Auto Mode, plus ArgoCD, Kyverno, Istio and platform-engineering tooling) is in progress; each one will be published as a public repository with an accompanying write-up on https://carlosposada.dev/blog. See https://carlosposada.dev/now for what is currently in flight.
+A series of reproducible Infrastructure-as-Code labs (Terraform on AWS: ECS Fargate, and EKS across managed node groups, self-managed nodes and Auto Mode, plus ArgoCD, Kyverno, Istio and platform-engineering tooling) is in progress; each one will be published as a public repository with an accompanying write-up on https://carlosposada.dev/blog. See https://carlosposada.dev/now for what is currently in flight, and https://carlosposada.dev/work for the full roadmap of labs (R1–R11) with the status of each one.
 
 ## Contact Information
 

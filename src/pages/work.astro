@@ -1,0 +1,83 @@
+---
+/**
+ * work.astro — Work (antes Projects + Services)
+ * Sin catálogo de servicios: el trabajo habla por sí solo. Arriba lo que está
+ * shipped o en curso (DEPLOYMENTS), debajo el roadmap de labs (ROADMAP), que
+ * nunca se marca como hecho hasta que es un repo público con su write-up.
+ * /projects y /services redirigen aquí (public/_redirects).
+ */
+import PageLayout from "@layouts/PageLayout.astro";
+import ParticleField from "@components/global/ParticleField.astro";
+import PageHero from "@components/ui/PageHero.astro";
+import PageCta from "@components/ui/PageCta.astro";
+import { DEPLOYMENTS, ROADMAP } from "@utils/constants";
+
+const shipped = ROADMAP.filter((r) => r.status === "shipped").length;
+---
+
+<PageLayout
+  title="Work"
+  description="Cloud & DevOps work by Carlos Posada: what is shipped, what is in flight and the roadmap of reproducible Terraform labs on AWS — ECS, EKS, ArgoCD, Kyverno, Istio and platform engineering."
+  schemaType="services"
+>
+  <ParticleField preset="work" />
+  <div class="page-wrap">
+    <PageHero
+      eyebrow="$ kubectl get deployments --all-namespaces"
+      title="Work"
+      lede="Shipped, in flight and planned. Nothing is marked done until it is a public repo with a write-up."
+    />
+
+    <section class="page-section" aria-labelledby="deployments-heading">
+      <div class="page-section-head">
+        <span class="stage-eyebrow text-primary">01 — deployments</span>
+        <h2 id="deployments-heading" class="stage-h2">Rolling out.</h2>
+      </div>
+      <ol class="deploy-list">
+        {DEPLOYMENTS.map((d, i) => (
+          <li class="deploy-row scroll-reveal fade-up" id={d.slug} style={`--reveal-delay: ${i * 90}ms`}>
+            <span class="deploy-index">0{i + 1}</span>
+            <div class="deploy-main">
+              <span class="dep-slug">deployment/{d.slug}</span>
+              <h3 class="deploy-name"><a href={d.href} class="link-draw">{d.name}</a></h3>
+              <p class="deploy-summary">{d.summary}</p>
+              <span class="dep-slug">{d.stack}</span>
+            </div>
+            <div class="deploy-status">
+              <span class={d.status === "shipped" ? "text-secondary" : "text-warning"}>
+                ● {d.status}{d.status === "building" && " · in progress"}
+              </span>
+              <span class:list={["rollbar", `is-${d.status}`]} aria-hidden="true"><i></i></span>
+              <span class="dep-slug">{d.status === "shipped" ? "live" : "no public repo yet"}</span>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="page-section" aria-labelledby="roadmap-heading">
+      <div class="page-section-head">
+        <span class="stage-eyebrow text-tertiary">02 — roadmap · $ terraform plan -target=labs</span>
+        <h2 id="roadmap-heading" class="stage-h2">{ROADMAP.length} labs, built in order.</h2>
+        <p class="page-lede">
+          Each one becomes a public repo — <code>make up</code>, <code>make down</code>, a cost box and an
+          honest "what broke" section — and one to three posts. {shipped} of {ROADMAP.length} shipped so far.
+        </p>
+      </div>
+      <ol class="roadmap">
+        {ROADMAP.map((r, i) => (
+          <li class:list={["roadmap-item scroll-reveal fade-up", `is-${r.status}`]} style={`--reveal-delay: ${(i % 4) * 70}ms`}>
+            <span class="roadmap-id">{r.id}</span>
+            <span class="roadmap-repo">
+              {r.href ? <a href={r.href} class="link-draw">{r.repo}</a> : r.repo}
+            </span>
+            <span class="roadmap-proves">{r.proves}</span>
+            <span class="roadmap-state">{r.status}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <PageCta title="Have infrastructure to build?" />
+  </div>
+</PageLayout>

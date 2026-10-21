@@ -39,18 +39,11 @@ const year = new Date().getFullYear();
         <h3 class="font-headline font-bold text-white mb-4 uppercase tracking-wider text-sm">Expertise</h3>
         <ul class="space-y-3">
           {SERVICES.map((service) => (
-            <li>
-              <a
-                href={`/services#${service.id}`}
-                class="text-sm text-on-surface/60 hover:text-primary transition-colors duration-300"
-              >
-                {service.title}
-              </a>
-            </li>
+            <li class="text-sm text-on-surface/60">{service.title}</li>
           ))}
           <li>
-            <a href="/projects" class="text-sm text-on-surface/60 hover:text-primary transition-colors duration-300">
-              View All Projects
+            <a href="/work" class="text-sm text-on-surface/60 hover:text-primary transition-colors duration-300">
+              See the work
             </a>
           </li>
         </ul>

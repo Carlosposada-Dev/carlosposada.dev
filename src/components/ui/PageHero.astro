@@ -1,0 +1,30 @@
+---
+/**
+ * PageHero.astro — cabecera de las páginas internas, en el lenguaje de la home.
+ * Etiqueta mono pequeña, título gigante y una línea de contexto. ParticleField
+ * escribe el título en partículas (`[data-name-line]`) y luego lo suelta en la
+ * malla; el texto real sube por debajo, igual que el nombre en la home.
+ */
+export interface Props {
+  /** Comando o contexto en mono, p. ej. "$ whoami" */
+  eyebrow: string;
+  /** Título de una palabra; se pinta con punto final en color */
+  title: string;
+  lede?: string;
+}
+
+const { eyebrow, title, lede } = Astro.props;
+---
+
+<header class="page-hero" data-hero>
+  <!-- Antes del primer pintado: con animación, el texto espera a la intro de partículas -->
+  <script is:inline>
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("hero-intro");
+  </script>
+  <span class="reveal-line"><span class="stage-eyebrow text-primary" style="--d: 150ms">{eyebrow}</span></span>
+  <h1 class="page-title">
+    <span class="reveal-line" data-name-line data-text={`${title}.`}><span style="--d: 250ms">{title}<span class="text-primary">.</span></span></span>
+  </h1>
+  {lede && <p class="reveal-fade page-lede" style="--d: 450ms">{lede}</p>}
+  <slot />
+</header>

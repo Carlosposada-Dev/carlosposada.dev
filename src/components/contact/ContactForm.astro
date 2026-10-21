@@ -1,169 +1,58 @@
 ---
 /**
  * ContactForm.astro
- * Formulario de contacto con:
+ * El formulario como una petición: cabecera `POST /api/contact`, campos en mono
+ * y la respuesta del Worker pintada como código HTTP.
  * - Validación client-side antes de enviar
  * - Submit via fetch al Cloudflare Worker en /api/contact
- * - Estados: idle | loading | success | error
- * - Accesibilidad: aria-live para mensajes de estado
+ * - Estados: idle | loading | success | error, anunciados con aria-live
  */
 ---
 
-<div
-  class="bg-surface-container rounded-2xl p-8 lg:p-12
-         border border-outline-variant/20 shadow-glow-primary
-         relative overflow-hidden"
->
-  <!-- Glow decorativo -->
-  <div
-    class="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"
-    aria-hidden="true"
-  ></div>
-
-  <!-- Formulario -->
-  <form
-    id="contact-form"
-    class="space-y-6 relative z-10"
-    novalidate
-    aria-label="Contact form"
-  >
-    <!-- Fila: nombre + email -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-      <!-- Nombre -->
-      <div class="space-y-2">
-        <label
-          for="name"
-          class="block text-xs font-label uppercase tracking-widest text-on-surface-variant"
-        >
-          Full Name
-        </label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          autocomplete="name"
-          placeholder="John Doe"
-          required
-          minlength="2"
-          class="input-base"
-          aria-required="true"
-          aria-describedby="name-error"
-        />
-        <p id="name-error" class="field-error hidden text-error text-xs mt-1" role="alert"></p>
+<div class="endpoint">
+  <div class="endpoint-head"><span>POST /api/contact</span><span class="text-secondary">● healthy</span></div>
+  <form id="contact-form" class="request-body" novalidate aria-label="Contact form">
+    <div class="request-grid">
+      <div class="request-field">
+        <label for="name">name</label>
+        <input id="name" name="name" type="text" autocomplete="name" placeholder="Jane Doe" required minlength="2" aria-required="true" aria-describedby="name-error" />
+        <p id="name-error" class="field-error hidden" role="alert"></p>
       </div>
-
-      <!-- Email -->
-      <div class="space-y-2">
-        <label
-          for="email"
-          class="block text-xs font-label uppercase tracking-widest text-on-surface-variant"
-        >
-          Email Address
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autocomplete="email"
-          placeholder="john@company.com"
-          required
-          class="input-base"
-          aria-required="true"
-          aria-describedby="email-error"
-        />
-        <p id="email-error" class="field-error hidden text-error text-xs mt-1" role="alert"></p>
+      <div class="request-field">
+        <label for="email">email</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="jane@company.com" required aria-required="true" aria-describedby="email-error" />
+        <p id="email-error" class="field-error hidden" role="alert"></p>
       </div>
     </div>
 
-    <!-- Tipo de consulta -->
-    <div class="space-y-2">
-      <label
-        for="inquiry"
-        class="block text-xs font-label uppercase tracking-widest text-on-surface-variant"
-      >
-        Type of Inquiry
-      </label>
+    <div class="request-field">
+      <label for="inquiry">inquiry</label>
       <div class="relative">
-        <select
-          id="inquiry"
-          name="inquiry"
-          class="input-base appearance-none cursor-pointer pr-10"
-          aria-required="true"
-        >
-          <option value="hiring">Hiring (Full-time)</option>
-          <option value="freelance">Freelance Project</option>
+        <select id="inquiry" name="inquiry" aria-required="true">
+          <option value="hiring">Hiring (full-time)</option>
+          <option value="freelance">Freelance project</option>
           <option value="collaboration">Collaboration</option>
           <option value="other">Other</option>
         </select>
-        <!-- Chevron decorativo -->
-        <span
-          class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2
-                 text-on-surface-variant pointer-events-none text-lg"
-          aria-hidden="true"
-        >
-          expand_more
-        </span>
+        <span class="material-symbols-outlined request-chevron" aria-hidden="true">expand_more</span>
       </div>
     </div>
 
-    <!-- Mensaje -->
-    <div class="space-y-2">
-      <label
-        for="message"
-        class="block text-xs font-label uppercase tracking-widest text-on-surface-variant"
-      >
-        Your Message
-      </label>
-      <textarea
-        id="message"
-        name="message"
-        rows="5"
-        placeholder="Tell me about your project infrastructure or goals..."
-        required
-        minlength="10"
-        class="input-base resize-none"
-        aria-required="true"
-        aria-describedby="message-error"
-      ></textarea>
-      <p id="message-error" class="field-error hidden text-error text-xs mt-1" role="alert"></p>
+    <div class="request-field">
+      <label for="message">message</label>
+      <textarea id="message" name="message" rows="6" placeholder="The infrastructure, the goal, the timeline." required minlength="10" aria-required="true" aria-describedby="message-error"></textarea>
+      <p id="message-error" class="field-error hidden" role="alert"></p>
     </div>
 
-    <!-- Botón de submit -->
-    <button
-      id="submit-btn"
-      type="submit"
-      class="w-full flex items-center justify-center gap-3
-             bg-primary-container hover:bg-primary
-             text-on-primary-container
-             font-headline font-bold py-4 rounded-lg
-             shadow-lg hover:shadow-glow-primary-md
-             transition-all duration-200 active:scale-[0.98]
-             disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
-    >
-      <span id="btn-label">Transmit Message</span>
-      <span
-        id="btn-icon"
-        class="material-symbols-outlined transition-transform group-hover:translate-x-0.5"
-        aria-hidden="true"
-      >
-        send
-      </span>
+    <button id="submit-btn" type="submit" class="btn-solid w-full justify-center">
+      <span id="btn-label">Send request</span>
+      <span id="btn-icon" class="material-symbols-outlined text-lg" aria-hidden="true">arrow_forward</span>
     </button>
 
-    <!-- Mensaje de estado (accesible con aria-live) -->
-    <div
-      id="form-status"
-      class="hidden rounded-lg px-4 py-3 text-sm font-body text-center"
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-    ></div>
+    <div id="form-status" class="request-status hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 
-    <!-- Nota de privacidad -->
-    <p class="text-center text-xs text-on-surface-variant/60 font-body">
-      By submitting, you agree to our{" "}
-      <a href="/privacy" class="text-primary hover:underline">privacy policy</a>.
+    <p class="stage-note m-0 normal-case tracking-normal">
+      By submitting, you agree to the <a href="/privacy" class="link-draw text-on-surface">privacy policy</a>.
       Response time is typically within 24 hours.
     </p>
   </form>
@@ -174,105 +63,53 @@
    * Lógica del formulario de contacto.
    * 1. Valida campos client-side antes de enviar.
    * 2. Hace fetch POST a /api/contact (Cloudflare Worker).
-   * 3. Gestiona los estados: idle → loading → success / error.
+   * 3. Pinta la respuesta como código HTTP: idle → loading → success / error.
+   *
+   * Se enlaza en `astro:page-load`: un módulo sólo se ejecuta una vez, así que
+   * llegando por View Transitions el formulario no tendría handler y el envío
+   * nativo pondría los campos en la URL.
    */
-
-  // ── Tipos ─────────────────────────────────────────────
   type FormState = "idle" | "loading" | "success" | "error";
 
-  // ── Referencias al DOM ─────────────────────────────────
-  const form = document.getElementById("contact-form") as HTMLFormElement | null;
-  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement | null;
-  const btnLabel = document.getElementById("btn-label");
-  const btnIcon = document.getElementById("btn-icon");
-  const statusEl = document.getElementById("form-status");
+  function init() {
+    const form = document.getElementById("contact-form") as HTMLFormElement | null;
+    const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement | null;
+    const btnLabel = document.getElementById("btn-label");
+    const btnIcon = document.getElementById("btn-icon");
+    const statusEl = document.getElementById("form-status");
+    if (!form || !submitBtn || !btnLabel || !btnIcon || !statusEl || form.dataset.bound) return;
+    form.dataset.bound = "1";
 
-  if (!form || !submitBtn || !btnLabel || !btnIcon || !statusEl) {
-    console.warn("[ContactForm] DOM elements not found");
-  } else {
-    // ── Helpers ──────────────────────────────────────────
-
-    /** Muestra / oculta el estado del formulario con estilo */
     function setStatus(state: FormState, message = "") {
-      statusEl!.className =
-        "rounded-lg px-4 py-3 text-sm font-body text-center transition-all";
-
+      statusEl!.className = "request-status";
       if (state === "idle") {
         statusEl!.classList.add("hidden");
         statusEl!.textContent = "";
         return;
       }
-
-      statusEl!.classList.remove("hidden");
-
-      if (state === "loading") {
-        statusEl!.classList.add("bg-surface-container-high", "text-on-surface-variant");
-        statusEl!.textContent = message || "Transmitting...";
-      } else if (state === "success") {
-        statusEl!.classList.add("bg-secondary/10", "border", "border-secondary/30", "text-secondary");
-        statusEl!.textContent = message;
-      } else if (state === "error") {
-        statusEl!.classList.add("bg-error/10", "border", "border-error/30", "text-error");
-        statusEl!.textContent = message;
-      }
+      statusEl!.classList.add(`is-${state}`);
+      statusEl!.textContent = message;
     }
 
-    /** Muestra error en un campo específico */
     function showFieldError(fieldId: string, msg: string) {
       const errorEl = document.getElementById(`${fieldId}-error`);
       if (errorEl) {
         errorEl.textContent = msg;
         errorEl.classList.remove("hidden");
       }
-      const input = document.getElementById(fieldId);
-      input?.classList.add("!border-error", "!shadow-none");
+      document.getElementById(fieldId)?.classList.add("is-invalid");
     }
 
-    /** Limpia todos los errores de campo */
     function clearFieldErrors() {
       form!.querySelectorAll<HTMLElement>(".field-error").forEach((el) => {
         el.textContent = "";
         el.classList.add("hidden");
       });
-      form!.querySelectorAll("input, textarea, select").forEach((el) => {
-        el.classList.remove("!border-error", "!shadow-none");
-      });
+      form!.querySelectorAll("input, textarea, select").forEach((el) => el.classList.remove("is-invalid"));
     }
 
-    /** Crea partículas CSS para éxito (Feature #15) */
-    function triggerConfetti() {
-      const container = document.createElement("div");
-      container.className = "fixed inset-0 pointer-events-none z-50 overflow-hidden";
-      document.body.appendChild(container);
-
-      const colors = ["#6dddff", "#82a3ff", "#2ff801", "#FF9900", "#c682ff"];
-      
-      for (let i = 0; i < 60; i++) {
-        const confetti = document.createElement("div");
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        const left = Math.random() * 100;
-        const animDuration = Math.random() * 2 + 2;
-        const animDelay = Math.random() * 0.5;
-        
-        confetti.className = "absolute w-2 h-3 rounded-sm opacity-0";
-        confetti.style.backgroundColor = color;
-        confetti.style.left = `${left}%`;
-        confetti.style.top = "-20px";
-        confetti.style.animation = `confetti-fall ${animDuration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${animDelay}s forwards`;
-        
-        // Rotación inicial aleatoria
-        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-        
-        container.appendChild(confetti);
-      }
-      
-      setTimeout(() => container.remove(), 5000);
-    }
-
-    /** Valida el formulario y devuelve true si todo está OK */
     function validate(data: FormData): boolean {
       let valid = true;
-
       const name = (data.get("name") as string)?.trim();
       const email = (data.get("email") as string)?.trim();
       const message = (data.get("message") as string)?.trim();
@@ -281,48 +118,34 @@
         showFieldError("name", "Please enter your full name (min. 2 characters).");
         valid = false;
       }
-
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email || !emailRegex.test(email)) {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         showFieldError("email", "Please enter a valid email address.");
         valid = false;
       }
-
       if (!message || message.length < 10) {
         showFieldError("message", "Message must be at least 10 characters.");
         valid = false;
       }
-
       return valid;
     }
 
-    /** Cambia el estado visual del botón */
     function setButtonState(loading: boolean) {
       submitBtn!.disabled = loading;
-      if (loading) {
-        btnLabel!.textContent = "Transmitting...";
-        btnIcon!.textContent = "sync";
-        btnIcon!.classList.add("animate-spin");
-      } else {
-        btnLabel!.textContent = "Transmit Message";
-        btnIcon!.textContent = "send";
-        btnIcon!.classList.remove("animate-spin");
-      }
+      btnLabel!.textContent = loading ? "Sending…" : "Send request";
+      btnIcon!.textContent = loading ? "progress_activity" : "arrow_forward";
+      btnIcon!.classList.toggle("animate-spin", loading);
     }
 
-    // ── Submit handler ────────────────────────────────────
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       clearFieldErrors();
       setStatus("idle");
 
       const data = new FormData(form);
-
-      // Validar antes de enviar
       if (!validate(data)) return;
 
       setButtonState(true);
-      setStatus("loading", "Transmitting your message...");
+      setStatus("loading", "→ POST /api/contact …");
 
       try {
         const response = await fetch("/api/contact", {
@@ -337,23 +160,15 @@
         });
 
         if (response.ok) {
-          setStatus("success", "✓ Message received! I'll get back to you within 24 hours.");
-          triggerConfetti();
+          setStatus("success", `HTTP/2 ${response.status} OK — message received. I'll reply within 24 hours.`);
           form.reset();
         } else {
           // El Worker devuelve JSON con un campo `error`
           const body = await response.json().catch(() => ({}));
-          throw new Error((body as { error?: string }).error || "Server error");
+          setStatus("error", `HTTP/2 ${response.status} — ${(body as { error?: string }).error || "Server error. Please try again."}`);
         }
-      } catch (err) {
-        const msg =
-          err instanceof Error ? err.message : "Unexpected error. Please try again.";
-        setStatus(
-          "error",
-          msg.includes("Failed to fetch")
-            ? "Connection error. Please check your network and try again."
-            : `⚠ ${msg}`
-        );
+      } catch {
+        setStatus("error", "Connection error — check your network and try again.");
       } finally {
         setButtonState(false);
       }
@@ -362,14 +177,15 @@
     // Limpiar error de campo al escribir
     form.querySelectorAll("input, textarea").forEach((el) => {
       el.addEventListener("input", () => {
-        const id = (el as HTMLElement).id;
-        const errorEl = document.getElementById(`${id}-error`);
+        const errorEl = document.getElementById(`${(el as HTMLElement).id}-error`);
         if (errorEl) {
           errorEl.textContent = "";
           errorEl.classList.add("hidden");
         }
-        el.classList.remove("!border-error", "!shadow-none");
+        el.classList.remove("is-invalid");
       });
     });
   }
+
+  document.addEventListener("astro:page-load", init);
 </script>

@@ -1,106 +1,26 @@
 ---
 /**
  * ProfileCard.astro
- * Tarjeta de perfil izquierda en About:
- * foto profesional (grayscale → color on hover),
- * badge "Open to Work" animado y links sociales.
+ * Retrato (gris → color al hover) con el estado debajo, en mono. Sin glow ni
+ * badges flotantes: el estado es una línea de texto, como el resto del sitio.
  */
-import { SOCIAL_LINKS, SITE } from "@utils/constants";
+import { SITE } from "@utils/constants";
 ---
 
-<div class="flex flex-col items-center lg:items-start gap-10">
-
-  <!-- Foto + glow decorativo -->
-  <div class="relative group w-full max-w-sm lg:max-w-none">
-
-    <!-- Glow de fondo que se intensifica al hover -->
-    <div
-      class="absolute -inset-4 bg-gradient-to-tr from-primary/20 to-secondary/20
-             blur-2xl opacity-50 group-hover:opacity-80 transition-opacity duration-500"
-      aria-hidden="true"
-    ></div>
-
-    <!-- Contenedor de la imagen -->
-    <div
-      class="relative w-full aspect-[4/5] rounded-xl overflow-hidden
-             border border-outline-variant/30 bg-surface-container shadow-2xl"
-    >
-      <img
-        src="/images/portrait.webp"
-        alt={`${SITE.author} — Cloud & DevOps Engineer`}
-        width="424"
-        height="512"
-        class="w-full h-full object-cover object-top
-               grayscale hover:grayscale-0 transition-all duration-700"
-        loading="eager"
-        decoding="async"
-        fetchpriority="high"
-      />
-
-      <!-- Badge "Open to Work" -->
-      {SITE.openToWork && (
-        <div
-          class="absolute top-5 right-5 flex items-center gap-2
-                 bg-surface-container-highest/85 backdrop-blur-md
-                 px-4 py-2 rounded-lg border border-secondary/30
-                 shadow-glow-secondary"
-          aria-label="Currently open to new opportunities"
-        >
-          <!-- Punto pulsante -->
-          <span class="relative flex h-3 w-3" aria-hidden="true">
-            <span
-              class="animate-ping absolute inline-flex h-full w-full
-                     rounded-full bg-secondary opacity-75"
-            ></span>
-            <span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
-          </span>
-          <span class="font-label text-xs font-bold text-secondary uppercase tracking-widest">
-            Open to Work
-          </span>
-        </div>
-      )}
-    </div>
+<figure class="profile">
+  <div class="profile-photo">
+    <img
+      src="/images/portrait.webp"
+      alt={`${SITE.author} — Cloud & DevOps Engineer`}
+      width="424"
+      height="512"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+    />
   </div>
-
-  <!-- Links sociales -->
-  <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4" aria-label="Social links">
-    {SOCIAL_LINKS.map((link) => (
-      <a
-        href={link.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={link.label}
-        class="group flex items-center justify-center w-12 h-12 shrink-0 rounded-lg
-               bg-surface-container-low border border-outline-variant/20
-               hover:border-primary/50 hover:bg-surface-container
-               transition-all duration-300"
-      >
-        <svg
-          viewBox={link.svgViewBox ?? "0 0 24 24"}
-          class="w-5 h-5 fill-current text-on-surface-variant group-hover:text-primary transition-colors"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path d={link.svgPath} />
-        </svg>
-      </a>
-    ))}
-
-    <!-- Separador decorativo -->
-    <div class="h-px w-16 bg-outline-variant/30" aria-hidden="true"></div>
-    <span class="font-label text-xs text-on-surface-variant uppercase tracking-[0.2em]">
-      Connect
-    </span>
-  </div>
-
-  <!-- CV: vivía en el hero de Home; aquí es su sitio natural -->
-  <a href="/carlos-posada-cv.pdf" download class="btn-ghost group">
-    Download CV
-    <span
-      class="material-symbols-outlined text-lg group-hover:translate-y-0.5 transition-transform"
-      aria-hidden="true"
-    >
-      download
-    </span>
-  </a>
-</div>
+  <figcaption class="profile-caption">
+    <span>{SITE.location} · {SITE.timezone}</span>
+    {SITE.openToWork && <span class="text-secondary">● open to work</span>}
+  </figcaption>
+</figure>

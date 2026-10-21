@@ -5,7 +5,7 @@
  * cada 2–4 semanas y la página muestra cuándo fue la última vez.
  */
 import PageLayout from "@layouts/PageLayout.astro";
-import CTABanner from "@components/home/CTABanner.astro";
+import PageCta from "@components/ui/PageCta.astro";
 import { NOW, SITE } from "@utils/constants";
 
 const updated = new Date(`${NOW.updated}T00:00:00Z`);
@@ -131,5 +131,5 @@ const ACCENT = {
     </p>
   </div>
 
-  <CTABanner />
+  <div class="page-wrap"><PageCta /></div>
 </PageLayout>
