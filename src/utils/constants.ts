@@ -16,6 +16,9 @@ export const SITE = {
   timezone: "COT (UTC-5)",
   email: "hello@carlosposada.dev",
   openToWork: true,
+  /** Línea `role` del terraform plan de la home */
+  role: "Cloud · DevOps · Kubernetes",
+  experience: "10+ years",
 } as const;
 
 // ─────────────────────────────────────────────────────────
@@ -516,6 +519,43 @@ export const FEATURED_PROJECTS: FeaturedProject[] = [
       { label: "Docker", color: "tertiary" },
     ],
     href: "/projects#infra-intelligence-bot",
+  },
+];
+
+// ─────────────────────────────────────────────────────────
+// Deployments de la home (etapa "rollout")
+// Sólo trabajo verificable. "building" no lleva porcentaje: no hay un dato
+// real de progreso, así que el arco se pinta como rolling update en curso.
+// ─────────────────────────────────────────────────────────
+export interface HomeDeployment {
+  slug: string;
+  name: string;
+  status: "shipped" | "building";
+  stack: string;
+  href: string;
+}
+
+export const HOME_DEPLOYMENTS: HomeDeployment[] = [
+  {
+    slug: "carlosposada-dev",
+    name: "carlosposada.dev",
+    status: "shipped",
+    stack: "Astro · Cloudflare Workers · Resend",
+    href: "https://github.com/Carlosposada-Dev",
+  },
+  {
+    slug: "aws-terraform-baseline",
+    name: "AWS Terraform baseline",
+    status: "building",
+    stack: "Terraform · AWS · GitHub OIDC",
+    href: "/now",
+  },
+  {
+    slug: "iac-labs-ecs-eks",
+    name: "IaC labs: ECS and EKS",
+    status: "building",
+    stack: "Terraform · ECS · EKS · ArgoCD",
+    href: "/now",
   },
 ];
 

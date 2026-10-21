@@ -300,26 +300,47 @@ aplica `_headers`; `astro dev` no).
 
 ### Home: la página se despliega al hacer scroll
 
-`src/pages/index.astro` es un pipeline de cinco etapas, una sección `[data-stage]` por
-etapa (`components/home/Stage*.astro`): plan → apply → rollout → observe → deployed.
-`PipelineBar.astro` (sticky bajo el navbar) mide en cada scroll cuánto ha entrado cada
-sección y lo publica como `--p` (0→1) en la propia sección y en el conector de la barra.
+`src/pages/index.astro` son seis secciones `[data-stage]` (`components/home/Stage*.astro`):
+hero → plan → apply → rollout → observe → deployed. El protagonista es **un único canvas
+fijo** (`ParticleField.astro`) cuyas ~6 200 partículas (2 600 en móvil) forman el objeto
+de cada etapa y hacen morph a la siguiente con el scroll:
 
-- **El revelado es CSS puro a partir de `--p`**: cada hijo con `data-step="n"` y
-  `--step: n` aparece cuando `--p · --steps` supera `n` (ver `.stage [data-step]` en
-  `global.css`). Sin JS, `--p` vale 1 y todo es visible; con `prefers-reduced-motion`,
-  idem. No hay librería de animación ni `animation-timeline` — sólo `calc()` y `clamp()`.
-- **Apply va pinned en desktop**: la sección mide 250 vh y su `.stage-sticky` se pega a
-  `top: 112px` (navbar + barra). Ese 112 está duplicado como `HEADER` en el script de
-  `PipelineBar`: si cambia uno, cambia el otro. En móvil no hay pinned.
-- Todo el contenido sale de `constants.ts`: pods = `CERTIFICATIONS` (+ `PLANNED` punteadas),
-  track = `CERTIFICATION_TRACKS` vía `getTrackProgress()`, deployments =
-  `FEATURED_PROJECTS`, endpoints = `SITE` + `SOCIAL_LINKS`. Las tiles de observe las pinta
-  el script de `WebVitals.astro`, que recorre todos los `[data-vitals]` de la página; las
-  métricas que el navegador no expone se quedan en "measuring…".
-- `html { scroll-behavior: smooth }` + un panel sin frames hace que `scrollTo` no mueva
-  nada y `requestAnimationFrame` no dispare: para probar el scroll desde herramientas, usar
-  `behavior: 'instant'` y disparar `astro:page-load`, que llama a `update()` directo.
+| Etapa | Objeto en el canvas |
+|---|---|
+| hero | malla de ondas en perspectiva; reacciona al cursor; al cargar, la mitad de las partículas escribe el nombre sobre el `h1` |
+| plan | malla baja; el `terraform plan` se teclea en el DOM; los pods nacen sobre el "11" |
+| apply | control plane + un nodo por emisor (`getIssuerNodes()`); aristas que crecen, pods que viajan a su nodo, pendientes como anillos huecos |
+| rollout | anillo con un arco por `HOME_DEPLOYMENTS`; "building" no tiene % (no hay dato): su arco es un tramo que recorre el sector |
+| observe | los dígitos de los Web Vitals del visitante, muestreados del propio DOM |
+| deployed | malla verde que se asienta + "200 OK" sobre `[data-ok]` |
+
+- **El script lee la página por data-attributes**: `[data-stage]` (sección),
+  `[data-box]` (dónde vive el objeto), `[data-seg]` (plan), `[data-node-lbl]` /
+  `[data-dep-lbl]` (etiquetas que posiciona junto al objeto), `[data-vnum]`, `[data-rail]`.
+  Todo el texto es HTML real; el canvas es `aria-hidden`.
+- **El morph va entre anclas**: el ancla de una etapa es el centro de su `[data-box]` (o
+  de su pantalla). Con el centro del viewport entre dos anclas, 30 % quieto, 40 % morph,
+  30 % quieto. Así funciona igual con pin (desktop) que sin él (móvil, reduced-motion).
+- **Pinned sólo en desktop sin reduced-motion**: las alturas (`.stage-pin-*`, 220–320 vh)
+  y el `position: sticky` viven en un `@media (min-width: 768px) and
+  (prefers-reduced-motion: no-preference)`. En móvil las etiquetas de rollout van en lista
+  bajo el anillo y los nodos sólo muestran el nombre.
+- **Sin JS se ve todo**: el plan sale completo, los contadores con su valor final y las
+  etiquetas en flujo. La clase `html.field-on` (la pone el script) es la que las vuelve
+  absolutas.
+- **Texto en partículas** (`sampleGlyphs`): se pinta el texto del elemento real en un
+  canvas fuera de pantalla con su misma fuente, interletrado y línea base, y las
+  partículas se posan en sus píxeles. Safari no soporta `letterSpacing` en canvas: allí el
+  muestreo sale unos px más ancho.
+- **Intro del nombre**: `html.hero-intro` (script inline en `StageHero`, antes del primer
+  pintado) retrasa el texto del hero 850 ms para que las partículas lo escriban primero.
+  Si las fuentes no están listas a los 0.9 s, no hay intro de partículas y el texto sube
+  igual. Ojo: ese retraso cuenta para el LCP que la propia página enseña en observe.
+- View Transitions: el motor se crea en `astro:page-load` y se destruye en
+  `astro:before-swap` (cancela el rAF, quita listeners, el cursor y las clases de `<html>`).
+- Para probar el scroll desde herramientas: `scrollTo({ top, behavior: 'instant' })`
+  (`html` tiene `scroll-behavior: smooth`). La intro dura ~2 s desde que se crea el motor:
+  una captura justo tras recargar sale con las partículas a medio converger.
 
 ### Búsqueda: índice + matcher
 
@@ -364,6 +385,9 @@ umbrales de Google no se hardcodean aquí.
   justo cuando ya nadie mira el footer.
 - Los valores viven en el módulo y se repintan en `astro:page-load` — View Transitions
   reemplaza el footer y las métricas son de la *carga*, no de la navegación.
+- Cada repintado emite `document` → `webvitals` con `{ name, value, rating }[]` (CLS 0
+  incluido). La etapa observe de la home lo escucha y, al arrancar, pide lo ya medido con
+  `webvitals:request`. Es la única vía: no leer el texto pintado del footer.
 - CLS 0 se pinta explícitamente: la librería sólo dispara si hay layout shift, así que una
   página perfecta se quedaría en "—".
 

@@ -92,14 +92,13 @@
     const cell = root.querySelector<HTMLElement>(`[data-vital="${name}"]`);
     if (!cell) return;
     cell.textContent = text;
-    // toggle, no replace: la home pinta las mismas métricas en tiles con su propia clase base
+    // toggle, no replace: la celda conserva su clase base
     cell.classList.remove(...Object.values(RATING_CLASS));
     cell.classList.add(RATING_CLASS[rating]);
     root.querySelector<HTMLElement>(`[data-vital-rating="${name}"]`)?.replaceChildren(rating);
   }
 
   function render() {
-    // Varios consumidores: el chip del footer y las tiles de la etapa "observe" de la home.
     // Sin ninguna métrica no se muestra nada: en Safari (sin LCP ni CLS) es
     // mejor que no aparezca el chip a un widget con tres guiones
     if (measured.size === 0) return;
@@ -111,6 +110,12 @@
       }
       if (!measured.has("CLS") && SUPPORTS_CLS) paint(root, "CLS", "0.000", "good");
     });
+
+    // La etapa "observe" de la home los cuenta desde 0 y los dibuja en partículas:
+    // necesita el valor numérico, no el texto pintado
+    const readings = [...measured.values()].map(({ name, value, rating }) => ({ name, value, rating }));
+    if (!measured.has("CLS") && SUPPORTS_CLS) readings.push({ name: "CLS", value: 0, rating: "good" });
+    document.dispatchEvent(new CustomEvent("webvitals", { detail: readings }));
   }
 
   function track(metric: Metric) {
@@ -127,4 +132,6 @@
 
   // INP no existe hasta que hay interacción — hasta entonces su celda queda en "—"
   document.addEventListener("astro:page-load", render);
+  // un consumidor que arranca tarde pide lo ya medido
+  document.addEventListener("webvitals:request", render);
 </script>

@@ -1,0 +1,39 @@
+---
+/**
+ * StageHero.astro — pantalla de entrada.
+ * Sólo nombre, línea de valor y un CTA: el protagonista es la malla de
+ * partículas de ParticleField. Al cargar, las partículas escriben el nombre
+ * sobre este mismo h1 (lo muestrean de `[data-name-line]`) y se sueltan en la
+ * malla; el texto real sube por debajo.
+ */
+import { SITE } from "@utils/constants";
+
+const [first, ...rest] = SITE.author.split(" ");
+const last = rest.join(" ");
+---
+
+<section id="stage-hero" data-stage="hero" class="stage-hero" aria-labelledby="hero-heading">
+  <!-- Antes del primer pintado: con animación, el texto espera a la intro de partículas -->
+  <script is:inline>
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("hero-intro");
+  </script>
+  <div data-hero class="hero-copy">
+    <span class="reveal-line"><span class="stage-eyebrow text-primary" style="--d: 150ms">Cloud &amp; DevOps Engineer · {SITE.location} · {SITE.timezone}</span></span>
+    <h1 id="hero-heading" class="hero-h1">
+      <span class="hero-name">
+        <span class="reveal-line" data-name-line data-text={first}><span style="--d: 250ms">{first}</span></span>
+        <span class="reveal-line" data-name-line data-text={`${last}.`}><span style="--d: 340ms">{last}<span class="text-primary">.</span></span></span>
+      </span>
+      <span class="reveal-line hero-value"><span style="--d: 430ms">Engineering reliable cloud infrastructure.</span></span>
+    </h1>
+    <div class="reveal-fade hero-row" style="--d: 600ms">
+      <div class="magnet" data-magnet>
+        <a href="/contact" class="btn-solid">
+          Start a conversation
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">arrow_forward</span>
+        </a>
+      </div>
+      <span class="stage-note">Scroll — the page provisions itself</span>
+    </div>
+  </div>
+</section>
