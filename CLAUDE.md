@@ -128,8 +128,14 @@ Las animaciones respetan `prefers-reduced-motion`.
 Fuente de verdad: `CERTIFICATIONS` en `src/utils/constants.ts`.
 Se renderizan en `src/components/about/Certifications.astro` (About page), agrupadas
 por `issuer` **en el orden en que aparecen en el array**. Los grupos se derivan de los
-datos: para un emisor nuevo basta añadir su entrada en `ISSUER_STYLES` dentro del
-componente (color de marca + tinte de fondo + borde); si falta, cae a un estilo neutro.
+datos: para un emisor nuevo basta añadir su color en `ISSUER_COLORS` dentro del
+componente (de él salen icono, nombre, borde y tinte vía `--c` + `color-mix`); si falta,
+cae al `accentColor` del cert.
+
+Presentación (mismo lenguaje que el clúster de la home): un "nodo" por emisor con su icono
+de marca y un "pod" por certificación. Al entrar en pantalla (`.scroll-reveal` →
+`.revealed`) los pods aterrizan escalonados por `--i`; con puntero fino se inclinan hacia
+el cursor (`[data-tilt]`, script del componente, delegado en `document`).
 
 Campos de `Certification`: `id`, `title`, `code`, `issuer`, `credentialUrl`, `badgeUrl`,
 `verifier?`, `accentColor`, `svgPath` (logo del emisor, SimpleIcons).
@@ -210,13 +216,13 @@ El orden de la tabla es el del array, que es el orden en que se pintan los grupo
 ### Roadmap de certificaciones
 
 `PLANNED_CERTIFICATIONS` (mismo archivo) son las **no obtenidas todavía**. Se pintan
-como cards fantasma (borde punteado, chip `In progress`, sin link, `hourglass_top`)
-al final del grupo de su emisor. Nunca deben parecer obtenidas: no llevan `badgeUrl`
+como pods punteados al final del grupo de su emisor: un anillo discontinuo que orbita con
+el código dentro y la etiqueta `planned`, sin link. Nunca deben parecer obtenidas: no llevan `badgeUrl`
 ni `credlyUrl`, y no son `<a>`.
 
 Al aprobar una: moverla a `CERTIFICATIONS` con su `credentialUrl` + `badgeUrl` y borrarla
-de `PLANNED_CERTIFICATIONS`. El grupo, el contador, la nota "N on the roadmap" y el chip de
-progreso del track se actualizan solos.
+de `PLANNED_CERTIFICATIONS`. El grupo, el contador, el titular "N verified. M on the
+roadmap" y las celdas del track se actualizan solos.
 
 Hoy hay 7:
 
@@ -224,14 +230,13 @@ Hoy hay 7:
 - **Anthropic (3)** — del track Claude Certified (4 exámenes, Foundations ya obtenida):
   Associate — Foundations, Developer — Foundations y Architect — Professional.
 
-### Chip de progreso de track
+### Progreso de track
 
-`ISSUER_TRACKS` en `Certifications.astro` declara programas con meta: hoy sólo
-`Linux Foundation → { label: "Kubestronaut", total: 5 }`. Pinta un chip en la cabecera del
-grupo con icono, barra de progreso y `obtenidas/total`, calculado desde los datos — no hay
-ningún "1/5" escrito a mano. **Kubestronaut exige las cinco certificaciones de Kubernetes
-del CNCF**: KCNA, KCSA, CKA, CKAD y CKS. La barra se oculta por debajo de `sm` y el chip
-cae a su propia línea (la fila de cabecera es `flex-wrap`).
+`CERTIFICATION_TRACKS` (constants) declara programas con meta: hoy sólo
+`Linux Foundation → { label: "Kubestronaut", total: 5 }`. En la cabecera del grupo se pinta
+la etiqueta con `obtenidas/total` y una celda por certificación requerida (las obtenidas se
+rellenan al entrar en pantalla), calculado desde los datos — no hay ningún "1/5" a mano. **Kubestronaut exige las cinco certificaciones de Kubernetes
+del CNCF**: KCNA, KCSA, CKA, CKAD y CKS. En móvil el track cae a su propia línea.
 
 Notas de contexto (no se muestran en el sitio):
 
@@ -253,7 +258,7 @@ Notas de contexto (no se muestran en el sitio):
   se queda en **4.05:1**; el label del grupo es 16px bold, que WCAG no considera texto
   grande, así que necesita 4.5:1. `#5B8DEF` llega a 5.96:1.
 - El fallback de badge (si Credly no carga, se muestra el `code`) vive en el `<script>`
-  del componente, con `data-cert-badge`. No volver a usar `onerror=` inline: un atributo
+  del componente, con `data-cert-badge` (añade `.is-broken` al `.cred-badge`). No volver a usar `onerror=` inline: un atributo
   de evento sólo se puede permitir con `'unsafe-inline'` + `'unsafe-hashes'`, mientras que
   un bloque `<script>` se cubre con un hash/nonce el día que se endurezca la CSP.
 

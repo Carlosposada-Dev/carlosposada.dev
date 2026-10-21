@@ -1,14 +1,13 @@
 ---
 /**
  * Certifications.astro
- * Full-width credential wall on the About page.
- * Renders every cert in CERTIFICATIONS as a large badge card, grouped by
- * issuer (AWS · Google Cloud · Microsoft · Anthropic), each linking to its
- * verification page — Credly for most, Microsoft Learn for Microsoft.
- * Groups are derived from the data — adding a cert with a new issuer only
- * requires an entry in ISSUER_STYLES below.
- * PLANNED_CERTIFICATIONS render as dashed ghost cards at the end of their
- * group (not links, clearly marked as roadmap — never as earned).
+ * La pared de credenciales en About, en el lenguaje del clúster de la home:
+ * un "nodo" por emisor (icono de marca, conteo y, si lo tiene, el progreso de
+ * su track) y un "pod" por certificación que aterriza al entrar en pantalla.
+ * Cada pod obtenido enlaza a su verificación (Credly o Microsoft Learn) y se
+ * inclina hacia el cursor; los del roadmap (PLANNED_CERTIFICATIONS) son anillos
+ * punteados que orbitan, nunca links. Los grupos salen de los datos: un emisor
+ * nuevo sólo necesita su entrada en ISSUER_COLORS.
  */
 import {
   CERTIFICATIONS,
@@ -18,282 +17,152 @@ import {
 } from "@utils/constants";
 import type { Certification, PlannedCertification } from "@utils/constants";
 
-/** Brand color per issuer — drives the group panel tint and border */
-const ISSUER_STYLES: Record<string, { color: string; bg: string; border: string }> = {
-  // Azul Kubernetes aclarado. El hex oficial de Linux Foundation (#003778) da
-  // 1.59:1 sobre el surface — ilegible; el de Kubernetes (#326CE5) se queda en
-  // 4.05. Este llega a 5.96 y mantiene la familia de color.
-  "Linux Foundation": {
-    color: "#5B8DEF",
-    bg: "rgba(91,141,239,0.06)",
-    border: "rgba(91,141,239,0.2)",
-  },
-  AWS: { color: "#FF9900", bg: "rgba(255,153,0,0.06)", border: "rgba(255,153,0,0.2)" },
-  "Google Cloud": { color: "#4285F4", bg: "rgba(66,133,244,0.06)", border: "rgba(66,133,244,0.2)" },
-  // #00A4EF (el azul del logo) en vez del gris de SimpleIcons: legible sobre
-  // fondo oscuro y suficientemente distinto del azul de Google
-  Microsoft: { color: "#00A4EF", bg: "rgba(0,164,239,0.06)", border: "rgba(0,164,239,0.2)" },
-  Anthropic: { color: "#D97757", bg: "rgba(217,119,87,0.06)", border: "rgba(217,119,87,0.2)" },
+/**
+ * Color de marca por emisor, legible sobre el surface. Linux Foundation usa un
+ * azul Kubernetes aclarado (#003778 da 1.59:1, #326CE5 4.05:1; este 5.96:1);
+ * Microsoft, el azul de su logo en vez del gris de SimpleIcons.
+ */
+const ISSUER_COLORS: Record<string, string> = {
+  "Linux Foundation": "#5B8DEF",
+  AWS: "#FF9900",
+  "Google Cloud": "#4285F4",
+  Microsoft: "#00A4EF",
+  Anthropic: "#D97757",
 };
 
 /** Verificadores presentes, para la nota del pie (hoy: Credly y Microsoft Learn) */
-const verifiers = [
-  ...new Set(CERTIFICATIONS.map((cert) => cert.verifier ?? DEFAULT_VERIFIER)),
-];
-
-// Chip de progreso del programa (Kubestronaut): la meta vive en constants
-const ISSUER_TRACKS = CERTIFICATION_TRACKS;
+const verifiers = [...new Set(CERTIFICATIONS.map((cert) => cert.verifier ?? DEFAULT_VERIFIER))];
 
 interface Group {
   issuer: string;
   color: string;
-  bg: string;
-  border: string;
+  icon: string;
   certs: Certification[];
   planned: PlannedCertification[];
 }
 
-// Group in the order issuers first appear in CERTIFICATIONS
+// En el orden en que aparece cada emisor en CERTIFICATIONS
 const groups = CERTIFICATIONS.reduce<Group[]>((acc, cert) => {
   const existing = acc.find((g) => g.issuer === cert.issuer);
-  if (existing) {
-    existing.certs.push(cert);
-    return acc;
-  }
-  const style = ISSUER_STYLES[cert.issuer] ?? {
-    color: cert.accentColor,
-    bg: "rgba(255,255,255,0.03)",
-    border: "rgba(255,255,255,0.12)",
-  };
-  acc.push({ issuer: cert.issuer, ...style, certs: [cert], planned: [] });
+  if (existing) existing.certs.push(cert);
+  else acc.push({ issuer: cert.issuer, color: ISSUER_COLORS[cert.issuer] ?? cert.accentColor, icon: cert.svgPath, certs: [cert], planned: [] });
   return acc;
 }, []);
-
-// Attach roadmap entries to their issuer group (ignored if the issuer has no earned cert yet)
 for (const planned of PLANNED_CERTIFICATIONS) {
   groups.find((g) => g.issuer === planned.issuer)?.planned.push(planned);
 }
 ---
 
-<section
-  class="scroll-reveal fade-up"
-  style="--reveal-delay: 200ms;"
-  aria-labelledby="certs-section-heading"
->
-  <!-- Section header -->
-  <div class="flex items-center gap-4 mb-10">
-    <div>
-      <p class="section-label text-tertiary mb-1">Verified Credentials</p>
-      <h2
-        id="certs-section-heading"
-        class="font-headline text-2xl md:text-3xl font-bold text-on-surface"
-      >
-        Cloud &amp; AI Certifications
-      </h2>
-    </div>
-    <div class="flex-1 h-px bg-outline-variant/30 hidden sm:block" aria-hidden="true"></div>
-    <!-- Total count badge -->
-    <span
-      class="shrink-0 px-3 py-1 rounded-lg font-mono text-xs font-bold
-             bg-surface-container border border-outline-variant/30 text-on-surface-variant"
-    >
-      {CERTIFICATIONS.length} active
-    </span>
+<section aria-labelledby="certs-section-heading">
+  <div class="page-section-head">
+    <span class="stage-eyebrow text-tertiary">03 — credentials · $ kubectl get certs --all-namespaces</span>
+    <h2 id="certs-section-heading" class="stage-h2">
+      {CERTIFICATIONS.length} verified. {PLANNED_CERTIFICATIONS.length} on the roadmap.
+    </h2>
   </div>
 
-  <!-- Issuer groups -->
-  <div class="space-y-8">
-    {groups.filter((g) => g.certs.length > 0).map((group, gi) => (
-      <div
-        class="rounded-2xl border p-6 md:p-8"
-        style={`background: ${group.bg}; border-color: ${group.border};`}
-      >
-        <!-- Issuer label row — wrap para que el chip de track caiga debajo en mobile -->
-        <div class="flex flex-wrap items-center gap-3 mb-6">
-          <svg
-            class="w-5 h-5 fill-current shrink-0"
-            style={`color: ${group.color}`}
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d={group.certs[0].svgPath} />
-          </svg>
-          <span
-            class="font-headline font-bold text-base tracking-wide"
-            style={`color: ${group.color}`}
-          >
-            {group.issuer}
-          </span>
-          <span class="font-mono text-xs text-on-surface-variant/50">
-            {group.certs.length} certification{group.certs.length > 1 ? "s" : ""}
-            {group.planned.length > 0 && ` · ${group.planned.length} on the roadmap`}
-          </span>
-
-          <!-- Progreso del programa, si el emisor tiene uno declarado -->
-          {ISSUER_TRACKS[group.issuer] && (
-            <span
-              class="ml-auto shrink-0 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5"
-              style={`border-color: ${group.border}; background: ${group.bg};`}
-              title={`${ISSUER_TRACKS[group.issuer].label}: ${group.certs.length} of ${ISSUER_TRACKS[group.issuer].total} required certifications earned`}
-            >
-              <span
-                class="material-symbols-outlined text-[16px]"
-                style={`color: ${group.color}`}
-                aria-hidden="true"
-              >
-                {ISSUER_TRACKS[group.issuer].icon}
-              </span>
-              <span
-                class="font-headline text-[10px] font-bold uppercase tracking-widest"
-                style={`color: ${group.color}`}
-              >
-                {ISSUER_TRACKS[group.issuer].label}
-              </span>
-              <!-- Barra de progreso -->
-              <span
-                class="hidden sm:block h-1 w-12 rounded-full overflow-hidden bg-on-surface/10"
-                aria-hidden="true"
-              >
-                <span
-                  class="block h-full rounded-full"
-                  style={`width: ${(group.certs.length / ISSUER_TRACKS[group.issuer].total) * 100}%; background: ${group.color};`}
-                ></span>
-              </span>
-              <span class="font-mono text-[11px] font-bold" style={`color: ${group.color}`}>
-                {group.certs.length}<span class="opacity-50">/{ISSUER_TRACKS[group.issuer].total}</span>
-              </span>
+  <div class="cred-groups">
+    {groups.map((group) => {
+      const track = CERTIFICATION_TRACKS[group.issuer];
+      return (
+        <div class="cred-group scroll-reveal" style={`--c: ${group.color}`}>
+          <div class="cred-issuer">
+            <span class="cred-issuer-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d={group.icon} /></svg>
             </span>
-          )}
-        </div>
-
-        <!-- Badge grid — responsive: 2 col mobile → 3 col md → up to 5 col xl -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
-          {group.certs.map((cert, i) => (
-            <a
-              href={cert.credentialUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Verify ${cert.title} on ${cert.verifier ?? DEFAULT_VERIFIER}`}
-              class="group relative flex flex-col items-center gap-3 p-4 rounded-xl
-                     bg-surface-container border border-outline-variant/20
-                     hover:border-primary/50 hover:shadow-glow-primary hover:-translate-y-1
-                     transition-all duration-300 text-center"
-              style={`--reveal-delay: ${(gi * 5 + i) * 60}ms;`}
-            >
-              <!-- Badge image -->
-              <div class="w-20 h-20 md:w-24 md:h-24 relative">
-                <img
-                  src={cert.badgeUrl}
-                  alt={`${cert.title} certification badge`}
-                  class="w-full h-full object-contain
-                         group-hover:scale-110 transition-transform duration-300 drop-shadow-lg"
-                  loading="lazy"
-                  decoding="async"
-                  data-cert-badge
-                />
-                <!-- Fallback: code label -->
-                <div
-                  class="absolute inset-0 flex items-center justify-center
-                         font-mono text-sm font-bold opacity-0 transition-opacity"
-                  style={`color: ${cert.accentColor}`}
-                  aria-hidden="true"
-                >
-                  {cert.code}
-                </div>
-              </div>
-
-              <!-- Cert title -->
-              <p class="font-headline text-xs font-bold text-on-surface/80
-                        group-hover:text-primary transition-colors duration-200
-                        leading-snug line-clamp-2">
-                {cert.title}
-              </p>
-
-              <!-- Code chip -->
-              <span
-                class="inline-block px-2 py-0.5 rounded font-mono text-[10px] font-bold
-                       tracking-widest uppercase border"
-                style={`color: ${cert.accentColor}; border-color: ${cert.accentColor}40; background: ${cert.accentColor}15;`}
-              >
-                {cert.code}
-              </span>
-
-              <!-- Hover overlay: "Verify" label -->
-              <span
-                class="absolute top-2 right-2 opacity-0 group-hover:opacity-100
-                       transition-opacity duration-200
-                       material-symbols-outlined text-primary/70"
-                style="font-size: 0.9rem;"
-                aria-hidden="true"
-              >
-                open_in_new
-              </span>
-            </a>
-          ))}
-
-          <!-- Roadmap (not earned yet) — dashed ghost cards, never links -->
-          {group.planned.map((cert, i) => (
-            <div
-              class="relative flex flex-col items-center justify-center gap-3 p-4 rounded-xl
-                     border border-dashed border-outline-variant/25 bg-surface-container/30
-                     text-center"
-              aria-label={`Planned certification: ${cert.title}`}
-            >
-              <!-- Placeholder mark -->
-              <div class="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center">
-                <span
-                  class="material-symbols-outlined opacity-30"
-                  style={`font-size: 2.5rem; color: ${cert.accentColor};`}
-                  aria-hidden="true"
-                >
-                  hourglass_top
-                </span>
-              </div>
-
-              <p class="font-headline text-xs font-bold text-on-surface/35
-                        leading-snug line-clamp-2">
-                {cert.title}
-              </p>
-
-              <span
-                class="inline-block px-2 py-0.5 rounded font-mono text-[10px] font-bold
-                       tracking-widest uppercase border border-dashed
-                       border-outline-variant/30 text-on-surface-variant/40"
-              >
-                In progress
+            <div class="flex min-w-0 flex-col gap-1">
+              <h3 class="cred-issuer-name">{group.issuer}</h3>
+              <span class="dep-slug">
+                {group.certs.length} earned{group.planned.length > 0 && ` · ${group.planned.length} on the roadmap`}
               </span>
             </div>
-          ))}
+            {track && (
+              <div class="cred-track" title={`${track.label}: ${group.certs.length} of ${track.total} required certifications earned`}>
+                <span class="cred-track-label">
+                  <span class="material-symbols-outlined text-[16px]" aria-hidden="true">{track.icon}</span>
+                  {track.label} {group.certs.length}/{track.total}
+                </span>
+                <span class="cred-track-cells" aria-hidden="true">
+                  {Array.from({ length: track.total }, (_, i) => (
+                    <i class:list={[i < group.certs.length && "is-on"]} style={`--i: ${i}`}></i>
+                  ))}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <ul class="cred-grid">
+            {group.certs.map((cert, i) => (
+              <li style={`--i: ${i}`}>
+                <a
+                  href={cert.credentialUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="cred"
+                  data-tilt
+                  aria-label={`Verify ${cert.title} on ${cert.verifier ?? DEFAULT_VERIFIER}`}
+                >
+                  <span class="cred-badge">
+                    <img src={cert.badgeUrl} alt="" width="88" height="88" loading="lazy" decoding="async" data-cert-badge />
+                    <span class="cred-fallback" aria-hidden="true">{cert.code}</span>
+                  </span>
+                  <span class="cred-code">{cert.code}</span>
+                  <span class="cred-title">{cert.title}</span>
+                  <span class="material-symbols-outlined cred-verify" aria-hidden="true">north_east</span>
+                </a>
+              </li>
+            ))}
+            {group.planned.map((cert, i) => (
+              <li style={`--i: ${group.certs.length + i}`}>
+                <div class="cred is-planned" aria-label={`On the roadmap: ${cert.title}`}>
+                  <span class="cred-badge cred-orbit" aria-hidden="true"><span>{cert.code}</span></span>
+                  <span class="cred-code">planned</span>
+                  <span class="cred-title">{cert.title}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
-    ))}
+      );
+    })}
   </div>
 
-  <!-- Footer note — los verificadores salen de los datos, no hardcodeados -->
-  <p class="text-center text-xs text-on-surface-variant/40 font-mono mt-6">
-    All credentials independently verifiable on {verifiers.join(" and ")} — click any badge
+  <p class="stage-note mt-8 normal-case tracking-normal">
+    Every badge links to its verification on {verifiers.join(" or ")}.
   </p>
 </section>
 
 <script>
   /**
-   * Badge fallback: if a Credly image fails to load, fade it out and reveal the
-   * cert code underneath. Replaces an inline onerror= handler so the component
-   * keeps working if 'unsafe-inline' is ever dropped from the CSP.
+   * 1. Fallback del badge: si la imagen de Credly no carga, se oculta y queda el
+   *    código. En un <script> y no con onerror= inline, para que siga valiendo el
+   *    día que la CSP deje de permitir 'unsafe-inline'.
+   * 2. Inclinación hacia el cursor de los pods (`[data-tilt]`): sólo con puntero
+   *    fino y sin reduced-motion. Delegado en document: sobrevive a las View
+   *    Transitions sin re-bind.
    */
   function initCertBadgeFallback() {
     document.querySelectorAll<HTMLImageElement>("img[data-cert-badge]").forEach((img) => {
-      const showFallback = () => {
-        img.style.opacity = "0";
-        const fallback = img.nextElementSibling as HTMLElement | null;
-        if (fallback) fallback.style.opacity = "1";
-      };
-      // Already failed before this script ran
+      const showFallback = () => img.closest(".cred-badge")?.classList.add("is-broken");
       if (img.complete && img.naturalWidth === 0) showFallback();
       img.addEventListener("error", showFallback, { once: true });
     });
   }
-
   initCertBadgeFallback();
   document.addEventListener("astro:page-load", initCertBadgeFallback);
+
+  const canTilt = matchMedia("(pointer: fine)").matches && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let tilted: HTMLElement | null = null;
+  if (canTilt) {
+    document.addEventListener("pointermove", (e) => {
+      const el = e.target instanceof Element ? e.target.closest<HTMLElement>("[data-tilt]") : null;
+      if (tilted && tilted !== el) { tilted.style.removeProperty("--rx"); tilted.style.removeProperty("--ry"); }
+      tilted = el;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+      el.style.setProperty("--rx", `${(-y * 10).toFixed(2)}deg`);
+      el.style.setProperty("--ry", `${(x * 12).toFixed(2)}deg`);
+    }, { passive: true });
+  }
 </script>
