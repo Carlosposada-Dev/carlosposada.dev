@@ -1,36 +1,78 @@
 ---
 /**
  * ContactMethods.astro
- * Canales, ubicación y estado como un panel de endpoint: `dt` en mono apagado,
- * `dd` con el valor enlazado. Mismo formato que el cierre de la home.
+ * Panel de canales: el email arriba y en grande (con botón de copiar), luego
+ * cada red con su icono de marca, y al final ubicación, zona horaria y estado.
  */
 import { SITE, SOCIAL_LINKS } from "@utils/constants";
+
+// Material Symbols no tiene iconos de marca: el sobre va como SVG, igual que las redes
+const EMAIL_SVG =
+  "M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z";
+
+const pretty = (href: string) => href.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
 ---
 
 <div class="endpoint">
   <div class="endpoint-head"><span>channels</span><span class="text-secondary">● {SOCIAL_LINKS.length + 1} reachable</span></div>
-  <div class="endpoint-body">
-    <dl class="endpoint-links">
-      <dt>email</dt>
-      <dd><a href={`mailto:${SITE.email}`} class="link-draw">{SITE.email}</a></dd>
-      {SOCIAL_LINKS.map((link) => (
-        <>
-          <dt>{link.label.toLowerCase()}</dt>
-          <dd><a href={link.href} class="link-draw" target="_blank" rel="noopener noreferrer">{link.href.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</a></dd>
-        </>
-      ))}
-    </dl>
-    <dl class="endpoint-links">
-      <dt>location</dt>
-      <dd>{SITE.location}</dd>
-      <dt>timezone</dt>
-      <dd>{SITE.timezone}</dd>
-      {SITE.openToWork && (
-        <>
-          <dt>status</dt>
-          <dd class="text-secondary">open to work</dd>
-        </>
-      )}
-    </dl>
+
+  <div class="channel-email">
+    <a href={`mailto:${SITE.email}`} class="channel">
+      <span class="channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={EMAIL_SVG} /></svg></span>
+      <span class="channel-text">
+        <span class="channel-label">email</span>
+        <span class="channel-value channel-value-lg">{SITE.email}</span>
+      </span>
+    </a>
+    <button type="button" class="channel-copy" data-copy={SITE.email} aria-label={`Copy ${SITE.email}`}>
+      <span class="material-symbols-outlined text-lg" aria-hidden="true">content_copy</span>
+      <span data-copy-label>copy</span>
+    </button>
   </div>
+
+  <ul class="channel-list">
+    {SOCIAL_LINKS.map((link) => (
+      <li>
+        <a href={link.href} class="channel" target="_blank" rel="noopener noreferrer">
+          <span class="channel-icon" aria-hidden="true">
+            <svg viewBox={link.svgViewBox ?? "0 0 24 24"}><path d={link.svgPath} /></svg>
+          </span>
+          <span class="channel-text">
+            <span class="channel-label">{link.label}</span>
+            <span class="channel-value">{pretty(link.href)}</span>
+          </span>
+          <span class="material-symbols-outlined channel-arrow" aria-hidden="true">arrow_outward</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <dl class="endpoint-links channel-meta">
+    <dt>location</dt>
+    <dd>{SITE.location}</dd>
+    <dt>timezone</dt>
+    <dd>{SITE.timezone}</dd>
+    {SITE.openToWork && (
+      <>
+        <dt>status</dt>
+        <dd class="text-secondary">open to work</dd>
+      </>
+    )}
+  </dl>
 </div>
+
+<script>
+  // Copiar el email: delegado en document para sobrevivir a las View Transitions
+  document.addEventListener("click", async (e) => {
+    const btn = e.target instanceof Element ? e.target.closest<HTMLButtonElement>("[data-copy]") : null;
+    if (!btn) return;
+    const label = btn.querySelector("[data-copy-label]");
+    try {
+      await navigator.clipboard.writeText(btn.dataset.copy ?? "");
+      if (label) label.textContent = "copied";
+    } catch {
+      if (label) label.textContent = "copy failed";
+    }
+    setTimeout(() => { if (label) label.textContent = "copy"; }, 1800);
+  });
+</script>

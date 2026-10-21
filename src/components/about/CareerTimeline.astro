@@ -1,27 +1,31 @@
 ---
 /**
  * CareerTimeline.astro
- * La carrera como releases: periodo en mono, rol a gran escala, descripción y
- * stack como texto. La actual va marcada; las demás quedan en tono apagado.
+ * La carrera como un `git log --graph`: periodo a la izquierda, una rama que se
+ * dibuja al entrar en pantalla y un commit por rol. Compacto a propósito: el
+ * rol es un titular mediano, no un display.
  */
 import { CAREER } from "@utils/constants";
 ---
 
 <section class="page-section" aria-labelledby="career-heading">
   <div class="page-section-head">
-    <span class="stage-eyebrow text-tertiary">02 — career · $ git tag --list</span>
-    <h2 id="career-heading" class="stage-h2">Three releases so far.</h2>
+    <span class="stage-eyebrow text-tertiary">02 — career · $ git log --graph --oneline</span>
+    <h2 id="career-heading" class="stage-h2">{CAREER.length} releases so far.</h2>
   </div>
-  <ol class="release-list">
+  <ol class="graph scroll-reveal">
     {CAREER.map((entry, i) => (
-      <li class:list={["release scroll-reveal fade-up", entry.isCurrent && "is-current"]} style={`--reveal-delay: ${i * 90}ms`}>
-        <span class="release-period">
-          {entry.period.toLowerCase()}
-          {entry.isCurrent && <span class="text-secondary"> ● current</span>}
-        </span>
-        <h3 class="release-title">{entry.title}</h3>
-        <p class="release-desc">{entry.description}</p>
-        <span class="dep-slug">{entry.tags.join(" · ")}</span>
+      <li class:list={["commit", entry.isCurrent && "is-current"]} style={`--i: ${i}`}>
+        <span class="commit-period">{entry.period.toLowerCase()}</span>
+        <span class="commit-node" aria-hidden="true"></span>
+        <div class="commit-body">
+          <h3 class="commit-title">
+            {entry.title}
+            {entry.isCurrent && <span class="commit-head">HEAD</span>}
+          </h3>
+          <p class="commit-desc">{entry.description}</p>
+          <span class="commit-tags">{entry.tags.join(" · ")}</span>
+        </div>
       </li>
     ))}
   </ol>

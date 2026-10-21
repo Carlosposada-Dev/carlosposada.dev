@@ -24,8 +24,14 @@ import { SOCIAL_LINKS } from "@utils/constants";
   </div>
   <div class="bio-links">
     {SOCIAL_LINKS.map((link) => (
-      <a href={link.href} class="link-draw" target="_blank" rel="noopener noreferrer">{link.label}</a>
+      <a href={link.href} class="social-pill" target="_blank" rel="noopener noreferrer">
+        <svg viewBox={link.svgViewBox ?? "0 0 24 24"} aria-hidden="true"><path d={link.svgPath} /></svg>
+        {link.label}
+      </a>
     ))}
-    <a href="/carlos-posada-cv.pdf" class="link-draw text-primary" download>Download CV</a>
+    <a href="/carlos-posada-cv.pdf" class="social-pill is-primary" download>
+      <span class="material-symbols-outlined text-lg" aria-hidden="true">download</span>
+      Download CV
+    </a>
   </div>
 </section>
