@@ -1,16 +1,18 @@
 ---
 /**
- * about.astro — About Me Page
- * Layout:
- *   Top: 5/12 photo+social (sticky) | 7/12 bio+timeline
- *   Bottom: full-width certifications badge wall
+ * about.astro — About
+ * Cabecera con el título en partículas, perfil (retrato + bio), carrera como
+ * releases y la pared de certificaciones (Certifications.astro).
  */
 import PageLayout from "@layouts/PageLayout.astro";
+import ParticleField from "@components/global/ParticleField.astro";
+import PageHero from "@components/ui/PageHero.astro";
+import PageCta from "@components/ui/PageCta.astro";
 import ProfileCard from "@components/about/ProfileCard.astro";
 import BioSection from "@components/about/BioSection.astro";
-import Certifications from "@components/about/Certifications.astro";
 import CareerTimeline from "@components/about/CareerTimeline.astro";
-import CTABanner from "@components/home/CTABanner.astro";
+import Certifications from "@components/about/Certifications.astro";
+import { SITE } from "@utils/constants";
 ---
 
 <PageLayout
@@ -18,30 +20,25 @@ import CTABanner from "@components/home/CTABanner.astro";
   description="Carlos Posada — Cloud & DevOps Engineer and AI Solutions Lead with 10+ years of experience in AWS, Kubernetes, Terraform, and QA Automation. Based in Medellín, Colombia."
   schemaType="about"
 >
-  <main class="pt-32 pb-20 px-6 md:px-8 max-w-screen-2xl mx-auto space-y-20">
+  <ParticleField preset="about" />
+  <div class="page-wrap">
+    <PageHero
+      eyebrow="$ whoami"
+      title="About"
+      lede={`${SITE.experience} in software engineering: QA automation first, then cloud and DevOps, now AI solutions. Kubernetes is the current focus.`}
+    />
 
-    <!-- ── Two-column hero: photo + bio/timeline ─────────── -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-
-      <!-- Left column: photo + social links (sticky on desktop) -->
-      <div class="lg:col-span-5">
-        <div class="lg:sticky lg:top-28">
-          <ProfileCard />
-        </div>
-      </div>
-
-      <!-- Right column: bio + career timeline -->
-      <div class="lg:col-span-7 space-y-16">
-        <BioSection />
-        <CareerTimeline />
-      </div>
-
+    <div class="page-section profile-grid">
+      <ProfileCard />
+      <BioSection />
     </div>
 
-    <!-- ── Full-width certifications badge wall ───────────── -->
-    <Certifications />
+    <CareerTimeline />
 
-  </main>
+    <div class="page-section">
+      <Certifications />
+    </div>
 
-  <CTABanner />
+    <PageCta />
+  </div>
 </PageLayout>

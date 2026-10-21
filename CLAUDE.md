@@ -64,8 +64,7 @@ tests; el build de Astro + TypeScript es el gate de calidad.
 src/
 ├── layouts/       BaseLayout (shell HTML + SEO/OG) → PageLayout (Navbar+Footer+BottomNav
 │                  +CommandPalette)
-├── components/    agrupados por página: global/ seo/ ui/ home/ about/ services/
-│                  projects/ contact/ blog/
+├── components/    agrupados por página: global/ seo/ ui/ home/ about/ contact/ blog/
 ├── content/       Content Collections (blog en Markdown) + config.ts con el schema
 ├── pages/         una .astro por ruta + blog/[...slug].astro + api/ (SSR)
 ├── styles/        global.css — Design System en @layer components/utilities
@@ -298,11 +297,37 @@ aplica `_headers`; `astro dev` no).
 
 **Ojo**: las rutas SSR (`/api/*`) las sirve el Worker y no pasan por `_headers`.
 
+### Páginas internas: el mismo lenguaje que la home
+
+About, Work, Contact y Blog comparten tres piezas:
+
+| Pieza | Qué hace |
+|---|---|
+| `<ParticleField preset="work|about|contact|blog" />` | El mismo motor que la home en modo *ambient*: sólo la malla, con el color y la altura del preset, atenuada al bajar. Sin `preset`, es la home con sus etapas |
+| `ui/PageHero.astro` | Etiqueta mono + título de una palabra a ~180 px + línea de contexto. Las partículas escriben el título (`[data-name-line]`) igual que el nombre en la home |
+| `ui/PageCta.astro` | Cierre "service/contact ● healthy" + CTA magnético. Sustituye al antiguo CTABanner |
+
+El contenido va dentro de `.page-wrap` (queda por encima del canvas). Las clases de cada
+página (`.deploy-row`, `.roadmap`, `.release`, `.post-row`, `.request-field`…) están en
+`global.css`, bloque "Páginas internas".
+
+**Work** (`/work`) fusiona Projects y Services: no hay catálogo de servicios, el trabajo
+habla por sí solo. Arriba `DEPLOYMENTS` (lo shipped o en curso; también alimenta el anillo
+de la home) y debajo `ROADMAP` (R1–R11 de `blog-projects-roadmap.md`). Un lab no se marca
+"shipped" ni lleva link hasta que es un repo público con su write-up; al publicarlo, se
+cambia su `status`, se le pone `href` y entra también en `DEPLOYMENTS`.
+
+`SERVICES` sigue existiendo sólo para el footer ("Expertise") y el Schema.org.
+
+**Contact**: el script del formulario se enlaza en `astro:page-load`. Un módulo sólo se
+ejecuta en la carga completa: llegando por View Transitions el formulario se quedaba sin
+handler y el envío nativo ponía nombre, email y mensaje en la URL.
+
 ### Home: la página se despliega al hacer scroll
 
 `src/pages/index.astro` son seis secciones `[data-stage]` (`components/home/Stage*.astro`):
 hero → plan → apply → rollout → observe → deployed. El protagonista es **un único canvas
-fijo** (`ParticleField.astro`) cuyas ~6 200 partículas (2 600 en móvil) forman el objeto
+fijo** (`global/ParticleField.astro`) cuyas ~6 200 partículas (2 600 en móvil) forman el objeto
 de cada etapa y hacen morph a la siguiente con el scroll:
 
 | Etapa | Objeto en el canvas |
@@ -469,6 +494,6 @@ la tabla de fases y la fecha de "Last updated" en `PROJECT_STATUS.md`.
   en la CSP ya lo permite.
 - `.claude/worktrees/` contiene copias del repo creadas por sesiones anteriores:
   ignorar al buscar código, la fuente es la raíz.
-- `components/home/HeroSection`, `SkillsBar`, `ServicesPreview`, `FeaturedProjects` y
-  `ProofSection` ya no se usan (la home es el pipeline de etapas). Están sin borrar;
-  se pueden eliminar.
+- `/projects` y `/services` ya no existen: se fusionaron en `/work`. Las redirecciones 301
+  viven en `public/_redirects` (Cloudflare Pages); `astro dev` no las aplica, `npm run
+  preview` sí.

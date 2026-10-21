@@ -6,7 +6,7 @@
  * se pinta como rolling update en curso, sin porcentaje. Las etiquetas las
  * coloca el script junto a su arco.
  */
-import { HOME_DEPLOYMENTS } from "@utils/constants";
+import { DEPLOYMENTS } from "@utils/constants";
 ---
 
 <section id="stage-rollout" data-stage="rollout" class="stage-pin stage-pin-rollout" aria-labelledby="rollout-heading">
@@ -17,7 +17,7 @@ import { HOME_DEPLOYMENTS } from "@utils/constants";
     </div>
 
     <div class="stage-box stage-box-rollout" data-box="rollout">
-      {HOME_DEPLOYMENTS.map((d) => (
+      {DEPLOYMENTS.map((d) => (
         <div class="stage-label dep-label" data-dep-lbl>
           <span class="dep-slug">deployment/{d.slug}</span>
           <a href={d.href} class="dep-name link-draw">{d.name}</a>
@@ -31,7 +31,7 @@ import { HOME_DEPLOYMENTS } from "@utils/constants";
 
     <div class="stage-foot">
       <span>shipped = public and live · building = in flight, see /now</span>
-      <a href="/projects" class="link-draw font-headline text-base font-bold text-primary">All work →</a>
+      <a href="/work" class="link-draw font-headline text-base font-bold text-primary">All work →</a>
     </div>
   </div>
 </section>

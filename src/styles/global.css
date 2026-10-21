@@ -395,6 +395,181 @@
     .vital-num { transition: none; }
   }
 
+  /* ── Páginas internas: mismo lenguaje que la home ──── */
+
+  /* Contenedor común: el contenido va por encima del canvas de ParticleField */
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+    padding: 0 clamp(20px, 6vw, 96px) clamp(64px, 10vh, 120px) clamp(20px, 4vw, 56px);
+  }
+  .page-hero {
+    @apply flex flex-col justify-end;
+    min-height: min(78vh, 760px);
+    gap: clamp(16px, 2.6vh, 28px);
+    padding-top: clamp(120px, 18vh, 200px);
+    padding-bottom: clamp(32px, 6vh, 72px);
+    will-change: transform, opacity;
+  }
+  .page-title {
+    @apply m-0 block font-headline font-bold text-on-surface;
+    font-size: clamp(64px, 13vw, 184px);
+    line-height: 0.86;
+    letter-spacing: -0.06em;
+  }
+  .page-lede {
+    @apply m-0 font-headline text-on-surface;
+    max-width: 52ch;
+    font-size: clamp(18px, 1.7vw, 24px);
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+  }
+  .page-lede code { @apply font-mono text-primary; font-size: 0.85em; }
+  .page-section { padding-top: clamp(56px, 10vh, 120px); }
+  .page-section-head { @apply flex flex-col; gap: 14px; margin-bottom: clamp(28px, 5vh, 56px); }
+
+  /* Work: deployments */
+  .deploy-list { @apply m-0 list-none p-0; border-top: 1px solid #1a2340; }
+  .deploy-row {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) minmax(200px, 260px);
+    gap: clamp(16px, 3vw, 48px);
+    align-items: start;
+    padding: clamp(28px, 4vh, 44px) 0;
+    border-bottom: 1px solid #1a2340;
+  }
+  .deploy-index { @apply font-mono text-sm; color: #8b93ad; padding-top: 0.4em; }
+  .deploy-main { @apply flex min-w-0 flex-col; gap: 10px; }
+  .deploy-name {
+    @apply m-0 font-headline font-bold text-on-surface;
+    font-size: clamp(32px, 4.6vw, 64px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+  }
+  .deploy-summary { @apply m-0 font-headline; max-width: 60ch; font-size: clamp(16px, 1.25vw, 19px); line-height: 1.5; color: #c3c8dd; }
+  .deploy-status { @apply flex flex-col font-mono text-xs; gap: 10px; padding-top: 0.6em; }
+
+  /* Barra de rolling update: shipped llena; building, un tramo que recorre la pista */
+  .rollbar { position: relative; display: block; height: 4px; overflow: hidden; border-radius: 2px; background: #1a2340; }
+  .rollbar i { position: absolute; inset: 0 auto 0 0; display: block; width: 100%; border-radius: 2px; background: #2ff801; }
+  .rollbar.is-building i { width: 32%; background: #f2c46b; animation: rollbar-sweep 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite alternate; }
+
+  /* Work: roadmap */
+  .roadmap {
+    @apply m-0 grid list-none p-0;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1px;
+    background: #1a2340;
+    border: 1px solid #1a2340;
+  }
+  .roadmap-item { @apply flex flex-col; gap: 8px; padding: 22px 22px 26px; background: #0a0e1a; }
+  .roadmap-id { @apply font-mono text-xs; color: #8b93ad; }
+  .roadmap-repo { @apply font-mono text-[15px] font-medium text-on-surface; overflow-wrap: anywhere; }
+  .roadmap-proves { @apply text-sm; line-height: 1.5; color: #a7aabb; }
+  .roadmap-state { @apply mt-auto pt-2 font-mono text-[11px] uppercase; letter-spacing: 0.08em; color: #8b93ad; }
+  .roadmap-item.is-building .roadmap-id,
+  .roadmap-item.is-building .roadmap-state { color: #f2c46b; }
+  .roadmap-item.is-shipped .roadmap-id,
+  .roadmap-item.is-shipped .roadmap-state { color: #2ff801; }
+
+  /* About */
+  .profile-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(32px, 5vw, 80px); align-items: start; }
+  .profile { @apply m-0 flex flex-col; gap: 14px; }
+  .profile-photo { overflow: hidden; border-radius: 12px; background: #0d1324; aspect-ratio: 4 / 5; }
+  .profile-photo img {
+    @apply h-full w-full object-cover object-top;
+    filter: grayscale(1);
+    transition: filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .profile:hover .profile-photo img { filter: none; }
+  .profile-caption { @apply flex flex-wrap justify-between font-mono text-xs; gap: 8px 16px; color: #8b93ad; }
+  .bio { @apply flex flex-col; gap: 20px; }
+  .bio-text { @apply flex flex-col font-headline; gap: 18px; font-size: clamp(18px, 1.5vw, 22px); line-height: 1.5; color: #c3c8dd; }
+  .bio-text p { margin: 0; }
+  .bio-links { @apply flex flex-wrap font-mono text-sm text-on-surface; gap: 10px 26px; padding-top: 8px; }
+  .release-list { @apply m-0 list-none p-0; border-top: 1px solid #1a2340; }
+  .release { @apply flex flex-col; gap: 10px; padding: clamp(28px, 4vh, 44px) 0; border-bottom: 1px solid #1a2340; }
+  .release-period { @apply font-mono text-xs uppercase; letter-spacing: 0.08em; color: #8b93ad; }
+  .release-title {
+    @apply m-0 font-headline font-bold;
+    font-size: clamp(30px, 4.2vw, 60px);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: #8b93ad;
+  }
+  .release.is-current .release-title { @apply text-on-surface; }
+  .release-desc { @apply m-0 font-headline; max-width: 62ch; font-size: clamp(16px, 1.2vw, 18px); line-height: 1.55; color: #c3c8dd; }
+
+  /* Contact: el formulario como petición */
+  .contact-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+  .request-body { @apply flex flex-col; gap: 20px; padding: clamp(20px, 2.4vw, 32px); }
+  .request-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .request-field { @apply flex flex-col; gap: 8px; }
+  .request-field label { @apply font-mono text-xs; color: #8b93ad; }
+  .request-field input,
+  .request-field select,
+  .request-field textarea {
+    @apply w-full font-mono text-sm text-on-surface;
+    appearance: none;
+    padding: 12px 14px;
+    border: 1px solid #1a2340;
+    border-radius: 6px;
+    background: #0a0e1a;
+    transition: border-color 0.24s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .request-field textarea { resize: vertical; min-height: 140px; }
+  .request-field input::placeholder,
+  .request-field textarea::placeholder { color: #8b93ad; }
+  .request-field input:focus,
+  .request-field select:focus,
+  .request-field textarea:focus { border-color: #6dddff; outline: none; }
+  .request-field .is-invalid { border-color: #ff716c; }
+  .request-field .field-error { @apply m-0 font-mono text-xs text-error; }
+  .request-chevron { @apply pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-lg; color: #8b93ad; }
+  .request-status { @apply font-mono text-sm; padding: 12px 14px; border-left: 2px solid #1a2340; color: #c3c8dd; }
+  .request-status.is-loading { border-color: #6dddff; }
+  .request-status.is-success { @apply text-secondary; border-color: #2ff801; }
+  .request-status.is-error { @apply text-error; border-color: #ff716c; }
+  .btn-solid:disabled { cursor: not-allowed; opacity: 0.6; }
+  .contact-grid .endpoint-links + .endpoint-links { margin-top: 12px; }
+
+  /* Blog: el índice como log */
+  .post-log { @apply m-0 list-none p-0; border-top: 1px solid #1a2340; }
+  .post-row { @apply flex flex-col; gap: 12px; padding: clamp(28px, 4vh, 44px) 0; border-bottom: 1px solid #1a2340; }
+  .post-meta { @apply flex flex-wrap font-mono text-xs uppercase; gap: 6px 20px; letter-spacing: 0.06em; color: #8b93ad; }
+  .post-title {
+    @apply m-0 font-headline font-bold text-on-surface;
+    font-size: clamp(28px, 3.6vw, 52px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+  }
+  .post-desc { @apply m-0 font-headline; max-width: 62ch; font-size: clamp(16px, 1.2vw, 18px); line-height: 1.55; color: #c3c8dd; }
+
+  /* Cierre común */
+  .page-cta { @apply flex flex-col; gap: 24px; padding-top: clamp(80px, 14vh, 160px); }
+  .page-cta-title {
+    @apply m-0 font-headline font-bold text-on-surface;
+    max-width: 18ch;
+    font-size: clamp(40px, 6vw, 88px);
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+  }
+
+  @media (max-width: 1023px) {
+    .profile-grid,
+    .contact-grid { grid-template-columns: 1fr; }
+    .profile { max-width: 420px; }
+  }
+  @media (max-width: 767px) {
+    .deploy-row { grid-template-columns: 1fr; gap: 14px; }
+    .deploy-index { padding: 0; }
+    .request-grid { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rollbar.is-building i { animation: none; left: 34%; }
+    .profile-photo img { transition: none; }
+  }
+
   /* ── Web Vitals chip (Feature #20) ──────────────────── */
 
   .vitals {
@@ -832,26 +1007,6 @@
 @keyframes grid-drift { to { background-position: 0 60px; } }
 @keyframes node-on { to { border-color: #6dddff; } }
 
-@keyframes confetti-fall {
-  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-}
-
-.skills-marquee {
-  display: flex;
-  animation: marquee 30s linear infinite;
-  width: max-content;
-}
-
-.skills-marquee:hover {
-  animation-play-state: paused;
-}
-
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
 /* ── Navbar scroll effect (Feature #4) ───────────────── */
 nav.nav-scrolled {
   @apply py-2 border-b-outline-variant/40;
@@ -882,3 +1037,4 @@ nav.nav-scrolled {
 /* Keyframes del revelado de la home (fuera de @layer) */
 @keyframes reveal-rise { to { transform: none; } }
 @keyframes reveal-fade { to { opacity: 1; } }
+@keyframes rollbar-sweep { from { transform: translateX(0); } to { transform: translateX(212%); } }

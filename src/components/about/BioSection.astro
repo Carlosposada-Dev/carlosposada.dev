@@ -1,42 +1,31 @@
 ---
 /**
  * BioSection.astro
- * Bloque de bio textual en About.
- * Headline editorial + dos párrafos de descripción.
+ * Bio en tipografía grande + canales como texto (subrayado que se dibuja) y CV.
  */
+import { SOCIAL_LINKS } from "@utils/constants";
 ---
 
-<section class="space-y-6" aria-labelledby="bio-heading">
-
-  <!-- Sup-label de sección -->
-  <p class="section-label text-secondary">About the Architect</p>
-
-  <!-- Headline editorial con clamp tipográfico -->
-  <h1
-    id="bio-heading"
-    class="font-headline font-bold text-on-surface leading-tight tracking-tighter"
-    style="font-size: clamp(2rem, 5vw, 3.5rem);"
-  >
-    Bridging the gap between{" "}
-    <span class="text-primary">Logic</span>{" "}
-    and{" "}
-    <span class="text-tertiary">Scale</span>.
-  </h1>
-
-  <!-- Cuerpo de texto -->
-  <div class="space-y-4 text-on-surface-variant leading-relaxed text-base md:text-lg font-body">
+<section class="bio" aria-labelledby="bio-heading">
+  <span class="stage-eyebrow text-tertiary">01 — profile</span>
+  <h2 id="bio-heading" class="stage-h2">Bridging the gap between logic and scale.</h2>
+  <div class="bio-text">
     <p>
-      I am Carlos, a systems architect and automation specialist dedicated to
-      building resilient digital infrastructures. With over a decade of
-      experience, I&apos;ve navigated the transition from manual precision to
-      autonomous systems.
+      I am Carlos, a systems architect and automation specialist dedicated to building resilient
+      digital infrastructures. With over a decade of experience, I&apos;ve navigated the transition
+      from manual precision to autonomous systems.
     </p>
     <p>
-      My philosophy is rooted in <em class="text-on-surface not-italic font-medium">technical elegance</em>:
-      the belief that the most complex infrastructure should operate with the
-      rhythm of a heartbeat&mdash;consistent, quiet, and essential. Whether
-      I&apos;m deploying multi-cloud environments or training AI agents for QA,
-      my focus remains on high-velocity reliability.
+      My philosophy is rooted in technical elegance: the most complex infrastructure should operate
+      with the rhythm of a heartbeat — consistent, quiet, and essential. Whether I&apos;m deploying
+      multi-cloud environments or training AI agents for QA, my focus remains on high-velocity
+      reliability.
     </p>
+  </div>
+  <div class="bio-links">
+    {SOCIAL_LINKS.map((link) => (
+      <a href={link.href} class="link-draw" target="_blank" rel="noopener noreferrer">{link.label}</a>
+    ))}
+    <a href="/carlos-posada-cv.pdf" class="link-draw text-primary" download>Download CV</a>
   </div>
 </section>
