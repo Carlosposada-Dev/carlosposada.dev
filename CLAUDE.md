@@ -312,8 +312,11 @@ About, Work, Contact y Blog comparten tres piezas:
 | `ui/PageHero.astro` | Etiqueta mono + título de una palabra a ~180 px + línea de contexto. Las partículas escriben el título (`[data-name-line]`) igual que el nombre en la home |
 | `ui/PageCta.astro` | Cierre "service/contact ● healthy" + CTA magnético. Sustituye al antiguo CTABanner |
 
-El contenido va dentro de `.page-wrap` (queda por encima del canvas). Las clases de cada
-página (`.deploy-row`, `.roadmap`, `.release`, `.post-row`, `.request-field`…) están en
+El contenido va dentro de `.page-wrap` (queda por encima del canvas; columna centrada de
+máx. 1440 px, texto alineado a la izquierda). `.split-section` pone el encabezado de una
+sección fijo a la izquierda y el contenido a la derecha (About: carrera y credenciales);
+por debajo de 1024 px vuelve a una columna. Las clases de cada
+página (`.deploy-row`, `.roadmap`, `.graph`/`.commit`, `.cred`, `.post-row`, `.request-field`…) están en
 `global.css`, bloque "Páginas internas".
 
 **Work** (`/work`) fusiona Projects y Services: no hay catálogo de servicios, el trabajo
@@ -340,7 +343,7 @@ de cada etapa y hacen morph a la siguiente con el scroll:
 | hero | malla de ondas en perspectiva; reacciona al cursor; al cargar, la mitad de las partículas escribe el nombre sobre el `h1` |
 | plan | malla baja; el `terraform plan` se teclea en el DOM; los pods nacen sobre el "11" |
 | apply | control plane + un nodo por emisor (`getIssuerNodes()`); aristas que crecen, pods que viajan a su nodo, pendientes como anillos huecos |
-| rollout | anillo con un arco por `HOME_DEPLOYMENTS`; "building" no tiene % (no hay dato): su arco es un tramo que recorre el sector |
+| rollout | anillo con un arco por `DEPLOYMENTS`; "building" no tiene % (no hay dato): su arco es un tramo que recorre el sector |
 | observe | los dígitos de los Web Vitals del visitante, muestreados del propio DOM |
 | deployed | malla verde que se asienta + "200 OK" sobre `[data-ok]` |
 

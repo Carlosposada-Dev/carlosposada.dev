@@ -398,10 +398,24 @@
   /* ── Páginas internas: mismo lenguaje que la home ──── */
 
   /* Contenedor común: el contenido va por encima del canvas de ParticleField */
+  /* Columna centrada: en pantallas anchas el margen se reparte a ambos lados en vez
+     de acumularse a la derecha (el texto sigue alineado a la izquierda) */
   .page-wrap {
     position: relative;
     z-index: 1;
-    padding: 0 clamp(20px, 6vw, 96px) clamp(64px, 10vh, 120px) clamp(20px, 4vw, 56px);
+    box-sizing: border-box;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding: 0 clamp(20px, 4vw, 56px) clamp(64px, 10vh, 120px);
+  }
+  /* Sección a dos columnas: encabezado fijo a la izquierda, contenido a la derecha */
+  .split-section { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 0 clamp(32px, 5vw, 80px); align-items: start; }
+  .split-section > .page-section-head { position: sticky; top: 112px; }
+  .split-section > :not(.page-section-head) { grid-column: 2; }
+  @media (max-width: 1023px) {
+    .split-section { grid-template-columns: minmax(0, 1fr); }
+    .split-section > .page-section-head { position: static; }
+    .split-section > :not(.page-section-head) { grid-column: 1; }
   }
   .page-hero {
     @apply flex flex-col justify-end;
