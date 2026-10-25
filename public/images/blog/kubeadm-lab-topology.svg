@@ -1,0 +1,242 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1010" width="1600" height="1010" role="img" aria-labelledby="t d">
+<title id="t">Architecture: a 3-node kubeadm cluster on one host</title>
+<desc id="d">An Ubuntu host with KVM runs multipass, which launches three VMs on the mpqemubr0 bridge. cp1 holds the control plane as static Pods (etcd, apiserver, controller-manager, scheduler); w1 and w2 run the workload Pods. Every node runs kubelet, containerd, calico-node and kube-proxy. Workers join the apiserver with kubeadm join, and the VMs are snapshotted so the cluster can be restored in about three minutes.</desc>
+<defs><marker id="a-dark" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#334155"/></marker><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2563EB"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#16A34A"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7C3AED"/></marker></defs>
+<rect width="1600" height="1010" fill="#fff"/>
+<text x="800" y="50" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#1e2a4a" text-anchor="middle">Architecture: a 3-Node kubeadm Cluster on One Host</text>
+<text x="800" y="80" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#6b7280" text-anchor="middle">Three multipass VMs on a bare-metal Ubuntu host with KVM: one control-plane node and two workers, networked with Calico and snapshotted for break / fix practice.</text>
+<rect x="20" y="110" width="1190" height="860" rx="12" fill="#EFF5FF" stroke="#2563EB" stroke-width="1.5"/>
+<rect x="40" y="124" width="380" height="32" rx="7" fill="#2563EB"/>
+<text x="56" y="145" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#fff" text-anchor="start">HOST · Ubuntu 24.04.4 bare metal + KVM</text>
+<rect x="92" y="177" width="56" height="56" rx="7.840000000000001" fill="#2563EB"/>
+<svg x="103.2" y="188.2" width="33.6" height="33.6" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><rect x="10" y="10" width="4" height="4"/><path d="M9 3v4M12 3v4M15 3v4M9 17v4M12 17v4M15 17v4M3 9h4M3 12h4M3 15h4M17 9h4M17 12h4M17 15h4"/></svg>
+<text x="120" y="251" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#1f2937" text-anchor="middle">UEFI · SVM on</text>
+<text x="120" y="267" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4b5563" text-anchor="middle">Ryzen 5 3600 · 48 GB</text>
+<rect x="262" y="177" width="56" height="56" rx="7.840000000000001" fill="#2563EB"/>
+<svg x="273.2" y="188.2" width="33.6" height="33.6" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M12 15h5"/></svg>
+<text x="290" y="251" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#1f2937" text-anchor="middle">/dev/kvm</text>
+<text x="290" y="267" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4b5563" text-anchor="middle">kvm_amd loaded</text>
+<rect x="422" y="177" width="56" height="56" rx="7.840000000000001" fill="#2563EB"/>
+<svg x="433.2" y="188.2" width="33.6" height="33.6" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>
+<text x="450" y="251" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#1f2937" text-anchor="middle">multipassd</text>
+<text x="450" y="267" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4b5563" text-anchor="middle">multipass 1.16.3</text>
+<path d="M150 205L258 205" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#a-dark)"/>
+<path d="M320 205L418 205" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#a-dark)"/>
+<circle cx="76" cy="180" r="12" fill="#2563EB"/>
+<text x="76" y="184.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+<rect x="747" y="177" width="56" height="56" rx="7.840000000000001" fill="#2563EB"/>
+<svg x="758.2" y="188.2" width="33.6" height="33.6" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M12 15h5"/></svg>
+<text x="775" y="251" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#1f2937" text-anchor="middle">kubectl · multipass exec</text>
+<text x="775" y="267" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4b5563" text-anchor="middle">Phases 1–5 run from here</text>
+<rect x="922" y="177" width="56" height="56" rx="7.840000000000001" fill="#BE123C"/>
+<svg x="933.2" y="188.2" width="33.6" height="33.6" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5L11 20a2.1 2.1 0 0 1-3-3l8.7-8.7a4 4 0 0 0-2-2z"/></svg>
+<text x="950" y="251" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#1f2937" text-anchor="middle">break / fix scripts</text>
+<text x="950" y="267" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4b5563" text-anchor="middle">tooling stays on the host</text>
+<rect x="1082" y="177" width="56" height="56" rx="7.840000000000001" fill="#BE123C"/>
+<svg x="1093.2" y="188.2" width="33.6" height="33.6" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+<text x="1110" y="251" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#1f2937" text-anchor="middle">snapshots</text>
+<text x="1110" y="267" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#4b5563" text-anchor="middle">clean-v134</text>
+<rect x="50" y="290" width="1130" height="550" rx="10" fill="#fff" fill-opacity=".55" stroke="#7C3AED" stroke-width="1.6" stroke-dasharray="2 4"/>
+<text x="1164" y="318" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11.5" font-weight="400" fill="#7C3AED" text-anchor="end">bridge mpqemubr0 · NAT + dnsmasq DHCP · stable leases</text>
+<path d="M450 272L450 288" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#a-dark)"/>
+<circle cx="474" cy="280" r="12" fill="#7C3AED"/>
+<text x="474" y="284.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<text x="492" y="284" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#4b5563" text-anchor="start">launches 3 qemu VMs</text>
+<path d="M760 272V300H300V331" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#a-dark)"/>
+<rect x="560" y="292" width="118" height="16" rx="3" fill="#fff"/>
+<circle cx="548" cy="300" r="12" fill="#C2410C"/>
+<text x="548" y="304.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+<text x="566" y="304" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" fill="#1f2937" text-anchor="start">kubeadm init</text>
+<path d="M790 272L790 288" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#a-dark)"/>
+<circle cx="814" cy="280" r="12" fill="#A21CAF"/>
+<text x="814" y="284.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+<text x="832" y="284" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#4b5563" text-anchor="start">Calico → every node</text>
+<path d="M1110 272V288" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#a-green)"/>
+<text x="1094" y="284" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#16A34A" text-anchor="end">restore ~3 min</text>
+<circle cx="1132" cy="280" r="12" fill="#BE123C"/>
+<text x="1132" y="284.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">6</text>
+<rect x="75" y="335" width="420" height="470" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+<rect x="84" y="344" width="34" height="34" rx="4.760000000000001" fill="#7C3AED"/>
+<svg x="90.8" y="350.8" width="20.4" height="20.4" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01M12 7.5h5M12 16.5h5"/></svg>
+<text x="127" y="359" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#111827" text-anchor="start">cp1</text>
+<text x="127" y="375" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" fill="#4b5563" text-anchor="start">control plane · 10.167.152.47</text>
+<text x="480" y="359" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#4b5563" text-anchor="end">2 vCPU · 4 GB · 20 GB</text>
+<text x="480" y="375" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" fill="#C2410C" text-anchor="end">taint NoSchedule</text>
+<rect x="90" y="395" width="390" height="120" rx="8" fill="#FFF5EE" stroke="#C2410C" stroke-opacity=".5"/>
+<text x="102" y="413" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700" fill="#C2410C" text-anchor="start">static Pods · /etc/kubernetes/manifests</text>
+<rect x="116" y="428" width="48" height="48" rx="6.720000000000001" fill="#C2410C"/>
+<svg x="125.6" y="437.6" width="28.799999999999997" height="28.799999999999997" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="2.8"/><path d="M5 6v12c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V6M5 12c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8"/></svg>
+<text x="140" y="493" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">etcd</text>
+<rect x="206" y="428" width="48" height="48" rx="6.720000000000001" fill="#C2410C"/>
+<svg x="215.6" y="437.6" width="28.799999999999997" height="28.799999999999997" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M12 8l3.5 2v4L12 16l-3.5-2v-4z"/></svg>
+<text x="230" y="493" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">apiserver</text>
+<rect x="296" y="428" width="48" height="48" rx="6.720000000000001" fill="#C2410C"/>
+<svg x="305.6" y="437.6" width="28.799999999999997" height="28.799999999999997" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+<text x="320" y="493" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">ctrl-mgr</text>
+<rect x="386" y="428" width="48" height="48" rx="6.720000000000001" fill="#C2410C"/>
+<svg x="395.6" y="437.6" width="28.799999999999997" height="28.799999999999997" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M8 14h2M12 14h2M8 17h2M12 17h2"/></svg>
+<text x="410" y="493" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">scheduler</text>
+<rect x="90" y="530" width="390" height="100" rx="8" fill="#ECFAFC" stroke="#0E7490" stroke-opacity=".5"/>
+<text x="468" y="548" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700" fill="#0E7490" text-anchor="end">node runtime</text>
+<rect x="117" y="552" width="46" height="46" rx="6.44" fill="#0E7490"/>
+<svg x="126.2" y="561.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+<text x="140" y="615" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">kubelet</text>
+<rect x="222" y="552" width="46" height="46" rx="6.44" fill="#0E7490"/>
+<svg x="231.2" y="561.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 6v12M11 6v12M15 6v12"/></svg>
+<text x="245" y="615" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">containerd</text>
+<rect x="327" y="552" width="46" height="46" rx="6.44" fill="#0E7490"/>
+<svg x="336.2" y="561.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>
+<text x="350" y="615" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">crictl</text>
+<path d="M140 551L140 520" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#a-dark)"/>
+<text x="150" y="540" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#0E7490" text-anchor="start">starts them from disk</text>
+<rect x="90" y="645" width="390" height="100" rx="8" fill="#FCF0FD" stroke="#A21CAF" stroke-opacity=".5"/>
+<text x="468" y="663" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700" fill="#A21CAF" text-anchor="end">cluster networking</text>
+<rect x="117" y="667" width="46" height="46" rx="6.44" fill="#A21CAF"/>
+<svg x="126.2" y="676.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M12 8l3.5 2v4L12 16l-3.5-2v-4z"/></svg>
+<text x="140" y="730" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">calico-node</text>
+<rect x="222" y="667" width="46" height="46" rx="6.44" fill="#A21CAF"/>
+<svg x="231.2" y="676.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></svg>
+<text x="245" y="730" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">CoreDNS</text>
+<rect x="327" y="667" width="46" height="46" rx="6.44" fill="#A21CAF"/>
+<svg x="336.2" y="676.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>
+<text x="350" y="730" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">kube-proxy</text>
+<text x="90" y="782" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" fill="#4b5563" text-anchor="start">PKI: leaf certs 1 y · CAs 10 y</text>
+<rect x="520" y="335" width="315" height="470" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+<rect x="529" y="344" width="34" height="34" rx="4.760000000000001" fill="#7C3AED"/>
+<svg x="535.8" y="350.8" width="20.4" height="20.4" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01M12 7.5h5M12 16.5h5"/></svg>
+<text x="572" y="359" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#111827" text-anchor="start">w1</text>
+<text x="572" y="375" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" fill="#4b5563" text-anchor="start">worker · 10.167.152.24</text>
+<rect x="535" y="395" width="285" height="120" rx="8" fill="#F1F5F9" stroke="#475569" stroke-opacity=".5"/>
+<text x="547" y="413" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700" fill="#475569" text-anchor="start">workload Pods</text>
+<rect x="566" y="428" width="48" height="48" rx="6.720000000000001" fill="#475569"/>
+<svg x="575.6" y="437.6" width="28.799999999999997" height="28.799999999999997" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M12 8l3.5 2v4L12 16l-3.5-2v-4z"/></svg>
+<text x="590" y="493" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">web</text>
+<rect x="671" y="428" width="48" height="48" rx="6.720000000000001" fill="#475569"/>
+<svg x="680.6" y="437.6" width="28.799999999999997" height="28.799999999999997" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M12 8l3.5 2v4L12 16l-3.5-2v-4z"/></svg>
+<text x="695" y="493" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">web</text>
+<rect x="535" y="530" width="285" height="100" rx="8" fill="#ECFAFC" stroke="#0E7490" stroke-opacity=".5"/>
+<text x="808" y="548" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700" fill="#0E7490" text-anchor="end">node runtime</text>
+<rect x="567" y="552" width="46" height="46" rx="6.44" fill="#0E7490"/>
+<svg x="576.2" y="561.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+<text x="590" y="615" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">kubelet</text>
+<rect x="672" y="552" width="46" height="46" rx="6.44" fill="#0E7490"/>
+<svg x="681.2" y="561.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 6v12M11 6v12M15 6v12"/></svg>
+<text x="695" y="615" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">containerd</text>
+<rect x="535" y="645" width="285" height="100" rx="8" fill="#FCF0FD" stroke="#A21CAF" stroke-opacity=".5"/>
+<text x="808" y="663" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700" fill="#A21CAF" text-anchor="end">cluster networking</text>
+<rect x="567" y="667" width="46" height="46" rx="6.44" fill="#A21CAF"/>
+<svg x="576.2" y="676.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M12 8l3.5 2v4L12 16l-3.5-2v-4z"/></svg>
+<text x="590" y="730" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">calico-node</text>
+<rect x="672" y="667" width="46" height="46" rx="6.44" fill="#A21CAF"/>
+<svg x="681.2" y="676.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>
+<text x="695" y="730" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">kube-proxy</text>
+<text x="535" y="782" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" fill="#7C3AED" text-anchor="start">ssh w1 from cp1 (ed25519)</text>
+<rect x="860" y="335" width="295" height="470" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+<rect x="869" y="344" width="34" height="34" rx="4.760000000000001" fill="#7C3AED"/>
+<svg x="875.8" y="350.8" width="20.4" height="20.4" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="7" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/><path d="M8 7.5h.01M8 16.5h.01M12 7.5h5M12 16.5h5"/></svg>
+<text x="912" y="359" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#111827" text-anchor="start">w2</text>
+<text x="912" y="375" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" fill="#4b5563" text-anchor="start">worker · 10.167.152.155</text>
+<rect x="875" y="395" width="265" height="120" rx="8" fill="#F1F5F9" stroke="#475569" stroke-opacity=".5"/>
+<text x="887" y="413" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700" fill="#475569" text-anchor="start">workload Pods</text>
+<rect x="906" y="428" width="48" height="48" rx="6.720000000000001" fill="#475569"/>
+<svg x="915.6" y="437.6" width="28.799999999999997" height="28.799999999999997" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M12 8l3.5 2v4L12 16l-3.5-2v-4z"/></svg>
+<text x="930" y="493" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">web</text>
+<rect x="1011" y="428" width="48" height="48" rx="6.720000000000001" fill="#475569"/>
+<svg x="1020.6" y="437.6" width="28.799999999999997" height="28.799999999999997" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M12 8l3.5 2v4L12 16l-3.5-2v-4z"/></svg>
+<text x="1035" y="493" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">web</text>
+<rect x="875" y="530" width="265" height="100" rx="8" fill="#ECFAFC" stroke="#0E7490" stroke-opacity=".5"/>
+<text x="1128" y="548" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700" fill="#0E7490" text-anchor="end">node runtime</text>
+<rect x="907" y="552" width="46" height="46" rx="6.44" fill="#0E7490"/>
+<svg x="916.2" y="561.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+<text x="930" y="615" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">kubelet</text>
+<rect x="1012" y="552" width="46" height="46" rx="6.44" fill="#0E7490"/>
+<svg x="1021.2" y="561.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 6v12M11 6v12M15 6v12"/></svg>
+<text x="1035" y="615" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">containerd</text>
+<rect x="875" y="645" width="265" height="100" rx="8" fill="#FCF0FD" stroke="#A21CAF" stroke-opacity=".5"/>
+<text x="1128" y="663" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="700" fill="#A21CAF" text-anchor="end">cluster networking</text>
+<rect x="907" y="667" width="46" height="46" rx="6.44" fill="#A21CAF"/>
+<svg x="916.2" y="676.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M12 8l3.5 2v4L12 16l-3.5-2v-4z"/></svg>
+<text x="930" y="730" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">calico-node</text>
+<rect x="1012" y="667" width="46" height="46" rx="6.44" fill="#A21CAF"/>
+<svg x="1021.2" y="676.2" width="27.599999999999998" height="27.599999999999998" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>
+<text x="1035" y="730" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#1f2937" text-anchor="middle">kube-proxy</text>
+<text x="875" y="782" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" fill="#7C3AED" text-anchor="start">ssh w2 from cp1 (ed25519)</text>
+<path d="M497 778H516" fill="none" stroke="#7C3AED" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#a-purple)"/>
+<path d="M680 806V822H288V809" fill="none" stroke="#2563EB" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#a-blue)"/>
+<path d="M1008 806V822H680" fill="none" stroke="#2563EB" stroke-width="1.8" stroke-dasharray="6 4"/>
+<rect x="364" y="813" width="232" height="18" rx="4" fill="#fff"/>
+<circle cx="352" cy="822" r="12" fill="#2563EB"/>
+<text x="352" y="826.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+<text x="372" y="826" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="11" font-weight="400" fill="#2563EB" text-anchor="start">kubeadm join → apiserver :6443</text>
+<rect x="40" y="860" width="372" height="86" rx="8" fill="#fff" stroke="#A21CAF" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="54" y="884" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#A21CAF" text-anchor="start">Why Calico</text>
+<text x="54" y="906" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#374151" text-anchor="start">Flannel has no NetworkPolicy — CKS needs it.</text>
+<text x="54" y="923" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#374151" text-anchor="start">Pod CIDR 10.244.0.0/16 avoids home LANs.</text>
+<rect x="429" y="860" width="372" height="86" rx="8" fill="#fff" stroke="#C2410C" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="443" y="884" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#C2410C" text-anchor="start">Why v1.34</text>
+<text x="443" y="906" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#374151" text-anchor="start">The CKA ran v1.35 when this was written:</text>
+<text x="443" y="923" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#374151" text-anchor="start">1.34 leaves kubeadm upgrade as practice.</text>
+<rect x="818" y="860" width="372" height="86" rx="8" fill="#fff" stroke="#BE123C" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="832" y="884" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#BE123C" text-anchor="start">Never on a node</text>
+<text x="832" y="906" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#374151" text-anchor="start">No apt upgrade: the packages are on hold.</text>
+<text x="832" y="923" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#374151" text-anchor="start">Install only &lt;pkg&gt;=&lt;version&gt;.</text>
+<rect x="1230" y="110" width="350" height="330" rx="12" fill="#fff" stroke="#d1d5db"/>
+<text x="1405" y="142" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#111827" text-anchor="middle">LEGEND</text>
+<path d="M1252 176L1312 176" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#a-dark)"/>
+<text x="1328" y="180" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">Runs / launches / starts</text>
+<path d="M1252 204L1312 204" fill="none" stroke="#2563EB" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#a-blue)"/>
+<text x="1328" y="208" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">kubeadm join (TLS bootstrap)</text>
+<path d="M1252 232L1312 232" fill="none" stroke="#7C3AED" stroke-width="1.8" stroke-dasharray="2 4"/>
+<text x="1328" y="236" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">Virtual bridge network</text>
+<path d="M1252 260L1312 260" fill="none" stroke="#7C3AED" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#a-purple)"/>
+<text x="1328" y="264" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">ssh from cp1</text>
+<path d="M1252 288L1312 288" fill="none" stroke="#16A34A" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#a-green)"/>
+<text x="1328" y="292" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">Snapshot restore</text>
+<rect x="1252" y="323" width="14" height="14" rx="3" fill="#2563EB"/>
+<text x="1274" y="334" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">Host</text>
+<rect x="1418" y="323" width="14" height="14" rx="3" fill="#7C3AED"/>
+<text x="1440" y="334" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">Virtual machines</text>
+<rect x="1252" y="349" width="14" height="14" rx="3" fill="#C2410C"/>
+<text x="1274" y="360" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">Control plane</text>
+<rect x="1418" y="349" width="14" height="14" rx="3" fill="#0E7490"/>
+<text x="1440" y="360" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">Node runtime</text>
+<rect x="1252" y="375" width="14" height="14" rx="3" fill="#A21CAF"/>
+<text x="1274" y="386" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">Networking</text>
+<rect x="1418" y="375" width="14" height="14" rx="3" fill="#475569"/>
+<text x="1440" y="386" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">Workloads</text>
+<rect x="1252" y="401" width="14" height="14" rx="3" fill="#BE123C"/>
+<text x="1274" y="412" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#374151" text-anchor="start">Operations</text>
+<rect x="1230" y="460" width="350" height="510" rx="12" fill="#fff" stroke="#d1d5db"/>
+<text x="1405" y="494" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#111827" text-anchor="middle">BUILD STEPS</text>
+<circle cx="1262" cy="530" r="12" fill="#2563EB"/>
+<text x="1262" y="534.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+<text x="1286" y="535" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#111827" text-anchor="start">Host ready</text>
+<text x="1286" y="555" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">SVM on in the UEFI, /dev/kvm present,</text>
+<text x="1286" y="571" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">multipass with snapshot support.</text>
+<circle cx="1262" cy="604" r="12" fill="#7C3AED"/>
+<text x="1262" y="608.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<text x="1286" y="609" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#111827" text-anchor="start">VMs + node prep</text>
+<text x="1286" y="629" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">cp1, w1, w2 on one bridge; swap off,</text>
+<text x="1286" y="645" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">containerd with systemd cgroups.</text>
+<circle cx="1262" cy="678" r="12" fill="#C2410C"/>
+<text x="1262" y="682.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+<text x="1286" y="683" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#111827" text-anchor="start">kubeadm init</text>
+<text x="1286" y="703" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">Certs, kubeconfigs and four static</text>
+<text x="1286" y="719" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">Pods. NotReady until the CNI runs.</text>
+<circle cx="1262" cy="752" r="12" fill="#A21CAF"/>
+<text x="1262" y="756.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+<text x="1286" y="757" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#111827" text-anchor="start">Calico</text>
+<text x="1286" y="777" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">Operator + Installation CR; one</text>
+<text x="1286" y="793" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">calico-node per node, CoreDNS Running.</text>
+<circle cx="1262" cy="826" r="12" fill="#2563EB"/>
+<text x="1262" y="830.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+<text x="1286" y="831" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#111827" text-anchor="start">kubeadm join</text>
+<text x="1286" y="851" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">Workers join with a fresh token</text>
+<text x="1286" y="867" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">(token create --print-join-command).</text>
+<circle cx="1262" cy="900" r="12" fill="#BE123C"/>
+<text x="1262" y="904.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">6</text>
+<text x="1286" y="905" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#111827" text-anchor="start">Work + snapshot</text>
+<text x="1286" y="925" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">Aliases and ssh on cp1, then</text>
+<text x="1286" y="941" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#4b5563" text-anchor="start">snapshot; restore takes ~3 minutes.</text>
+<text x="1580" y="996" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#6b7280" text-anchor="end" font-style="italic">Verified 2026-08-31 · Ubuntu 24.04.4 · multipass 1.16.3 · Kubernetes v1.34.11 · containerd 2.2.1 · Calico v3.32.2</text>
+</svg>

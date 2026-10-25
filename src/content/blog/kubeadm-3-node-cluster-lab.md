@@ -44,22 +44,7 @@ Each VM gets **2 vCPU and 4 GB**. The control-plane node's 2 vCPU are not negoti
 
 A point of vocabulary worth fixing early: what you create are **three nodes**, one of them a *control-plane node*. The control plane is not the machine — it is the set of components (apiserver, etcd, scheduler, controller-manager) running on that node.
 
-```mermaid
-flowchart LR
-  subgraph HOST["Host: Ubuntu 24.04 + KVM"]
-    MP["multipassd"]
-    subgraph BR["bridge mpqemubr0 (NAT + DHCP)"]
-      CP["cp1 — control plane<br/>apiserver · etcd · scheduler · controller-manager"]
-      W1["w1 — worker"]
-      W2["w2 — worker"]
-    end
-  end
-  MP --> CP
-  MP --> W1
-  MP --> W2
-  CP -. "kubeadm join" .- W1
-  CP -. "kubeadm join" .- W2
-```
+<a href="/images/blog/kubeadm-lab-topology.svg" title="Open the diagram at full size"><img src="/images/blog/kubeadm-lab-topology.svg" alt="Architecture of the lab: an Ubuntu host with KVM runs multipass, which launches cp1, w1 and w2 on the mpqemubr0 bridge. cp1 holds the static Pods (etcd, apiserver, controller-manager, scheduler); every node runs kubelet, containerd, calico-node and kube-proxy; workers join the apiserver with kubeadm join; the VMs are snapshotted and restored in about three minutes." width="1600" height="1010" loading="lazy" decoding="async" /></a>
 
 ## Where each command runs — read this before copying anything
 
