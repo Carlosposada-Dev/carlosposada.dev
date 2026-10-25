@@ -20,6 +20,8 @@ export function formatDate(date: Date | string): string {
     year: "numeric",
     month: "short",
     day: "numeric",
+    // Las fechas del frontmatter son medianoche UTC: sin esto, un build en UTC-5 pinta el día anterior
+    timeZone: "UTC",
   });
 }
 

@@ -20,7 +20,7 @@
   #   fonts.gstatic.com     → the font files themselves
   #   cdn.jsdelivr.net      → Mermaid, dynamically imported in blog posts
   #   *.cloudflareinsights.com → Web Analytics beacon (Feature #11, still off)
-  #   img-src https:        → Credly badges, Unsplash project images
+  #   img-src https:        → Credly and Microsoft Learn certification badges
   # 'unsafe-inline' in script-src is still required: Astro inlines small
   # component scripts. Replace with hashes/nonces before removing it.
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://cdn.jsdelivr.net https://cloudflareinsights.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'

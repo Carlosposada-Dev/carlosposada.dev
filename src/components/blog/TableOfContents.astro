@@ -1,4 +1,11 @@
 ---
+/**
+ * TableOfContents.astro — el índice del post como pipeline de despliegue.
+ * Cada h2 es una etapa (anillo + conector) y sus h3 son pasos dentro de ella.
+ * Al leer, las etapas pasadas se rellenan en verde, la actual late en cyan y el
+ * conector de la actual avanza con el scroll — el mismo plan → apply → rollout
+ * de la home. Sin JS es una lista de enlaces normal.
+ */
 interface Heading {
   depth: number;
   slug: string;
@@ -12,72 +19,52 @@ interface Props {
 }
 
 const { headings, variant = "sidebar" } = Astro.props;
+
+// h2 → etapa, h3 → paso de la etapa anterior (un h3 sin h2 previo es su propia etapa)
+const stages: Array<Heading & { steps: Heading[] }> = [];
+for (const h of headings) {
+  const last = stages[stages.length - 1];
+  if (h.depth === 3 && last) last.steps.push(h);
+  else stages.push({ ...h, steps: [] });
+}
 ---
 
-{variant === "sidebar" && (
-  <nav
-    aria-label="Table of contents"
-    class="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto
-           glass-card rounded-xl border border-outline-variant/20 p-5"
-  >
-    <p class="text-xs font-headline font-bold uppercase tracking-widest
-              text-on-surface-variant/60 mb-4">
-      On this page
+{variant === "sidebar" ? (
+  <nav aria-label="Table of contents" class="pipe pipe-sidebar" data-pipe>
+    <p class="pipe-head stage-eyebrow">
+      <span class="text-primary">pipeline</span>
+      <span data-pipe-count>{stages.length} stages</span>
     </p>
-    <ol class="space-y-0.5" role="list">
-      {headings.map((h) => (
-        <li>
-          <a
-            href={`#${h.slug}`}
-            data-toc-link={h.slug}
-            class:list={[
-              "toc-link block py-1.5 text-sm leading-snug transition-colors duration-150",
-              "text-on-surface-variant/60 hover:text-primary",
-              h.depth === 3 ? "pl-4 text-xs" : "font-medium",
-            ]}
-          >
-            {h.text}
+    <ol class="pipe-list" role="list">
+      {stages.map((s) => (
+        <li class="pipe-stage" data-pipe-stage>
+          <a href={`#${s.slug}`} class="pipe-link" data-pipe-link={s.slug}>
+            <i class="pipe-dot" aria-hidden="true"></i>{s.text}
           </a>
+          {s.steps.length > 0 && (
+            <ol class="pipe-steps" role="list">
+              {s.steps.map((st) => (
+                <li><a href={`#${st.slug}`} class="pipe-step" data-pipe-link={st.slug}>{st.text}</a></li>
+              ))}
+            </ol>
+          )}
         </li>
       ))}
     </ol>
   </nav>
-)}
-
-{variant === "mobile" && (
-  <details class="mb-8 glass-card rounded-xl border border-outline-variant/20 group">
-    <summary
-      class="flex items-center justify-between px-5 py-3.5 cursor-pointer
-             text-sm font-headline font-bold text-on-surface-variant
-             hover:text-primary transition-colors list-none"
-    >
-      <span class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-base text-primary" aria-hidden="true">
-          menu_book
-        </span>
-        Table of contents
-      </span>
-      <span
-        class="material-symbols-outlined text-base transition-transform duration-200
-               group-open:rotate-180"
-        aria-hidden="true"
-      >
-        expand_more
-      </span>
+) : (
+  <details class="pipe-mobile group">
+    <summary class="pipe-head stage-eyebrow">
+      <span class="text-primary">pipeline</span>
+      <span>{stages.length} stages</span>
+      <span class="material-symbols-outlined ml-auto text-base transition-transform group-open:rotate-180" aria-hidden="true">expand_more</span>
     </summary>
-    <nav aria-label="Table of contents" class="px-5 pb-4 pt-1 border-t border-outline-variant/20">
-      <ol class="space-y-0.5" role="list">
-        {headings.map((h) => (
-          <li>
-            <a
-              href={`#${h.slug}`}
-              class:list={[
-                "block py-1.5 text-sm leading-snug transition-colors",
-                "text-on-surface-variant hover:text-primary",
-                h.depth === 3 ? "pl-4 text-xs" : "",
-              ]}
-            >
-              {h.text}
+    <nav aria-label="Table of contents" class="pipe" data-pipe>
+      <ol class="pipe-list" role="list">
+        {stages.map((s) => (
+          <li class="pipe-stage" data-pipe-stage>
+            <a href={`#${s.slug}`} class="pipe-link" data-pipe-link={s.slug}>
+              <i class="pipe-dot" aria-hidden="true"></i>{s.text}
             </a>
           </li>
         ))}
@@ -87,47 +74,68 @@ const { headings, variant = "sidebar" } = Astro.props;
 )}
 
 <script>
-  // Scroll-spy: highlights the active heading in the desktop sidebar
-  document.addEventListener("astro:page-load", () => {
-    const links = document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]");
-    if (!links.length) return;
+  interface Stage { li: HTMLElement; el: HTMLElement; steps: Array<{ a: HTMLElement; el: HTMLElement }> }
+  interface Pipe { stages: Stage[]; count: HTMLElement | null; end: HTMLElement }
 
-    let activeSlug = "";
+  let pipes: Pipe[] = [];
+  let raf = 0;
 
-    const setActive = (slug: string) => {
-      if (slug === activeSlug) return;
-      activeSlug = slug;
-      links.forEach((link) => {
-        const isActive = link.dataset.tocLink === slug;
-        link.classList.toggle("!text-primary", isActive);
-        link.classList.toggle("text-on-surface-variant/60", !isActive);
+  const byId = (a: HTMLElement) => document.getElementById(a.dataset.pipeLink ?? "");
+
+  function build(): Pipe[] {
+    const end = document.getElementById("post-body");
+    if (!end) return [];
+    return Array.from(document.querySelectorAll<HTMLElement>("[data-pipe]")).map((nav) => ({
+      end,
+      count: nav.parentElement?.querySelector<HTMLElement>("[data-pipe-count]") ?? null,
+      stages: Array.from(nav.querySelectorAll<HTMLElement>("[data-pipe-stage]")).flatMap((li) => {
+        const el = byId(li.querySelector<HTMLElement>(".pipe-link")!);
+        if (!el) return [];
+        const steps = Array.from(li.querySelectorAll<HTMLElement>(".pipe-step")).flatMap((a) => {
+          const s = byId(a);
+          return s ? [{ a, el: s }] : [];
+        });
+        return [{ li, el, steps }];
+      }),
+    }));
+  }
+
+  function update() {
+    raf = 0;
+    // La "línea de lectura": lo que pasa por encima del 30 % del viewport ya se leyó
+    const line = innerHeight * 0.3;
+    for (const { stages, count, end } of pipes) {
+      const tops = stages.map((s) => s.el.getBoundingClientRect().top);
+      const cur = tops.reduce((acc, t, i) => (t <= line ? i : acc), -1);
+      let done = 0;
+      stages.forEach((s, i) => {
+        const next = i + 1 < stages.length ? tops[i + 1] : end.getBoundingClientRect().bottom;
+        const p = i < cur ? 1 : i === cur ? Math.min(1, Math.max(0, (line - tops[i]) / (next - tops[i]))) : 0;
+        const isDone = p >= 1;
+        if (isDone) done++;
+        s.li.style.setProperty("--p", p.toFixed(3));
+        s.li.classList.toggle("is-done", isDone);
+        s.li.classList.toggle("is-current", i === cur && !isDone);
+        const link = s.li.querySelector(".pipe-link")!;
+        // El paso actual: el último h3 de la etapa actual que ya cruzó la línea
+        const step = i === cur ? s.steps.filter((st) => st.el.getBoundingClientRect().top <= line).pop() : undefined;
+        s.steps.forEach((st) => st.a.removeAttribute("aria-current"));
+        link.removeAttribute("aria-current");
+        if (i === cur) (step?.a ?? link).setAttribute("aria-current", "location");
       });
-    };
+      if (count) count.textContent = `${done}/${stages.length} passed`;
+    }
+  }
 
-    const headingEls = Array.from(
-      document.querySelectorAll<HTMLElement>("#post-body h2[id], #post-body h3[id]")
-    );
-    if (!headingEls.length) return;
+  const schedule = () => { if (!raf && pipes.length) raf = requestAnimationFrame(update); };
+  addEventListener("scroll", schedule, { passive: true });
+  addEventListener("resize", schedule);
+  document.addEventListener("astro:page-load", () => { pipes = build(); schedule(); });
+  document.addEventListener("astro:before-swap", () => { pipes = []; });
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActive(entry.target.id);
-            break;
-          }
-        }
-      },
-      { rootMargin: "-80px 0px -60% 0px", threshold: 0 }
-    );
-
-    headingEls.forEach((el) => observer.observe(el));
-
-    // Close mobile accordion on link click
-    document.querySelectorAll(".toc-mobile-link").forEach((a) => {
-      a.addEventListener("click", () => {
-        (a.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open");
-      });
-    });
+  // En móvil, el acordeón se cierra al elegir una etapa
+  document.addEventListener("click", (e) => {
+    const a = (e.target as Element).closest?.(".pipe-mobile a");
+    a?.closest("details")?.removeAttribute("open");
   });
 </script>

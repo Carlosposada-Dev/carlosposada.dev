@@ -764,6 +764,96 @@
   }
   .post-desc { @apply m-0 font-headline; max-width: 62ch; font-size: clamp(16px, 1.2vw, 18px); line-height: 1.55; color: #c3c8dd; }
 
+  /* Blog: el post */
+  .post-hero {
+    @apply flex flex-col;
+    gap: clamp(16px, 2.4vh, 24px);
+    padding-top: clamp(120px, 18vh, 200px);
+    padding-bottom: clamp(40px, 7vh, 80px);
+    will-change: transform, opacity;
+  }
+  .post-hero-eyebrow { @apply flex flex-wrap; gap: 4px 20px; color: #8b93ad; }
+  .post-hero-title {
+    @apply m-0 font-headline font-bold text-on-surface;
+    max-width: 22ch;
+    font-size: clamp(36px, 5.2vw, 76px);
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+  }
+  .post-layout { display: grid; grid-template-columns: minmax(0, 780px); }
+  .post-layout.has-toc { grid-template-columns: minmax(0, 780px) 260px; gap: clamp(48px, 6vw, 112px); }
+  @media (max-width: 1023px) {
+    .post-layout.has-toc { grid-template-columns: minmax(0, 1fr); }
+  }
+  .post-end {
+    @apply flex flex-col items-start justify-between sm:flex-row sm:items-center;
+    gap: 16px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid #1a2340;
+  }
+
+  /* TOC como pipeline: anillo por etapa, conector que se rellena al leer */
+  .pipe-sidebar { @apply sticky; top: 112px; max-height: calc(100vh - 140px); overflow-y: auto; }
+  .pipe-head { @apply flex items-center; gap: 12px; margin: 0 0 20px; color: #8b93ad; }
+  .pipe-list { @apply m-0 list-none p-0; }
+  .pipe-stage { position: relative; padding-bottom: 18px; }
+  /* Conector: pista gris y relleno verde escalado por --p (0–1) */
+  .pipe-stage::before,
+  .pipe-stage::after { content: ""; position: absolute; left: 4.5px; top: 20px; bottom: 2px; width: 1px; background: #1a2340; }
+  .pipe-stage::after { background: #2ff801; transform-origin: top; transform: scaleY(var(--p, 0)); }
+  .pipe-stage:last-child { padding-bottom: 0; }
+  .pipe-stage:last-child::before,
+  .pipe-stage:last-child::after { display: none; }
+  .pipe-link { @apply flex items-start font-headline font-medium; gap: 12px; font-size: 14px; line-height: 1.35; color: #8b93ad; transition: color 0.2s; }
+  .pipe-link:hover,
+  .pipe-step:hover { color: #6dddff; }
+  .pipe-dot {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    margin-top: 4px;
+    border: 1px solid #3a4566;
+    border-radius: 9999px;
+    background: #0a0e1a;
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+  .pipe-stage.is-done .pipe-link { color: #c3c8dd; }
+  .pipe-stage.is-done .pipe-dot { border-color: #2ff801; background: #2ff801; }
+  .pipe-stage.is-current .pipe-link { color: #e2e4f6; }
+  .pipe-stage.is-current .pipe-dot { border-color: #6dddff; animation: pipe-pulse 1.6s ease-out infinite; }
+  .pipe-steps { @apply m-0 list-none; padding: 8px 0 0 22px; }
+  .pipe-step { @apply block font-mono; padding: 3px 0; font-size: 12px; line-height: 1.4; color: #6b7390; transition: color 0.2s; }
+  .pipe-step[aria-current] { color: #6dddff; }
+  .pipe-mobile { margin-bottom: 32px; padding: 14px 18px; border: 1px solid #1a2340; border-radius: 12px; background: rgba(14, 19, 32, 0.7); }
+  .pipe-mobile > summary { @apply cursor-pointer list-none; margin: 0; }
+  .pipe-mobile > summary::-webkit-details-marker { display: none; }
+  .pipe-mobile[open] > summary { margin-bottom: 18px; }
+
+  /* Bloques de código como terminal (utils/shiki-terminal.ts) */
+  .code-block { margin: 1.75em 0; overflow: hidden; border: 1px solid #1a2340; border-radius: 12px; background: theme("colors.surface-container.low"); }
+  .code-head {
+    @apply flex items-center font-mono text-[11px] uppercase;
+    gap: 12px;
+    padding: 8px 10px 8px 14px;
+    border-bottom: 1px solid #1a2340;
+    letter-spacing: 0.08em;
+    color: #8b93ad;
+  }
+  .code-host { @apply font-semibold normal-case; padding: 2px 8px; border-radius: 4px; background: rgba(109, 221, 255, 0.12); color: #6dddff; letter-spacing: 0.02em; }
+  .code-host::before { content: "▶ "; }
+  .code-title { @apply normal-case; color: #c3c8dd; letter-spacing: 0.02em; }
+  .code-lang { margin-left: auto; }
+  .code-copy { padding: 2px 8px; border: 1px solid #1a2340; border-radius: 4px; color: #c3c8dd; text-transform: inherit; letter-spacing: inherit; transition: color 0.2s, border-color 0.2s; }
+  .code-copy:hover,
+  .code-copy:focus-visible { border-color: #6dddff; color: #6dddff; outline: none; }
+  .code-copy.is-copied { border-color: #2ff801; color: #2ff801; }
+  /* !important: Shiki pinta el fondo del tema como estilo inline en el <pre> */
+  .code-block pre.astro-code { margin: 0; padding: 18px 20px; font-size: 14px; line-height: 1.65; background-color: transparent !important; }
+  /* Salida esperada: lo que se ve, no lo que se ejecuta */
+  .code-block.is-output { border-style: dashed; background: transparent; }
+  .code-block.is-output .code-head { border-bottom-style: dashed; }
+
   /* Cierre común */
   .page-cta { @apply flex flex-col; gap: 24px; padding-top: clamp(80px, 14vh, 160px); }
   .page-cta-title {
@@ -787,6 +877,7 @@
   @media (prefers-reduced-motion: reduce) {
     .rollbar.is-building i { animation: none; left: 34%; }
     .profile-photo img { transition: none; }
+    .pipe-stage.is-current .pipe-dot { animation: none; }
   }
 
   /* ── Web Vitals chip (Feature #20) ──────────────────── */
@@ -1258,3 +1349,4 @@ nav.nav-scrolled {
 @keyframes reveal-fade { to { opacity: 1; } }
 @keyframes orbit-spin { to { transform: rotate(1turn); } }
 @keyframes rollbar-sweep { from { transform: translateX(0); } to { transform: translateX(212%); } }
+@keyframes pipe-pulse { from { box-shadow: 0 0 0 0 rgba(109, 221, 255, 0.55); } to { box-shadow: 0 0 0 7px rgba(109, 221, 255, 0); } }

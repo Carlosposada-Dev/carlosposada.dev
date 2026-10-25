@@ -294,7 +294,7 @@ Orígenes permitidos hoy (todos en uso real):
 | `fonts.gstatic.com` | los archivos de fuente |
 | `cdn.jsdelivr.net` | Mermaid, importado dinámicamente en `blog/[...slug].astro` |
 | `*.cloudflareinsights.com` | beacon de Web Analytics (aún apagado) |
-| `img-src https:` | badges de Credly, imágenes de Unsplash |
+| `img-src https:` | badges de Credly y Microsoft Learn |
 
 Si se agrega un CDN o endpoint externo, actualizar `script-src` / `connect-src` ahí o el
 recurso se bloquea en producción. Verificar siempre con `npm run preview` (wrangler sí
@@ -474,6 +474,17 @@ Estos archivos son contenido público: aplica la misma regla de "nada inventado"
 - Shiki para syntax highlighting, Mermaid renderizado en cliente, TOC flotante,
   barra de progreso de lectura y CTA de newsletter al final del post.
 - El feed RSS se genera en `src/pages/rss.xml.ts`.
+- La página del post usa el lenguaje de las internas (`ParticleField preset="blog"`,
+  cabecera `.post-hero`). Sin portada: `coverImage` sólo alimenta el `og:image` y, si se
+  usa, va en `public/images/` (nada de Unsplash ni stock hotlinkeado).
+- El TOC (`blog/TableOfContents.astro`) es un pipeline: cada h2 es una etapa que se
+  rellena en verde al leerla, los h3 son pasos dentro de ella.
+- Bloques de código = terminales (`src/utils/shiki-terminal.ts`, transformer de Shiki).
+  El meta del bloque pone cabecera: ```` ```bash host=cp1 title="kubeadm init" ````. Sin
+  lenguaje (` ``` `) se pinta como **salida** (borde punteado): úsalo para lo que el lector
+  debe ver, no para lo que ejecuta.
+- Mermaid: Shiki deja el lenguaje en `pre[data-language="mermaid"]`; el `<code>` no lleva
+  clase `language-*` (así estuvo roto hasta 2026-10-25).
 - Al añadir un post: respetar el frontmatter del schema (si falta un campo requerido,
   el build falla, que es el comportamiento deseado).
 
