@@ -23,7 +23,7 @@ const blog = defineCollection({
     featured: z.boolean().default(false),
     /** If true, post is hidden from listing (draft mode) */
     draft: z.boolean().default(false),
-    /** Cover image URL — shown in featured card and post header */
+    /** Social preview image (og:image). Own asset in public/images/ — no hotlinking */
     coverImage: z.string().optional(),
     /** Alt text for cover image */
     coverImageAlt: z.string().optional(),

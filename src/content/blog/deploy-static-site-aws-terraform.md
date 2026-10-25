@@ -7,8 +7,6 @@ category: Cloud
 tags: ["terraform", "aws", "s3", "cloudfront", "iac", "devops"]
 featured: true
 draft: false
-coverImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80"
-coverImageAlt: "Abstract digital cloud formation in electric cyan particles"
 readingTime: "15 min read"
 ---
 
